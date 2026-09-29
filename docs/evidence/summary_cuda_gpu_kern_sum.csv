@@ -1,0 +1,5 @@
+Time (%),Total Time (ns),Instances,Avg (ns),Med (ns),Min (ns),Max (ns),StdDev (ns),Name
+80.1,113123,2,56561.5,56561.5,6016,107107,71482.1,"void hbr::<unnamed>::histogram_kernel<(bool)1>(const unsigned char *, unsigned long long, unsigned long long, unsigned long long, unsigned long long, unsigned long long, unsigned long long *)"
+9.2,12992,2,6496.0,6496.0,5728,7264,1086.1,"void hbr::<unnamed>::histogram_kernel<(bool)0>(const unsigned char *, unsigned long long, unsigned long long, unsigned long long, unsigned long long, unsigned long long, unsigned long long *)"
+7.4,10432,1,10432.0,10432.0,10432,10432,0.0,"hbr::<unnamed>::stencil_kernel(const double *, double *, unsigned long long, unsigned long long)"
+3.3,4640,2,2320.0,2320.0,1856,2784,656.2,"hbr::<unnamed>::reduce_kernel(const double *, const unsigned char *, unsigned long long, double *)"

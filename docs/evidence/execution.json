@@ -1,0 +1,412 @@
+{
+  "schema_version": 1,
+  "measurement": {
+    "started_utc": "2026-09-29T22:45:00.536162+00:00",
+    "revision": "675bd82ad9f2ed25cda41835835a1074ebc88ace",
+    "contention": "One agent measurement workload. User applications and ordinary clocks/power settings preserved. External contention not controlled.",
+    "cpu": "AMD Ryzen 7 7800X3D, Windows 11, MSVC 19.44.35228.0",
+    "gpu_before": "NVIDIA GeForce RTX 4090, 617.14, 24564 MiB, 21 %, 5510 MiB, 37",
+    "protocol_hashes": {
+      "cpu-protocol.json": "c4b38ecdfe7e35d639f63ce6cdd4604391c1e6c54e0a3638808a592814c62c82",
+      "cuda-protocol.json": "b5b30e64f2bccefd7585ca48555e06caecbf0c8f3fa657abc27868a24cf4f069"
+    },
+    "runs": [
+      {
+        "name": "cpu",
+        "started_utc": "2026-09-29T22:45:00.615694+00:00",
+        "exit_code": 0,
+        "binary_sha256": "5cf4f9b67af8ca6590d82a4d6f4eafd35ce7cb33f40e9e931b74d9a8a81a4802",
+        "csv_sha256": "9697f4e834c6573517e14a226dbd10a630e51d3a427312076cf759df255f41b6"
+      },
+      {
+        "name": "cuda",
+        "started_utc": "2026-09-29T22:45:00.901357+00:00",
+        "exit_code": 0,
+        "binary_sha256": "88c8bcec11adaa233014b70145f89a735440ee55b4541224aa4f5465b88fa89f",
+        "csv_sha256": "a83f16d5046ff83d719578aad2a5fce03da5b51f2c63a63b3e0b856f75002f11"
+      }
+    ],
+    "gpu_after": "12 %, 5518 MiB, 37",
+    "source_unchanged": true,
+    "finished_utc": "2026-09-29T22:45:01.343029+00:00"
+  },
+  "followup": {
+    "revision": "b2cb6a8370646bb9a044ad677c8d4551bb8d1161",
+    "started_utc": "2026-09-29T22:47:27.800642+00:00",
+    "finished_utc": "2026-09-29T22:47:28.095940+00:00",
+    "exit_code": 0,
+    "binary_sha256": "1313062e3d8535319eef2cde81118b2342cc3b5f95671ff1f8eb7f5df00064d1",
+    "csv_sha256": "cb9eb5e6e8bc11cf6993056d778aea3951ab2b4a1ee044b525c95a1949deea69",
+    "contention": "One agent measurement slot. User processes preserved. External contention uncontrolled.",
+    "protocol_sha256": "0d7f72b5089a59dd624f87be47e7c4b711cf8a64eb8d056c38dff488a43491b4"
+  },
+  "artifact_sha256": {
+    "baseline-cpu.csv": "9697f4e834c6573517e14a226dbd10a630e51d3a427312076cf759df255f41b6",
+    "baseline-cuda.csv": "a83f16d5046ff83d719578aad2a5fce03da5b51f2c63a63b3e0b856f75002f11",
+    "followup-cpu.csv": "cb9eb5e6e8bc11cf6993056d778aea3951ab2b4a1ee044b525c95a1949deea69",
+    "summary_cuda_api_sum.csv": "88bf01a50364037644e2690439d4ec82d6ee87545765f5393aa0241ab10d34fa",
+    "summary_cuda_gpu_kern_sum.csv": "6ca8b53e5a5e8bafbab936a1712bb86b7523745b8043b2a663d1e3e9b4c887c1",
+    "summary_cuda_gpu_mem_time_sum.csv": "e6c966bb6f139e786d9eee764e2d2a328745fd8634aa3c9804f414a0d23b4c0b"
+  },
+  "local_verification": [
+    {
+      "name": "windows-checks-01",
+      "revision": "675bd82ad9f2ed25cda41835835a1074ebc88ace",
+      "content_sha256": "de7262f9ccc8b52c667e0cbc44a34fa2cef7a988897f24a625c340a0d76aa98e",
+      "status": "passed",
+      "started_utc": "2026-09-29T22:42:18.097970+00:00",
+      "finished_utc": "2026-09-29T22:43:16.125390+00:00",
+      "private_receipt_sha256": "66c878070c682c2d7317af084cdb7b4462513350a66977cfe166409508ae2964",
+      "checks": [
+        {
+          "id": "windows-configure",
+          "status": "passed",
+          "exit_code": 0
+        },
+        {
+          "id": "windows-build",
+          "status": "passed",
+          "exit_code": 0
+        },
+        {
+          "id": "windows-test",
+          "status": "passed",
+          "exit_code": 0
+        },
+        {
+          "id": "portable-configure",
+          "status": "passed",
+          "exit_code": 0
+        },
+        {
+          "id": "portable-build",
+          "status": "passed",
+          "exit_code": 0
+        },
+        {
+          "id": "portable-test",
+          "status": "passed",
+          "exit_code": 0
+        },
+        {
+          "id": "cuda-build",
+          "status": "passed",
+          "exit_code": 0
+        },
+        {
+          "id": "cuda-test",
+          "status": "passed",
+          "exit_code": 0
+        },
+        {
+          "id": "cuda-install",
+          "status": "passed",
+          "exit_code": 0
+        },
+        {
+          "id": "consumer-configure",
+          "status": "passed",
+          "exit_code": 0
+        },
+        {
+          "id": "consumer-build",
+          "status": "passed",
+          "exit_code": 0
+        },
+        {
+          "id": "consumer-run",
+          "status": "passed",
+          "exit_code": 0
+        },
+        {
+          "id": "python-package",
+          "status": "passed",
+          "exit_code": 0
+        },
+        {
+          "id": "diff",
+          "status": "passed",
+          "exit_code": 0
+        }
+      ]
+    },
+    {
+      "name": "linux-checks-01",
+      "revision": "675bd82ad9f2ed25cda41835835a1074ebc88ace",
+      "content_sha256": "de7262f9ccc8b52c667e0cbc44a34fa2cef7a988897f24a625c340a0d76aa98e",
+      "status": "passed",
+      "started_utc": "2026-09-29T22:43:51.311613+00:00",
+      "finished_utc": "2026-09-29T22:44:22.947570+00:00",
+      "private_receipt_sha256": "42eb912bc3c34d44d4ddcda1a3495194250a98c28456c442a6901945fdb5a2a5",
+      "checks": [
+        {
+          "id": "release-configure",
+          "status": "passed",
+          "exit_code": 0
+        },
+        {
+          "id": "release-build",
+          "status": "passed",
+          "exit_code": 0
+        },
+        {
+          "id": "release-test",
+          "status": "passed",
+          "exit_code": 0
+        },
+        {
+          "id": "sanitize-configure",
+          "status": "passed",
+          "exit_code": 0
+        },
+        {
+          "id": "sanitize-build",
+          "status": "passed",
+          "exit_code": 0
+        },
+        {
+          "id": "sanitize-test",
+          "status": "passed",
+          "exit_code": 0
+        },
+        {
+          "id": "portable-configure",
+          "status": "passed",
+          "exit_code": 0
+        },
+        {
+          "id": "portable-build",
+          "status": "passed",
+          "exit_code": 0
+        },
+        {
+          "id": "portable-test",
+          "status": "passed",
+          "exit_code": 0
+        },
+        {
+          "id": "install",
+          "status": "passed",
+          "exit_code": 0
+        },
+        {
+          "id": "consumer-configure",
+          "status": "passed",
+          "exit_code": 0
+        },
+        {
+          "id": "consumer-build",
+          "status": "passed",
+          "exit_code": 0
+        },
+        {
+          "id": "consumer-run",
+          "status": "passed",
+          "exit_code": 0
+        },
+        {
+          "id": "python-package",
+          "status": "passed",
+          "exit_code": 0
+        },
+        {
+          "id": "diff",
+          "status": "passed",
+          "exit_code": 0
+        }
+      ]
+    },
+    {
+      "name": "windows-checks-02",
+      "revision": "b2cb6a8370646bb9a044ad677c8d4551bb8d1161",
+      "content_sha256": "d16f3559d84dc01ec5e0d431cd9266f5703b56d73465eb90c145aca3e7684dc0",
+      "status": "passed",
+      "started_utc": "2026-09-29T22:47:59.097656+00:00",
+      "finished_utc": "2026-09-29T22:48:46.042747+00:00",
+      "private_receipt_sha256": "7b85c2a3f6dd364ac2a9012f03d4160a7de33ea0db0bcc2fbaf771b057bf02fa",
+      "checks": [
+        {
+          "id": "windows-build",
+          "status": "passed",
+          "exit_code": 0
+        },
+        {
+          "id": "windows-test",
+          "status": "passed",
+          "exit_code": 0
+        },
+        {
+          "id": "portable-build",
+          "status": "passed",
+          "exit_code": 0
+        },
+        {
+          "id": "portable-test",
+          "status": "passed",
+          "exit_code": 0
+        },
+        {
+          "id": "cuda-build",
+          "status": "passed",
+          "exit_code": 0
+        },
+        {
+          "id": "cuda-test",
+          "status": "passed",
+          "exit_code": 0
+        },
+        {
+          "id": "cuda-install",
+          "status": "passed",
+          "exit_code": 0
+        },
+        {
+          "id": "consumer-configure",
+          "status": "passed",
+          "exit_code": 0
+        },
+        {
+          "id": "consumer-build",
+          "status": "passed",
+          "exit_code": 0
+        },
+        {
+          "id": "consumer-run",
+          "status": "passed",
+          "exit_code": 0
+        },
+        {
+          "id": "python-package",
+          "status": "passed",
+          "exit_code": 0
+        },
+        {
+          "id": "diff",
+          "status": "passed",
+          "exit_code": 0
+        }
+      ]
+    },
+    {
+      "name": "linux-checks-02",
+      "revision": "b2cb6a8370646bb9a044ad677c8d4551bb8d1161",
+      "content_sha256": "d16f3559d84dc01ec5e0d431cd9266f5703b56d73465eb90c145aca3e7684dc0",
+      "status": "passed",
+      "started_utc": "2026-09-29T22:48:45.735225+00:00",
+      "finished_utc": "2026-09-29T22:49:07.534757+00:00",
+      "private_receipt_sha256": "0d59e20ecaf79b792db09ccca9bd382d67cea85f79d4e20833e39f1c806eb4f0",
+      "checks": [
+        {
+          "id": "release-configure",
+          "status": "passed",
+          "exit_code": 0
+        },
+        {
+          "id": "release-build",
+          "status": "passed",
+          "exit_code": 0
+        },
+        {
+          "id": "release-test",
+          "status": "passed",
+          "exit_code": 0
+        },
+        {
+          "id": "sanitize-configure",
+          "status": "passed",
+          "exit_code": 0
+        },
+        {
+          "id": "sanitize-build",
+          "status": "passed",
+          "exit_code": 0
+        },
+        {
+          "id": "sanitize-test",
+          "status": "passed",
+          "exit_code": 0
+        },
+        {
+          "id": "portable-configure",
+          "status": "passed",
+          "exit_code": 0
+        },
+        {
+          "id": "portable-build",
+          "status": "passed",
+          "exit_code": 0
+        },
+        {
+          "id": "portable-test",
+          "status": "passed",
+          "exit_code": 0
+        },
+        {
+          "id": "install",
+          "status": "passed",
+          "exit_code": 0
+        },
+        {
+          "id": "consumer-configure",
+          "status": "passed",
+          "exit_code": 0
+        },
+        {
+          "id": "consumer-build",
+          "status": "passed",
+          "exit_code": 0
+        },
+        {
+          "id": "consumer-run",
+          "status": "passed",
+          "exit_code": 0
+        },
+        {
+          "id": "python-package",
+          "status": "passed",
+          "exit_code": 0
+        },
+        {
+          "id": "diff",
+          "status": "passed",
+          "exit_code": 0
+        }
+      ]
+    }
+  ],
+  "environments": {
+    "windows": "Windows 11 build 26200, MSVC 19.44.35228.0, CMake 4.4.3, Python 3.11.8",
+    "linux": "Ubuntu 24.04.5 under WSL2, kernel 6.18.33.2-microsoft-standard-WSL2, GCC 13.3.0, CMake 3.28.3, Python 3.12.3",
+    "cuda": "NVIDIA RTX 4090, compute capability 8.9, driver 617.14, nvcc 13.4.59. Official component archives verified before local extraction."
+  },
+  "profiler": {
+    "revision": "675bd82ad9f2ed25cda41835835a1074ebc88ace",
+    "binary_sha256": "88c8bcec11adaa233014b70145f89a735440ee55b4541224aa4f5465b88fa89f",
+    "nsight_systems": {
+      "version": "2026.3.2.313",
+      "status": "executed",
+      "scope": "CUDA process tree only, CPU sampling and context-switch tracing disabled",
+      "kernels": 7,
+      "h2d_copies": 7,
+      "d2h_copies": 6,
+      "private_report_sha256": "e9045b76e1f87430f9416a9a7183fcd411e7edf79093f0ad3a81b27fb29692a5"
+    },
+    "nsight_compute": {
+      "version": "2026.3.0.13",
+      "status": "blocked",
+      "exit_code": 1,
+      "reason": "ERR_NVGPUCTRPERM. Device performance counter access not permitted. Settings unchanged."
+    },
+    "compute_sanitizer": {
+      "version": "13.4.57",
+      "status": "blocked",
+      "exit_code": 99,
+      "reason": "WDDM debugger interface unavailable. Tool reported two initialization errors. Native numerical test itself passed. No sanitizer pass claimed and no administrative setting changed."
+    }
+  },
+  "retained_findings": [
+    "Precommit largest-finite stencil fixture exposed overflow. Finite bounding behavior added and verified on CPU and CUDA.",
+    "Initial hosted Windows wheel failed because the workflow forced a Visual Studio version absent from that runner. Follow-up workflow reuses the native configure generator."
+  ],
+  "privacy": "Raw local paths, process metadata, full profiler reports and tool logs remain private. Published CSV files are exact retained bytes. Check summaries are sanitized derivatives."
+}
