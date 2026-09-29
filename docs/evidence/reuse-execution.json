@@ -1,0 +1,31 @@
+{
+  "source": "caa7391fdf20efe0a712d500043333e05541f555",
+  "source_tree": "4aaec6bc46891992abe8895d71e9f0a70b39c15e",
+  "protocol_sha256": "2c68f7b1fef6a29cfae537b1c0c935d1e46df4d31ef926d1b2913d570b25e5f3",
+  "contract_sha256": "be8af4cc685e9b442ac3dc7c6378299889a3f369b23a1d51a482919f17a0b39a",
+  "binary_sha256": "4566adb1b2812c3b3c85d45bef108e963203d190c5f14b6d877170ce5054c65a",
+  "started_utc": "2026-09-29T23:34:45.352279+00:00",
+  "gpu_before": "NVIDIA GeForce RTX 4090, 617.14, 24564 MiB, 18 %, 5640 MiB, 37",
+  "contention": "Shared Windows workstation; user applications preserved; no competing task performance workload; two maximum CPU threads; no clock/power changes",
+  "cpu": "AMD Ryzen 7 7800X3D",
+  "compiler": "MSVC19.44.35228.0 / CUDA13.4.59",
+  "os": "Windows11Pro10.0.26200",
+  "status": "passed",
+  "exit_code": 0,
+  "csv_sha256": "a55877130311d315d9c10774d788a478391c70fb5f240b5c9f14e9d842270e06",
+  "gpu_after": "32 %, 5638 MiB, 38",
+  "finished_utc": "2026-09-29T23:34:45.803654+00:00",
+  "source_unchanged": true,
+  "schema_version": 1,
+  "protocol_commit": "7f742572aebeff14be4321b532d00ad91301e150",
+  "verification": {
+    "windows": "8 executed groups including native, CUDA numerical, CUDA reuse, 7 acquisition and 8 execution host-exception checkpoints, installed CPU/CUDA consumer and original evidence validation",
+    "linux": "12 executed groups at measured source under Ubuntu24.04.5 WSL2 / GCC13.3, Release and ASan/UBSan, installed CPU consumer, original evidence validator. No Linux GPU execution.",
+    "cuda_failure_scope": "Injected host exceptions with successful cleanup synchronization, not actual CUDA OOM or device loss",
+    "gpu_sanitizer": "Prior WDDM initialization failure remains open",
+    "gpu_counters": "Prior ERR_NVGPUCTRPERM remains open",
+    "python": "CPU-only binding unchanged. Fresh package contracts run in exact-revision hosted CI, separate from the GPU experiment.",
+    "windows_content_sha256": "405d690458b77a1eebeb3659fdeed1b0760ca80c1e103a00591c435b8350181a",
+    "linux_source": "caa7391fdf20efe0a712d500043333e05541f555"
+  }
+}

@@ -48,6 +48,17 @@ Executed results are recorded separately from source capabilities. Cross-vendor 
 
 The [September execution report](docs/results-2026-09-29.md) includes Windows and WSL verification, fresh package consumers, actual RTX 4090 execution, a CUDA trace and the original slower GPU results. It also records a measured correction to CPU stencil dispatch. Hardware-counter profiling and Windows GPU sanitizer initialization remain restricted in that environment. The [retained evidence check](tools/validate_evidence.py) validates the published sample groups and file identities.
 
+Repeated fixed-shape histograms can optionally use `CudaHistogramContext`. It retains a bounded set of device buffers, a stream and events, but every call still uploads current input and returns a completed, independently owned host result. The [reuse contract](docs/reuse-contract.md) specifies ownership, failure retirement and thread/device requirements. The [bounded reuse experiment](docs/reuse-results.md) preserves setup costs, complete calls, variability and smaller cases that favor the CPU. The simple API and CPU-only Python interface remain available.
+
+```cpp
+std::vector<std::uint8_t> image(256 * 256, 7);
+hbr::CudaHistogramContext histogram(256, 256, 64, 64);
+auto first = histogram.run(image);
+image[0] = 19;
+auto second = histogram.run(image); // first still owns its original counts
+histogram.close();
+```
+
 ## Source and dependencies
 
 This runtime is independently authored for these numerical examples. It contains no source from private applications. C++ standard library facilities provide the runtime. pybind11, scikit-build-core and NumPy are optional packaging/interface dependencies with their own licenses. No toolkit, driver, font or third-party binary is vendored.

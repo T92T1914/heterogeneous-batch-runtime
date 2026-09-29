@@ -28,6 +28,7 @@ jobs:
           $env:CMAKE_GENERATOR = $line.Substring('CMAKE_GENERATOR:INTERNAL='.Length)
           python -m pip install . pytest
       - run: python tools/validate_evidence.py
+      - run: python tools/report_reuse.py --check
       - run: python -m pytest tests/python -q
   sanitizer:
     runs-on: ubuntu-latest
