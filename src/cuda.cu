@@ -6,10 +6,34 @@
 #include <cmath>
 #include <limits>
 #include <stdexcept>
+#include <thread>
+#ifdef HBR_TEST_CUDA_FAULTS
+#include "cuda_faults.hpp"
+namespace hbr::test {
+thread_local int failure = -1, count = 0, live = 0, drain_count = 0, drain_error_count = 0;
+void fail_at(int point) { failure = point; count = 0; }
+int checkpoints() { return count; }
+int live_resources() { return live; }
+int drains() { return drain_count; }
+int drain_errors() { return drain_error_count; }
+}
+#endif
 
 namespace hbr {
 namespace {
 using Clock = std::chrono::steady_clock;
+void fault_point() {
+#ifdef HBR_TEST_CUDA_FAULTS
+    if (test::count++ == test::failure) throw std::runtime_error("injected host exception");
+#endif
+}
+void resource_change(int delta) {
+#ifdef HBR_TEST_CUDA_FAULTS
+    test::live += delta;
+#else
+    (void)delta;
+#endif
+}
 void checked(cudaError_t status) {
     if (status != cudaSuccess) throw std::runtime_error(std::string("CUDA: ") + cudaGetErrorString(status));
 }
@@ -27,35 +51,48 @@ struct Operation {
     Clock::time_point start;
     explicit Operation(Clock::time_point begin) : start(begin) {
         try {
+            fault_point();
             checked(cudaStreamCreateWithFlags(&stream, cudaStreamNonBlocking));
-            for (auto& e : event) checked(cudaEventCreate(&e));
+            resource_change(1);
+            for (auto& e : event) { fault_point(); checked(cudaEventCreate(&e)); resource_change(1); }
         } catch (...) { cleanup(); throw; }
     }
     ~Operation() { cleanup(); }
     Operation(const Operation&) = delete;
     void cleanup() noexcept {
         // Work must finish before its buffers or stream are relinquished, even on failure.
-        if (stream) cudaStreamSynchronize(stream);
-        for (auto p : allocations) cudaFree(p);
+        if (stream) {
+            const auto status = cudaStreamSynchronize(stream);
+#ifdef HBR_TEST_CUDA_FAULTS
+            if (status == cudaSuccess) ++test::drain_count;
+            else ++test::drain_error_count;
+#else
+            (void)status;
+#endif
+        }
+        for (auto p : allocations) { if (cudaFree(p) == cudaSuccess) resource_change(-1); }
         allocations.clear();
-        for (auto& e : event) if (e) { cudaEventDestroy(e); e = nullptr; }
-        if (stream) { cudaStreamDestroy(stream); stream = nullptr; }
+        for (auto& e : event) if (e) { if (cudaEventDestroy(e) == cudaSuccess) resource_change(-1); e = nullptr; }
+        if (stream) { if (cudaStreamDestroy(stream) == cudaSuccess) resource_change(-1); stream = nullptr; }
     }
     template<class T> T* allocate(std::size_t count) {
         void* data = nullptr;
+        fault_point();
         checked(cudaMalloc(&data, product(count, sizeof(T))));
         try { allocations.push_back(data); } catch (...) { cudaFree(data); throw; }
+        resource_change(1);
         return static_cast<T*>(data);
     }
-    void mark(int index) { checked(cudaEventRecord(event[index], stream)); }
-    CudaTiming finish() {
+    void mark(int index) { fault_point(); checked(cudaEventRecord(event[index], stream)); }
+    CudaTiming finish(bool release = true) {
         mark(3);
+        fault_point();
         checked(cudaStreamSynchronize(stream));
         float upload, kernel, download;
         checked(cudaEventElapsedTime(&upload, event[0], event[1]));
         checked(cudaEventElapsedTime(&kernel, event[1], event[2]));
         checked(cudaEventElapsedTime(&download, event[2], event[3]));
-        cleanup();
+        if (release) cleanup();
         return {upload, kernel, download, std::chrono::duration<double, std::milli>(Clock::now() - start).count()};
     }
 };
@@ -160,5 +197,87 @@ CudaResult<std::vector<double>> cuda_stencil3x3(std::span<const double> image, s
     op.mark(1); stencil_kernel<<<blocks(image.size()),256,0,op.stream>>>(x,output,rows,cols); checked(cudaGetLastError());
     op.mark(2); checked(cudaMemcpyAsync(value.data(), output, image.size_bytes(), cudaMemcpyDeviceToHost, op.stream));
     auto timing = op.finish(); return {std::move(value), timing};
+}
+
+struct CudaHistogramContext::Impl {
+    const std::size_t rows, cols, tr, tc, pixels, tiles, nc, bytes;
+    const bool shared;
+    const std::thread::id owner = std::this_thread::get_id();
+    int device = 0;
+    Operation op{Clock::now()};
+    std::uint8_t* image = nullptr;
+    unsigned long long* bins = nullptr;
+    std::uint64_t sequence = 0;
+    bool closed = false;
+    bool failed = false;
+
+    Impl(std::size_t r, std::size_t c, std::size_t tile_r, std::size_t tile_c, bool use_shared,
+         std::size_t ntiles, std::size_t storage)
+        : rows(r), cols(c), tr(tile_r), tc(tile_c), pixels(product(r,c)), tiles(ntiles),
+          nc(c/tile_c + (c%tile_c != 0)), bytes(storage), shared(use_shared) {
+        checked(cudaGetDevice(&device));
+        if (pixels) { image = op.allocate<std::uint8_t>(pixels); bins = op.allocate<unsigned long long>(product(tiles,256)); }
+    }
+    void check_owner() const {
+        if (std::this_thread::get_id() != owner) throw std::logic_error("context belongs to another thread");
+        int current;
+        checked(cudaGetDevice(&current));
+        if (current != device) throw std::logic_error("context belongs to another CUDA device");
+    }
+};
+CudaHistogramContext::CudaHistogramContext(std::size_t rows, std::size_t cols, std::size_t tr,
+                                         std::size_t tc, bool shared) {
+    if (!tr || !tc) throw std::invalid_argument("tile dimensions must be positive");
+    const auto pixels = product(rows,cols);
+    const auto tiles = product(rows/tr + (rows%tr != 0), cols/tc + (cols%tc != 0));
+    if (tiles > 2147483647ULL) throw std::overflow_error("tile grid too large");
+    const auto output_bytes = product(product(tiles,256),sizeof(std::uint64_t));
+    if (pixels > maximum_device_bytes || output_bytes > maximum_device_bytes - pixels)
+        throw std::length_error("histogram context exceeds 64 MiB device-storage limit");
+    impl_ = std::make_unique<Impl>(rows,cols,tr,tc,shared,tiles,pixels+output_bytes);
+}
+CudaHistogramContext::~CudaHistogramContext() = default;
+std::size_t CudaHistogramContext::device_bytes() const noexcept { return impl_->bytes; }
+CudaHistogramResult CudaHistogramContext::run(std::span<const std::uint8_t> image) {
+    const auto start = Clock::now();
+    auto& p = *impl_;
+    p.check_owner();
+    if (p.closed || p.failed) throw std::logic_error("histogram context is retired");
+    // Repeat the simple API's shape and output-size validation on every invocation.
+    if (!p.tr || !p.tc || product(p.rows,p.cols) != image.size()) throw std::invalid_argument("image shape mismatch");
+    const auto tiles = product(p.rows/p.tr+(p.rows%p.tr != 0), p.cols/p.tc+(p.cols%p.tc != 0));
+    if (tiles > 2147483647ULL) throw std::overflow_error("tile grid too large");
+    if (p.sequence == std::numeric_limits<std::uint64_t>::max()) throw std::overflow_error("request sequence exhausted");
+    std::vector<std::uint64_t> value(product(tiles,256),0);
+    const auto id = ++p.sequence;
+    if (image.empty()) return {id,std::move(value),{0,0,0,std::chrono::duration<double,std::milli>(Clock::now()-start).count()}};
+    p.op.start = start;
+    try {
+        p.op.mark(0); fault_point();
+        checked(cudaMemcpyAsync(p.image,image.data(),image.size_bytes(),cudaMemcpyHostToDevice,p.op.stream));
+        p.op.mark(1);
+        if (p.shared) histogram_kernel<true><<<static_cast<unsigned>(tiles),256,0,p.op.stream>>>(p.image,p.rows,p.cols,p.tr,p.tc,p.nc,p.bins);
+        else histogram_kernel<false><<<static_cast<unsigned>(tiles),256,0,p.op.stream>>>(p.image,p.rows,p.cols,p.tr,p.tc,p.nc,p.bins);
+        checked(cudaGetLastError()); fault_point(); p.op.mark(2);
+        checked(cudaMemcpyAsync(value.data(),p.bins,product(value.size(),sizeof(std::uint64_t)),cudaMemcpyDeviceToHost,p.op.stream));
+        fault_point();
+        auto timing = p.op.finish(false);
+        return {id,std::move(value),timing};
+    } catch (...) {
+        // Drain before the host result leaves scope, including a failure after D2H submission.
+        // A failed context never reuses storage, even if cleanup itself encounters a device error.
+        p.failed = true;
+        p.op.cleanup();
+        throw;
+    }
+}
+void CudaHistogramContext::close() {
+    auto& p = *impl_;
+    p.check_owner();
+    if (p.closed) return;
+    p.closed = true;
+    const auto status = p.op.stream ? cudaStreamSynchronize(p.op.stream) : cudaSuccess;
+    p.op.cleanup();
+    checked(status);
 }
 }
