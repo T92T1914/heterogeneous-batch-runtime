@@ -141,6 +141,10 @@ std::vector<double> stencil3x3(std::span<const double> image, std::size_t rows, 
     finite(image);
     std::vector<double> result(image.begin(), image.end());
     if (rows < 3 || cols < 3) return result;
+#ifdef HBR_HAS_AVX2
+    // Resolve the CPU/OS capability once per call, rather than once per row.
+    const bool use_avx2 = options.backend == Backend::optimized && avx2_available();
+#endif
     parallel(rows - 2, options.backend == Backend::scalar ? 1 : options.threads,
       [&](std::size_t first, std::size_t last, std::size_t) {
         for (auto r = first + 1; r < last + 1; ++r) {
@@ -149,7 +153,7 @@ std::vector<double> stencil3x3(std::span<const double> image, std::size_t rows, 
             const double* bottom = middle + cols;
             double* out = result.data() + r * cols;
 #ifdef HBR_HAS_AVX2
-            if (options.backend == Backend::optimized && avx2_available()) {
+            if (use_avx2) {
                 stencil_row_avx2(top, middle, bottom, out, cols);
                 continue;
             }

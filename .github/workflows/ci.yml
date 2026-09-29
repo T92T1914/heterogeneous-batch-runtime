@@ -22,9 +22,12 @@ jobs:
         run: python -m pip install . pytest
       - name: Build Windows wheel
         if: runner.os == 'Windows'
-        run: python -m pip install . pytest
-        env:
-          CMAKE_GENERATOR: Visual Studio 17 2022
+        run: |
+          $line = Get-Content build/CMakeCache.txt | Where-Object { $_.StartsWith('CMAKE_GENERATOR:INTERNAL=') }
+          if (-not $line) { throw 'Native configure did not record its generator' }
+          $env:CMAKE_GENERATOR = $line.Substring('CMAKE_GENERATOR:INTERNAL='.Length)
+          python -m pip install . pytest
+      - run: python tools/validate_evidence.py
       - run: python -m pytest tests/python -q
   sanitizer:
     runs-on: ubuntu-latest

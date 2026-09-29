@@ -46,6 +46,8 @@ Native installation exports `hbr::hbr` and, when enabled, `hbr::hbr_cuda`. Confi
 
 Executed results are recorded separately from source capabilities. Cross-vendor comparisons are not established by one CUDA implementation. No hardware-independent speedup is claimed.
 
+The [September execution report](docs/results-2026-09-29.md) includes Windows and WSL verification, fresh package consumers, actual RTX 4090 execution, a CUDA trace and the original slower GPU results. It also records a measured correction to CPU stencil dispatch. Hardware-counter profiling and Windows GPU sanitizer initialization remain restricted in that environment. The [retained evidence check](tools/validate_evidence.py) validates the published sample groups and file identities.
+
 ## Source and dependencies
 
 This runtime is independently authored for these numerical examples. It contains no source from private applications. C++ standard library facilities provide the runtime. pybind11, scikit-build-core and NumPy are optional packaging/interface dependencies with their own licenses. No toolkit, driver, font or third-party binary is vendored.

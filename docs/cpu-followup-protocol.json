@@ -1,0 +1,10 @@
+{
+  "schema_version": 1,
+  "baseline_revision": "675bd82ad9f2ed25cda41835835a1074ebc88ace",
+  "question": "Does hoisting CPU feature detection out of the stencil row loop reduce completed CPU call cost without changing outputs?",
+  "source_change": "Resolve AVX2 support once per stencil call. Keep the same row kernels, arithmetic and work partitioning.",
+  "conditions": "Repeat the committed CPU protocol once after native numerical tests pass. Preserve every baseline and follow-up sample.",
+  "interpretation": "Inspect each stencil size and thread count. Reduction and histogram are unchanged controls. Timing differences on the shared host do not establish causality by themselves.",
+  "acceptance": "Retain the simpler dispatch path if correctness passes and measured stencil medians support removal of the repeated detection overhead. Do not extrapolate beyond this host and bounded sample.",
+  "gpu": "No GPU kernel changes. Original GPU and CPU comparison remains tied to its original source and binary. Do not relabel it as the new CPU baseline."
+}

@@ -1,1 +1,2 @@
 * text=auto eol=lf
+docs/evidence/*.csv -text whitespace=cr-at-eol
