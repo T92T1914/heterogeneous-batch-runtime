@@ -1,0 +1,19 @@
+[build-system]
+requires = ["scikit-build-core>=0.11,<2", "pybind11>=3,<4"]
+build-backend = "scikit_build_core.build"
+
+[project]
+name = "heterogeneous-batch-runtime"
+version = "0.1.0"
+description = "Owned numerical batches with scalar and optimized native CPU implementations"
+readme = "README.md"
+requires-python = ">=3.11"
+dependencies = ["numpy>=1.26"]
+license = "MIT"
+
+[tool.scikit-build]
+cmake.args = ["-DHBR_PYTHON=ON", "-DBUILD_TESTING=OFF"]
+wheel.packages = ["python/heterogeneous_batch_runtime"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests/python"]

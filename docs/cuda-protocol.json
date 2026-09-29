@@ -1,0 +1,17 @@
+{
+  "schema_version": 1,
+  "purpose": "Compare completed CUDA work and global versus shared histogram atomics",
+  "command": "hbr_cuda_bench --run",
+  "preconditions": ["native and CUDA correctness passed", "source and protocol committed", "one measurement slot"],
+  "square_sides": [32, 256, 1024],
+  "iterations": 6,
+  "first_iteration": "retained separately, first invocation of condition after device discovery, not cold process",
+  "workloads": ["masked_reduce", "tile_histogram", "stencil3x3"],
+  "histogram_tiles": [64, 64],
+  "histogram_distributions": ["uniform deterministic byte cycle", "single bin 7"],
+  "histogram_experiment": "global atomics versus private block shared bins, same tile ownership and exact counts",
+  "baseline": "optimized CPU using up to two threads, AVX2 where supported, same validation and outputs",
+  "cuda_timing": "events on one stream bracket H2D, kernels and D2H; stream synchronized before results or memory release",
+  "host_timing": "same outer steady_clock boundary for CPU and CUDA, including validation, allocations, copies, launch, synchronization, checksum selection, result destruction and CUDA cleanup",
+  "notes": ["pageable host buffers, no transfer overlap claim", "event durations are not added to host elapsed time", "no Python or runtime queue costs included", "profiler run separate from timing samples", "record device, driver, toolkit, source, binary hash and contention", "retain slower cases"]
+}

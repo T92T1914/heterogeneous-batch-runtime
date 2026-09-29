@@ -1,0 +1,7 @@
+@PACKAGE_INIT@
+include(CMakeFindDependencyMacro)
+find_dependency(Threads)
+if(@HBR_CUDA@)
+  find_dependency(CUDAToolkit)
+endif()
+include("${CMAKE_CURRENT_LIST_DIR}/hbrTargets.cmake")

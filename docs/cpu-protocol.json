@@ -1,0 +1,17 @@
+{
+  "schema_version": 1,
+  "purpose": "Bounded CPU comparison after correctness and source commit",
+  "command": "hbr_bench --run",
+  "workloads": ["masked_reduce", "tile_histogram", "stencil3x3"],
+  "square_sides": [32, 256, 1024],
+  "configurations": ["scalar 1 thread", "optimized 1 thread", "optimized 2 threads"],
+  "iterations": 6,
+  "first_iteration": "retained separately, first invocation for this condition, not cold process or cold hardware",
+  "warm_iterations": [1, 2, 3, 4, 5],
+  "inputs": "deterministic formula in tools/benchmark.cpp, no external data",
+  "timing": "steady_clock around completed synchronous native call including validation, allocation and output disposal",
+  "excluded": ["input generation", "Python snapshots", "runtime queueing", "GPU transfers"],
+  "order": "fixed declared order, no claim of bias-free benchmarking",
+  "contention": "one agent measurement workload; ordinary user applications are preserved and external contention may remain",
+  "claims": "retain every sample and unfavorable case; no general hardware or application speedup claim"
+}
