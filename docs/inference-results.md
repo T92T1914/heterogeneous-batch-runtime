@@ -8,11 +8,11 @@ The predicted labels were `2, 3, 2, 3, 4, 5, 5, 2` for the geometric examples la
 
 ## Executed checks
 
-Twenty-one contract tests passed from the installed consumer. They exercised every logit at batch sizes zero, one, two and eight, independent returned arrays, PNG normalization and alpha handling, file and dimension limits, exact dtype/layout, nonfinite and out-of-range input, corrupted model rejection and owner-thread operations. Lifecycle cases checked immutable admitted inputs, capacity, duplicate identities, the finite session request limit, queued cancellation, running cancellation, stale result retention, error retirement and waiting shutdown.
+Twenty-six tests passed with the installed consumer in a clean environment. They exercised every logit at batch sizes zero, one, two and eight, independent returned arrays, PNG normalization and alpha handling, file and dimension limits, exact dtype/layout, nonfinite and out-of-range input, corrupted model rejection and owner-thread operations. Lifecycle cases checked immutable admitted inputs, capacity, duplicate identities, the finite session request limit, queued cancellation, running cancellation, stale result retention, error retirement and waiting shutdown. Acquisition tests checked interrupted flush, retry, conflicting content and identity validation. Synthetic reporting fixtures checked complete-sample tables and rejection of incomplete groups without collecting performance data.
 
 The failure fixture raises a host error before inference. It does not simulate a GPU fault. The CPU package also rejected required CUDA initialization rather than silently satisfying that request on CPU. Profiling verified actual CPU node placement. None of those checks closes native GPU correctness, provider failure recovery or device memory acceptance.
 
-The fresh application wheel was built and installed in an isolated environment. The command line application ran from a directory outside its source tree. Adaptive Timing was installed from public revision `f6e0564474b053212f722e107b55b619aa8e50d9`; its existing completion adapter was reused without changing that repository. The default numerical runtime's dependencies and source interfaces are unchanged.
+The fresh application wheel was built and installed in a clean environment with its declared dependencies. Package dependency validation passed. The command line application ran from a directory outside its source tree. Adaptive Timing was installed from public revision `f6e0564474b053212f722e107b55b619aa8e50d9`; its existing completion adapter was reused without changing that repository. The default numerical runtime's dependencies and source interfaces are unchanged.
 
 ## Pending evidence
 

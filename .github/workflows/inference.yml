@@ -35,3 +35,4 @@ jobs:
       - name: Installed consumer contracts
         shell: bash
         run: HBR_MNIST_MODEL="$PWD/artifacts/mnist-8.onnx" python -m pytest examples/image_classifier/tests -q
+      - run: python tools/check_inference_evidence.py

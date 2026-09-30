@@ -1,18 +1,22 @@
 {
   "schema_version": 1,
-  "execution": "actual Windows CPU installed consumer",
+  "execution": "actual Windows CPU clean installed consumer",
   "source_files": [
     {
       "path": "examples/image_classifier/acquire.py",
-      "sha256": "40b4b80ae4257afe7e5dc48fa8e3be6f0bd1743f7f69b120c54f4106bfec5dda"
+      "sha256": "066d0c17dad698607fc931ca64327b2bd826107c1714d861f497ca32c221fb6d"
     },
     {
       "path": "examples/image_classifier/artifacts.json",
-      "sha256": "43cccd4fc385d50d80dd7e8b6b2808dd751eec57c02f8116fad3a1fc1220b22f"
+      "sha256": "940ad73b40a93bcad720b002bf5d9449715559e64c2a832db952ad50160b42c6"
     },
     {
       "path": "examples/image_classifier/CMakeLists.txt",
       "sha256": "b726a4459164cf25ed11e54b9809ec6d2f67630d559f7c2d39727854833e26b8"
+    },
+    {
+      "path": "examples/image_classifier/compare.py",
+      "sha256": "4eec251e7fe7bd0e143d3d362433f6588421d78e4a001d914f2d4907c36a5089"
     },
     {
       "path": "examples/image_classifier/LICENSE",
@@ -20,7 +24,7 @@
     },
     {
       "path": "examples/image_classifier/pyproject.toml",
-      "sha256": "e8a39dfa3c90da59bb300a1d840d8d1db16d92b3dafd174fd8c7e648af78d50f"
+      "sha256": "c6105d67cf85870d273485d206fca5db4441bd81c78656479e0bc5360f570708"
     },
     {
       "path": "examples/image_classifier/python/hbr_image_classifier/__init__.py",
@@ -44,18 +48,26 @@
     },
     {
       "path": "examples/image_classifier/README.md",
-      "sha256": "95b21f7ae4210f421c4003c06e22dfed2b80def7e38651fc4ce19212e34ff541"
+      "sha256": "732ca0f33b5a88798b154c1b92610272dfffbede1264a5048c2334ed00f4a900"
     },
     {
       "path": "examples/image_classifier/session.cpp",
-      "sha256": "c62f51d326b82468a82495370e32188eed27525c11a76297b0f2d7c8495b0102"
+      "sha256": "e7228c37fe87800d46a905e04731254710a642ead69875d003e63e5055104e8b"
+    },
+    {
+      "path": "examples/image_classifier/tests/test_acquisition.py",
+      "sha256": "4adefc08b351443d04f030678508a2922d4acceaf2edb98a10c1a0da30c4584e"
+    },
+    {
+      "path": "examples/image_classifier/tests/test_comparison_report.py",
+      "sha256": "36ce4ad2efc5cc591f8e32d9688f2780e43c5135478978e84328ffd6c23b0127"
     },
     {
       "path": "examples/image_classifier/tests/test_inference.py",
       "sha256": "618cd9b016c4c4511fb294d7bf52d6b33b36849b53aa90fd99a4303171aae0e2"
     }
   ],
-  "source_fingerprint": "67a18df455e105b92e05d31f0f4bebadb2102fb570398487e7136e39241db0ac",
+  "source_fingerprint": "1224d6e334b4294935df47922db51c0737ff01cc1f9563e268c68ec0c9c62f9a",
   "model_sha256": "2f06e72de813a8635c9bc0397ac447a601bdbfa7df4bebc278723b958831c9bf",
   "ort_version": "1.30.0",
   "python": "3.11.8",
@@ -65,8 +77,7 @@
     "onnx": "1.23.1",
     "numpy": "2.4.6",
     "Pillow": "12.3.0",
-    "pybind11": "3.1.0",
-    "scikit-build-core": "0.11.6"
+    "adaptive-timing-engine": "0.1.0"
   },
   "application": {
     "schema_version": 1,
@@ -649,7 +660,7 @@
           "op": "Gemm"
         }
       ],
-      "raw_sha256": "4731e5668b70aad28c6e8052183aa07e79633696b2437d50d0c39bb776403cda",
+      "raw_sha256": "feec976eb102a19208506de847f9910145be04b0e7937a85d1e58028e0fa8719",
       "meaning": "ORT operation placement from this run; event counts are not hardware counters or elapsed inference time"
     }
   },
@@ -662,23 +673,30 @@
   },
   "checks": [
     {
-      "name": "optional-wheel",
+      "name": "clean-install",
       "exit_code": 0,
-      "log_sha256": "30dd20334803bc0c1305dec7681a3177f245bd4055f27789eca9780ff0ffe987"
+      "log_sha256": "8e991999e523f9ccb868b3e38871ea16cf5421832d672a6559a087548f67f7d3"
     },
     {
-      "name": "consumer-contracts",
+      "name": "clean-dependencies",
       "exit_code": 0,
-      "log_sha256": "3009a0d7524597dd6e780de86a2a55c1fa5db5fa1a87192b13ab11a8b64742b4"
+      "log_sha256": "672aec65a45bed50e70229c70934a7eebf0462595c459b83023027645d57cccf"
     },
     {
-      "name": "installed-application",
+      "name": "clean-contracts",
+      "exit_code": 0,
+      "log_sha256": "6448dbcb9d9719264b8a30b3e6031fb37ece6443276d25afd89ab4da0a7c7ee3"
+    },
+    {
+      "name": "clean-cli",
       "exit_code": 0,
       "log_sha256": "0ef6621921250136500efcf6bb4ad8ced590c608647c91bb09bf51754595e6e4"
     }
   ],
-  "contract_tests_passed": 21,
+  "wheel_sha256": "23a5865f4d521cf6b5b524287757bf47f66b855983ee579f9a0b2204d3ad9bed",
+  "contract_tests_passed": 26,
   "performance": "not collected while shared-workstation performance slot was occupied",
   "cuda": "not executed; compatible provider dependency and exclusive GPU slot pending",
-  "linux": "hosted optional-consumer check pending; not inferred from prior core checks"
+  "linux": "hosted optional-consumer check pending; not inferred from prior core checks",
+  "source_inventory_scope": "application source and fixtures, normalized LF bytes; output and source identities are separate from wheel byte reproducibility"
 }
