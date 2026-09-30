@@ -24,6 +24,12 @@ Run CPU with one intra-op and one inter-op thread. A serious baseline uses the s
 
 CUDA is an optional required-provider mode. Failed initialization must fail visibly. Successful configuration alone does not establish placement. Retain an ONNX Runtime operator profile from actual execution, including any CPU nodes. The required mode disables CPU fallback. Host timestamps and operator profile durations are distinct from hardware counters. GPU measurement waits for a compatible provider toolchain and a free permitted machine. Prior counter and sanitizer restrictions remain open.
 
+## Separate Windows CPU memory probe
+
+The retained-memory probe runs separately from timing collection. In a fresh Windows process it prepares eight geometric examples and the independent full-logit reference before its baseline sample. It records the current process working set, cumulative peak working set and private committed bytes through `GetProcessMemoryInfo`. Samples occur before creating the CPU session, after creation, after 8, 16, 32 and 64 physically completed and reconciled requests, after explicit close and after garbage collection. Every output must pass the same full-logit tolerance. CPU thread limits and the eight-image input stay fixed. There is one session and one request outstanding at a time.
+
+These are total process counters, including Python, the reference evaluator, loaded libraries and allocator caches. Working set is resident memory. Private committed bytes are neither resident bytes nor an allocation ledger. The peak is cumulative across the process lifetime and cannot fall after close. Retained bytes after close do not alone prove a leak. This bounded observation does not establish a strict total-memory cap or GPU memory safety. It stops at 64 requests and uses no device memory or performance counter collection.
+
 ## Acceptance and publication
 
 Execute preprocessing and entire-logit reference checks, repeated calls, mutable input after admission, independent results, duplicate identity, capacity, queued and running cancellation, stale adoption, failure retirement and waiting shutdown. A CPU-only provider must reject required CUDA. Actual GPU correctness, placement, memory and timings are separate acceptance items.
