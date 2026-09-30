@@ -40,7 +40,7 @@ The CPU path uses runtime-dispatched AVX2 for reduction and stencil work, with a
 
 The [CPU protocol](docs/cpu-protocol.json) fixes the initial measurement conditions. It retains the first invocation and every warm sample, including slower optimized cases. Native operation time includes validation and allocation. It excludes Python conversion, queueing and GPU transfers. Those require separate measurements.
 
-The optional CUDA backend uses a completed synchronous C++ interface. Configure with `-DHBR_CUDA=ON` and the CUDA architecture for the actual device. Its tests execute on a compatible GPU. The [GPU protocol](docs/cuda-protocol.json) compares global and shared histogram atomics and retains transfer, kernel and completed host timings separately. The Python wheel remains a CPU interface.
+The optional CUDA backend uses a completed synchronous C++ interface. Configure with `-DHBR_CUDA=ON` and the CUDA architecture for the actual device. Its tests execute on a compatible GPU. The [GPU protocol](docs/cuda-protocol.json) compares global and shared histogram atomics and retains transfer, kernel and completed host timings separately. The default Python wheel remains a CPU interface. An [explicit optional Python build](docs/python-cuda.md) exposes the existing reusable histogram through owned snapshots and a dedicated resource owner.
 
 Native installation exports `hbr::hbr` and, when enabled, `hbr::hbr_cuda`. Configure `tests/consumer` against the installed prefix to check a separate application. CUDA consumers also need a compatible CUDA toolkit. No toolkit is bundled.
 
@@ -60,5 +60,7 @@ histogram.close();
 ```
 
 ## Source and dependencies
+
+The [Adaptive CUDA application](https://github.com/T92T1914/adaptive-timing-engine/blob/main/examples/cuda_histogram.py) uses bounded submission, physical completion and generation reconciliation. Its host asynchronous admission is separate from GPU concurrency. The [Python application verification](docs/python-cuda-results.md) separates actual RTX 4090 output checks, fresh installs, hosted Clang/TSan results and the local WSL initialization restriction. The optional interface documentation defines input mutation, explicit close and diagnostic limitations.
 
 This runtime is independently authored for these numerical examples. It contains no source from private applications. C++ standard library facilities provide the runtime. pybind11, scikit-build-core and NumPy are optional packaging/interface dependencies with their own licenses. No toolkit, driver, font or third-party binary is vendored.

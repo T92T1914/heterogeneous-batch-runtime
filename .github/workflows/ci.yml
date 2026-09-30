@@ -40,3 +40,18 @@ jobs:
         env:
           ASAN_OPTIONS: detect_leaks=1
           UBSAN_OPTIONS: halt_on_error=1
+      - name: Explicit Clang host build
+        run: cmake -S . -B build/clang -DCMAKE_BUILD_TYPE=Release -DCMAKE_CXX_COMPILER=clang++
+      - run: cmake --build build/clang --parallel 2
+      - run: ctest --test-dir build/clang --output-on-failure
+      - name: Separate host ThreadSanitizer configuration
+        run: cmake -S . -B build/tsan -DCMAKE_BUILD_TYPE=Debug -DCMAKE_CXX_COMPILER=clang++ -DHBR_THREAD_SANITIZER=ON
+      - run: cmake --build build/tsan --parallel 2
+      - name: Report host ThreadSanitizer outcome separately
+        run: python tools/run_host_tsan.py build/tsan/hbr_tests --output reports/host-tsan.json
+      - name: Retain actual host diagnostic state
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: host-tsan-state
+          path: reports/host-tsan.json
