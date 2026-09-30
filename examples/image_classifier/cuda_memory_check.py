@@ -39,6 +39,9 @@ class DeviceMemory:
 
 
 def probe(model_path, report):
+    # This is a cooperative decision deadline. Initialization and retirement
+    # cannot be interrupted safely merely because a wall-clock limit expires.
+    deadline = time.perf_counter() + 30
     import numpy as np
     import onnx
     import onnxruntime as ort
@@ -64,14 +67,17 @@ def probe(model_path, report):
     # The first device.read initializes CUDA runtime state before this baseline.
     snapshot("after_imports_reference_and_cuda_context_initialization", 0)
     execution = InferenceExecutor(model, provider="cuda-required", capacity=1)
-    deadline = time.perf_counter() + 30
+    primary_error = None
     try:
         snapshot("after_session_creation", execution.outstanding)
         for number in range(1, REQUESTS + 1):
             if time.perf_counter() > deadline:
                 raise TimeoutError("bounded memory observation incomplete")
             execution.submit_batch(Dispatch(str(number), "inference", 0, 1, "dispatched"), 1, batch)
-            result, = execution.wait(1, timeout=30)
+            results = execution.wait(1, timeout=max(0, deadline-time.perf_counter()))
+            if not results:
+                raise TimeoutError("memory observation wait expired; physical retirement still required")
+            result, = results
             if not result.usable or execution.outstanding != 0:
                 raise RuntimeError("one physically completed reconciled result required")
             np.testing.assert_allclose(result.value, expected, rtol=RTOL, atol=ATOL)
@@ -82,12 +88,24 @@ def probe(model_path, report):
             del result
             if number in CHECKPOINTS:
                 snapshot("after_completed_requests", execution.outstanding)
+    except BaseException as error:
+        primary_error = error
+        raise
     finally:
-        execution.close()
-        snapshot("after_explicit_close", execution.outstanding)
+        cleanup_errors = []
+        def record_cleanup(phase, action):
+            try:
+                action()
+            except BaseException as error:
+                cleanup_errors.append(error)
+                report.setdefault("cleanup_errors", []).append({"phase": phase, "type": type(error).__name__})
+        record_cleanup("physical_retirement", execution.close)
+        record_cleanup("after_explicit_close", lambda:snapshot("after_explicit_close", execution.outstanding))
         del execution
         gc.collect()
-        snapshot("after_close_executor_release_and_gc", 0)
+        record_cleanup("after_close_executor_release_and_gc", lambda:snapshot("after_close_executor_release_and_gc", 0))
+        if cleanup_errors and primary_error is None:
+            raise RuntimeError("memory observation cleanup incomplete") from cleanup_errors[0]
     report["status"] = "completed"
 
 
@@ -101,6 +119,7 @@ def main():
         "snapshots": [], "scope": "64 serial completed eight-image requests, one owner and no overlapping requests. Separate from timing collection.",
         "device_scope": "cudaMemGetInfo after context initialization reports shared-device OS free bytes, not this process's live allocations. Other applications can affect every sample.",
         "process_gpu_memory": "unavailable through this probe. No process allocation bound or GPU leak verdict is established.",
+        "deadline": "30-second cooperative decision limit includes initialization. Synchronous initialization and safe retirement are not forcibly interrupted, so this is not a hard process wall-time cap.",
         "host_scope": "whole current-process working set, private commit and lifetime peaks. Imports, validator, loaded libraries and allocator caches are included.",
         "device_api": "https://docs.nvidia.com/cuda/cuda-runtime-api/cuda_runtime_api/group__CUDART__MEMORY.html"}
     with Path(args.output).open("x", encoding="utf8") as stream:
