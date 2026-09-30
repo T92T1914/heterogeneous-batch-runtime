@@ -43,4 +43,6 @@ Each request owns its snapshot and results. An immutable generation does not can
 
 The consumer does not install GPU dependencies, change counter permissions, reset a device or select an unverified vendor backend. Keep provider acquisition and native GPU acceptance separate from the default CPU installation.
 
+The repository's `tools/check_inference_evidence.py` checks retained execution identities. Later source changes are compared with the recorded historical Git snapshot, so that check requires Git and the recorded commit objects. Use a full repository clone, or fetch the recorded source revision into a shallow clone. A downloaded source archive can run the current application and its contracts, but lacks the history needed to verify changed historical source. Hosted consumer checks fetch that history explicitly.
+
 When a performance slot is free, `compare.py --model <reviewed-model> --output <new-results.json>` executes the separately committed prepared-input protocol. It retains twenty complete-call samples per condition and generates its table from those rows. It is not run during an occupied shared-workstation slot. Its host intervals do not establish device time or total process/device memory. No comparison table is presented until real collection completes.

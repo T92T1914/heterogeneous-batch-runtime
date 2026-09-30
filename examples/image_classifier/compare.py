@@ -35,8 +35,8 @@ def collect(model, *, provider='cpu', samples=20, warmups=5, deadline_seconds=12
         batch=prepare_arrays(example_images()[:count]);input_hash=sha256(batch.tobytes()).hexdigest()
         expected=np.concatenate([reference.run(None,{'Input3':x[None]})[0] for x in batch])
         setup=time.perf_counter();reused=InferenceExecutor(model,provider=provider);setup_seconds=time.perf_counter()-setup
-        retain({'batch':count,'mode':'cpp-reused','phase':'setup','seconds':setup_seconds,'input_sha256':input_hash})
         try:
+            retain({'batch':count,'mode':'cpp-reused','phase':'setup','seconds':setup_seconds,'input_sha256':input_hash})
             python=ort.InferenceSession(model.data,opts,providers=['CPUExecutionProvider'])
             for iteration in range(-warmups-1,samples):
                 # Alternating order is fixed in advance, not chosen after a fast sample.
