@@ -2,7 +2,7 @@
 
 I added this consumer to give the runtime work an actual inference application. It classifies a bounded set of digit images through a C++20 ONNX Runtime session and uses Adaptive Timing's existing admission, completion and generation reconciliation. The numerical runtime remains independently installable. It does not need ONNX Runtime, Pillow, a model download or these application dependencies.
 
-The [contract and protocol](../../docs/inference-protocol.md) explain ownership, image preparation, memory limits and the pending comparison. The model accepts one image at a time. A batch here is a serial sequence of up to eight images through one session. It is not fused GPU batching or an asynchronous GPU API.
+The [contract and protocol](../../docs/inference-protocol.md) explain ownership, image preparation, memory limits and the prepared-input comparison. The [CPU results](../../docs/inference-results.md) retain actual session-reuse timings and a separate process-memory observation. The model accepts one image at a time. A batch here is a serial sequence of up to eight images through one session. It is not fused GPU batching or an asynchronous GPU API.
 
 ## Source and model
 
