@@ -3,16 +3,27 @@ from hashlib import sha256
 import json
 from pathlib import Path
 import math
+import re
+import subprocess
 
 def verify(root):
     data=json.loads((root/'docs/inference-cpu-evidence.json').read_text())
     files=data['source_files']
+    revision=data['source_revision']
+    if re.fullmatch('[0-9a-f]{40}',revision) is None:
+        raise ValueError('invalid recorded source revision')
     for record in files:
         path=root/record['path']
         if path.resolve().parent != root.resolve() and not path.resolve().is_relative_to(root.resolve()):
             raise ValueError('source path escapes repository')
         if sha256(path.read_bytes()).hexdigest()!=record['sha256']:
-            raise ValueError('source identity changed: '+record['path'])
+            # Verify the older execution's immutable source, not later fixes.
+            try:
+                historical=subprocess.check_output(['git','show',revision+':'+record['path']],cwd=root)
+            except (OSError,subprocess.CalledProcessError) as error:
+                raise ValueError('recorded source snapshot is required: '+record['path']) from error
+            if sha256(historical).hexdigest()!=record['sha256']:
+                raise ValueError('recorded source identity changed: '+record['path'])
     fingerprint=sha256(json.dumps(files,sort_keys=True,separators=(',',':')).encode()).hexdigest()
     if fingerprint!=data['source_fingerprint']:raise ValueError('source inventory identity changed')
     app=data['application'];reference=data['reference']

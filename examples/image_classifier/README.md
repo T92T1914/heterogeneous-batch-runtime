@@ -2,7 +2,7 @@
 
 I added this consumer to give the runtime work an actual inference application. It classifies a bounded set of digit images through a C++20 ONNX Runtime session and uses Adaptive Timing's existing admission, completion and generation reconciliation. The numerical runtime remains independently installable. It does not need ONNX Runtime, Pillow, a model download or these application dependencies.
 
-The [contract and protocol](../../docs/inference-protocol.md) explain ownership, image preparation, memory limits and the pending comparison. The model accepts one image at a time. A batch here is a serial sequence of up to eight images through one session. It is not fused GPU batching or an asynchronous GPU API.
+The [contract and protocol](../../docs/inference-protocol.md) explain ownership, image preparation, memory limits and the prepared-input comparison. The [CPU results](../../docs/inference-results.md) retain actual session-reuse timings and a separate process-memory observation. The model accepts one image at a time. A batch here is a serial sequence of up to eight images through one session. It is not fused GPU batching or an asynchronous GPU API.
 
 ## Source and model
 
@@ -42,5 +42,7 @@ The tested installation uses ONNX Runtime's CPU package and API version 30. The 
 Each request owns its snapshot and results. An immutable generation does not cancel physical work. Running cancellation prevents adoption while synchronous inference finishes. Queued cancellation can stop admission. Closing waits for work and closes the session on its owner worker. Capacity includes completed results until reconciliation. Close the executor after at most 256 admitted requests and start a new session for a longer run. Errors do not reuse a request identity or silently adopt a stale result.
 
 The consumer does not install GPU dependencies, change counter permissions, reset a device or select an unverified vendor backend. Keep provider acquisition and native GPU acceptance separate from the default CPU installation.
+
+The repository's `tools/check_inference_evidence.py` checks retained execution identities. Later source changes are compared with the recorded historical Git snapshot, so that check requires Git and the recorded commit objects. Use a full repository clone, or fetch the recorded source revision into a shallow clone. A downloaded source archive can run the current application and its contracts, but lacks the history needed to verify changed historical source. Hosted consumer checks fetch that history explicitly.
 
 When a performance slot is free, `compare.py --model <reviewed-model> --output <new-results.json>` executes the separately committed prepared-input protocol. It retains twenty complete-call samples per condition and generates its table from those rows. It is not run during an occupied shared-workstation slot. Its host intervals do not establish device time or total process/device memory. No comparison table is presented until real collection completes.

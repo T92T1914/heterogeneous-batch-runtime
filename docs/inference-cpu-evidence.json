@@ -1,6 +1,7 @@
 {
   "schema_version": 1,
   "execution": "actual Windows CPU clean installed consumer",
+  "source_revision": "631a546f781625a27f7b9e9cf94f641293dd55d5",
   "source_files": [
     {
       "path": "examples/image_classifier/acquire.py",
