@@ -116,12 +116,44 @@ def test_shutdown_with_work_and_failure_retirement(model):
     batch=prepare_arrays(example_images()[:1])
     def fail(cancel):raise ValueError("injected host failure before Run")
     execution.submit_batch(dispatch("error"),1,batch,gate=fail)
+    error,=execution.wait(1,timeout=5)
+    assert error.status=="failed" and 'injected host failure' in error.error
     execution.close()
-    error,=execution.reconcile(1)
-    assert error.status in ("failed","canceled")
     assert execution.outstanding==0
     with pytest.raises(RuntimeError,match="closed"):execution.submit_batch(dispatch("new"),1,batch)
     with pytest.raises(ValueError,match="capacity"):InferenceExecutor(model,capacity=5)
+
+def test_close_waits_for_running_physical_completion(model):
+    entered,release=threading.Event(),threading.Event()
+    execution=InferenceExecutor(model)
+    def gate(cancel):
+        entered.set()
+        assert release.wait(5)
+    execution.submit_batch(dispatch('closing'),1,prepare_arrays(example_images()[:1]),gate=gate)
+    assert entered.wait(2)
+    timer=threading.Timer(0.02,release.set);timer.start()
+    try:
+        execution.close()
+        result,=execution.reconcile(1)
+        assert result.status=='completed' and result.cancellation_requested and not result.usable
+        assert release.is_set() and execution.outstanding==0
+        execution.close()
+    finally:release.set();timer.join();execution.close()
+
+def test_duplicate_and_finite_session_history(model):
+    execution=InferenceExecutor(model)
+    empty=np.empty((0,1,28,28),np.float32)
+    try:
+        execution.submit_batch(dispatch('first'),1,empty)
+        execution.wait(1,timeout=5)
+        with pytest.raises(ValueError,match='twice'):execution.submit_batch(dispatch('first'),1,empty)
+        for n in range(1,256):
+            execution.submit_batch(dispatch(str(n)),1,empty)
+            result,=execution.wait(1,timeout=5)
+            assert result.usable
+        with pytest.raises(RuntimeError,match='request limit'):execution.submit_batch(dispatch('limit'),1,empty)
+        assert execution.outstanding==0
+    finally:execution.close()
 
 def test_profile_records_actual_cpu_placement(model,tmp_path):
     from hbr_image_classifier.cli import summarize_profile

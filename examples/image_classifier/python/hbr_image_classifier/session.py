@@ -1,9 +1,10 @@
 """One synchronous C++ session, closed by its owning executor worker."""
 from importlib.util import find_spec
 from pathlib import Path
+from hashlib import sha256
 import os
 import numpy as np
-from .model import Model
+from .model import Model, MODEL_SHA256
 
 def runtime_library():
     spec = find_spec("onnxruntime")
@@ -21,6 +22,8 @@ class Session:
     def __init__(self, model, *, provider="cpu", library=None, profile_prefix=""):
         if not isinstance(model, Model):
             raise TypeError("a reviewed Model is required")
+        if model.sha256 != MODEL_SHA256 or sha256(model.data).hexdigest() != MODEL_SHA256:
+            raise ValueError("model does not match the reviewed artifact")
         from ._session import Session as NativeSession
         self._native = NativeSession(library or runtime_library(), model.data, provider, str(profile_prefix))
         self.provider = provider
