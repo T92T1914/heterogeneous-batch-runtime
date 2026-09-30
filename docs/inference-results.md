@@ -2,6 +2,8 @@
 
 The optional application built and executed on Windows with a C++20 MSVC extension, Python 3.11 and ONNX Runtime 1.30.0. It is separately installed from the numerical runtime. A pinned public MNIST model produced completed predictions for eight original geometric digit drawings. The full logits agreed with ONNX's independent reference evaluator within the committed tolerance.
 
+This is the retained CPU collection. The later [required CUDA follow-up](inference-cuda-results.md) records its own executed outputs, placement, comparison and memory observations. Pending GPU statements below describe the CPU collection's original boundary rather than the current follow-up status.
+
 The [machine-readable record](inference-cpu-evidence.json) retains model, input and source-content identities, dependencies, every output, normalized probabilities, lifecycle observations and actual provider placement. It records the maximum full-logit difference instead of comparing only the winning class. An actual ONNX Runtime profile contained 64 CPU provider node events. Those events establish this run's operator placement. They are not hardware counters, a latency result or a GPU result.
 
 The predicted labels were `2, 3, 2, 3, 4, 5, 5, 2` for the geometric examples labelled zero through seven. Several drawings were misclassified. These examples are not a held-out handwriting dataset, and the demonstration claims no accuracy score. The outputs are retained without selecting only the correct examples.

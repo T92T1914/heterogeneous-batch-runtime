@@ -1,0 +1,3680 @@
+{
+  "schema_version": 1,
+  "application_source_revision": "7a40f5fd43a213dab94ea5345fb87c697d3f4612",
+  "application_source_files": [
+    {
+      "path": "examples/image_classifier/session.cpp",
+      "sha256": "e7228c37fe87800d46a905e04731254710a642ead69875d003e63e5055104e8b"
+    },
+    {
+      "path": "examples/image_classifier/CMakeLists.txt",
+      "sha256": "b726a4459164cf25ed11e54b9809ec6d2f67630d559f7c2d39727854833e26b8"
+    },
+    {
+      "path": "examples/image_classifier/pyproject.toml",
+      "sha256": "c6105d67cf85870d273485d206fca5db4441bd81c78656479e0bc5360f570708"
+    },
+    {
+      "path": "examples/image_classifier/python/hbr_image_classifier/__init__.py",
+      "sha256": "b05452dfde98f1a24d61810be608b52a0be283857282a6e337c07f4d5320f720"
+    },
+    {
+      "path": "examples/image_classifier/python/hbr_image_classifier/session.py",
+      "sha256": "98440fc70255f47ddc703771003079b4b6f76f40c513e95f17688c28ee429705"
+    },
+    {
+      "path": "examples/image_classifier/python/hbr_image_classifier/model.py",
+      "sha256": "d9f4b4245802777a3447e8915c060deb5e46410ad0216f826ffee2b88e97c420"
+    },
+    {
+      "path": "examples/image_classifier/python/hbr_image_classifier/executor.py",
+      "sha256": "678272352652ea27ac7bceea5d4ba030a8086f2b6f785375eb2625849d74fe13"
+    },
+    {
+      "path": "examples/image_classifier/python/hbr_image_classifier/cli.py",
+      "sha256": "f8f17f7f6a93ca1977e6e7c473e9340e60a1c9cc8bc4d244c5d150d0f8d77ceb"
+    }
+  ],
+  "protocol_commit": "635e5d2caf7d2786e6d98a2f4696277a36d2d6f3",
+  "protocol_sha256": "00aaf72f52f0624c4d256ebc2be0b08a0492b9d157e930dd90a7736465797450",
+  "comparison_source_revision": "7a40f5fd43a213dab94ea5345fb87c697d3f4612",
+  "comparison_source_files": [
+    {
+      "path": "examples/image_classifier/compare.py",
+      "sha256": "f75a6e1f5f8fbb69d0f01062c2dd72af950a58dec04a936d016fc3369633ab4d"
+    }
+  ],
+  "corrected_memory_source_revision": "6d0254bf99709b66c7435f9178c49f2c1889c579",
+  "memory_source_files": [
+    {
+      "path": "examples/image_classifier/cuda_memory_check.py",
+      "sha256": "a858722e94591d6ddc7b5d5ba6798c92a45977b08fecb02df52a70cc1264244b"
+    },
+    {
+      "path": "examples/image_classifier/memory_check.py",
+      "sha256": "c7866c83b1083ccdfeceb43325caebb2082ec7f91c6145ac796ebb9642d88de4"
+    }
+  ],
+  "gpu_contract_source_revision": "6d0254bf99709b66c7435f9178c49f2c1889c579",
+  "contract_test_files": [
+    {
+      "path": "examples/image_classifier/tests/test_gpu_inference.py",
+      "sha256": "860fb97d5ba97336049242a65a5f16ac8dc693468365cf5936d8267252bd79d7"
+    },
+    {
+      "path": "examples/image_classifier/tests/test_inference.py",
+      "sha256": "cead5261bdccd35c226cd4856333a7ef64b5fbb2bba62291a97eeb1ff310f57f"
+    },
+    {
+      "path": "examples/image_classifier/tests/test_cuda_memory_failures.py",
+      "sha256": "93f89cf4f0ad25402d27f68f4a1ed491c0bc844d165ad5c6f3511323a0e842f1"
+    }
+  ],
+  "hardware": {
+    "os": "Windows 11 build26200",
+    "architecture": "x64",
+    "gpu": "NVIDIA GeForce RTX 4090",
+    "driver": "617.14",
+    "cpu": "AMD Ryzen 7 7800X3D",
+    "cuda_runtime": "13.4.92",
+    "cudnn": "9.27.0.42"
+  },
+  "dependencies": [
+    {
+      "name": "onnxruntime-gpu",
+      "version": "1.30.0",
+      "filename": "onnxruntime_gpu-1.30.0-cp311-cp311-win_amd64.whl",
+      "size": 160469661,
+      "sha256": "fea66ebd743717de6f254955293b5f978825be7867c87a99c4a0ac1fe6f1d763",
+      "url": "https://files.pythonhosted.org/packages/3f/e2/626586334da2356be4a9f0fa9864a9fc6406c6b128887258de091ffbf1be/onnxruntime_gpu-1.30.0-cp311-cp311-win_amd64.whl"
+    },
+    {
+      "name": "numpy",
+      "version": "2.4.6",
+      "filename": "numpy-2.4.6-cp311-cp311-win_amd64.whl",
+      "size": 12608406,
+      "sha256": "1e254a00cdf42b1e4d5b3d68d33af63268d41340d8885df2ab6470f2e1500147",
+      "url": "https://files.pythonhosted.org/packages/c5/31/7fc6239c12bce7e931463251cca4426c465e1876ba3cc785402ef4dd8f4e/numpy-2.4.6-cp311-cp311-win_amd64.whl"
+    },
+    {
+      "name": "nvidia-cuda-nvrtc",
+      "version": "13.4.92",
+      "filename": "nvidia_cuda_nvrtc-13.4.92-py3-none-win_amd64.whl",
+      "size": 46972283,
+      "sha256": "6af7ac5372920f6a7a560d0699348560fe44cb52c1d722d6afd3119f8af948c4",
+      "url": "https://files.pythonhosted.org/packages/64/5b/aa91896f64444eff1dd7f189f4db05046c7f0ba08c0f531283c1c1aac581/nvidia_cuda_nvrtc-13.4.92-py3-none-win_amd64.whl"
+    },
+    {
+      "name": "nvidia-cuda-runtime",
+      "version": "13.4.92",
+      "filename": "nvidia_cuda_runtime-13.4.92-py3-none-win_amd64.whl",
+      "size": 2778543,
+      "sha256": "08dca5e4aba480c2fd5b55075c0fa71b84ef9dcf0521f2d58baa14a803a7311c",
+      "url": "https://files.pythonhosted.org/packages/86/00/d5436004268f049214193659ebc36550b5ef3925c3d13b4cc980e13be6f5/nvidia_cuda_runtime-13.4.92-py3-none-win_amd64.whl"
+    },
+    {
+      "name": "nvidia-cudnn-cu13",
+      "version": "9.27.0.42",
+      "filename": "nvidia_cudnn_cu13-9.27.0.42-py3-none-win_amd64.whl",
+      "size": 436469905,
+      "sha256": "7d96f634adafd55c72231eb0500ca77ab109ec8ebff7b33000b76e081bc4558e",
+      "url": "https://files.pythonhosted.org/packages/87/6a/e55ff0ac26a5c6e2b21f41c9d04ad096b4ed6da593fba7e25845c61b0532/nvidia_cudnn_cu13-9.27.0.42-py3-none-win_amd64.whl"
+    },
+    {
+      "name": "nvidia-cufft",
+      "version": "12.4.0.43",
+      "filename": "nvidia_cufft-12.4.0.43-py3-none-win_amd64.whl",
+      "size": 160953139,
+      "sha256": "4ff7075f2d0b5f69291f70938d37a86ec632cbe5747184c74ba1f50f17accacc",
+      "url": "https://files.pythonhosted.org/packages/7b/cc/be7fe31058127336a66c88414a2ecc6beecf680baf85994a43eaf292b202/nvidia_cufft-12.4.0.43-py3-none-win_amd64.whl"
+    },
+    {
+      "name": "nvidia-curand",
+      "version": "10.4.4.72",
+      "filename": "nvidia_curand-10.4.4.72-py3-none-win_amd64.whl",
+      "size": 56731059,
+      "sha256": "e0bce83e083ef25976ee74f59e8f067c15149a74538f1be6c2462e286e7c9c68",
+      "url": "https://files.pythonhosted.org/packages/e2/d4/f59ab342b82ff05ff27d674acd470ba625d788bf71338f7da6c89669d6b9/nvidia_curand-10.4.4.72-py3-none-win_amd64.whl"
+    },
+    {
+      "name": "protobuf",
+      "version": "7.36.2",
+      "filename": "protobuf-7.36.2-cp310-abi3-win_amd64.whl",
+      "size": 456514,
+      "sha256": "a300819d441e078a5608c0d3c709796bb548136058fda017ae51d425b44fd353",
+      "url": "https://files.pythonhosted.org/packages/8a/55/b77bda4e5e5f5971fb51b07663694690e9afdb9402136c16a522bd621cad/protobuf-7.36.2-cp310-abi3-win_amd64.whl"
+    },
+    {
+      "name": "flatbuffers",
+      "version": "25.12.19",
+      "filename": "flatbuffers-25.12.19-py2.py3-none-any.whl",
+      "size": 26661,
+      "sha256": "7634f50c427838bb021c2d66a3d1168e9d199b0607e6329399f04846d42e20b4",
+      "url": "https://files.pythonhosted.org/packages/e8/2d/d2a548598be01649e2d46231d151a6c56d10b964d94043a335ae56ea2d92/flatbuffers-25.12.19-py2.py3-none-any.whl"
+    },
+    {
+      "name": "packaging",
+      "version": "26.3",
+      "filename": "packaging-26.3-py3-none-any.whl",
+      "size": 129956,
+      "sha256": "d7193f7c8e4e93f444fde0262bf90af30e16fa0ad0ad44cb553c87339b23cd1c",
+      "url": "https://files.pythonhosted.org/packages/63/34/ba1c580383c9eada3711951fef0795c80b829a078d72188184bcab9dd527/packaging-26.3-py3-none-any.whl"
+    },
+    {
+      "name": "nvidia-cublas",
+      "version": "13.8.0.4",
+      "filename": "nvidia_cublas-13.8.0.4-py3-none-win_amd64.whl",
+      "size": 423266897,
+      "sha256": "8c5494423bb8a46822cb6b0cb95d7fa4be2d7b96a31155dff083839ec8297910",
+      "url": "https://files.pythonhosted.org/packages/a3/df/f1246959833e2c437db8be3e5b477f66b87f8817821ed40de6c7561c9a36/nvidia_cublas-13.8.0.4-py3-none-win_amd64.whl"
+    },
+    {
+      "name": "nvidia-nvjitlink",
+      "version": "13.4.92",
+      "filename": "nvidia_nvjitlink-13.4.92-py3-none-win_amd64.whl",
+      "size": 39053950,
+      "sha256": "b286f3a4f227a9363efdec263c7b91788cef1478d2b8a5fa8bab7f3e82ff82fd",
+      "url": "https://files.pythonhosted.org/packages/72/7c/c44bd7277afafed9de262a23baec4dc8dcf7ecbb1b9ecb228821442d1e9b/nvidia_nvjitlink-13.4.92-py3-none-win_amd64.whl"
+    }
+  ],
+  "model_license": "Model weights were acquired privately and are not redistributed. The retained model card has an Apache front-matter versus MIT body/SPDX discrepancy, separate from the model zoo repository and runtime library licenses.",
+  "original_loader_failure": {
+    "stage": "automatic required-CUDA session initialization after official vendor-wheel installation",
+    "type": "RuntimeError",
+    "missing_dependency": "cublasLt64_13.dll",
+    "windows_error": 126,
+    "source_revision": "85ab2286c3321605936a92c0843b5254de23fd81",
+    "outcome": "no completed application result"
+  },
+  "application": {
+    "schema_version": 1,
+    "model_sha256": "2f06e72de813a8635c9bc0397ac447a601bdbfa7df4bebc278723b958831c9bf",
+    "input_sha256": "2852d857cb28a2210ad6bdb2499381884a183cc6b49e2c6d4faa2545814c3aac",
+    "provider_requested": "cuda-required",
+    "batch_shape": [
+      8,
+      1,
+      28,
+      28
+    ],
+    "input_kind": "original geometric example digits, not an accuracy dataset",
+    "contract": "serial one-image calls, completed host outputs, no asynchronous GPU interface",
+    "logits": [
+      [
+        7.3032402992248535,
+        -7.323434829711914,
+        9.959443092346191,
+        3.9533755779266357,
+        -7.01883602142334,
+        -1.8985905647277832,
+        0.7205076813697815,
+        -2.9965498447418213,
+        1.7038317918777466,
+        -10.700277328491211
+      ],
+      [
+        -2.033200740814209,
+        3.403608560562134,
+        1.2138832807540894,
+        6.400510787963867,
+        3.498084783554077,
+        -2.0328540802001953,
+        -7.0399298667907715,
+        3.7184293270111084,
+        -4.782986640930176,
+        -1.0533634424209595
+      ],
+      [
+        2.0847697257995605,
+        -6.043756484985352,
+        29.53020477294922,
+        3.8851287364959717,
+        -0.9542444944381714,
+        -14.444441795349121,
+        -7.130982875823975,
+        -0.8964564204216003,
+        3.889685869216919,
+        -12.294441223144531
+      ],
+      [
+        -11.286938667297363,
+        -3.8020546436309814,
+        13.940152168273926,
+        18.313993453979492,
+        -2.0807948112487793,
+        1.7853879928588867,
+        -20.8780517578125,
+        5.282227993011475,
+        -1.046061396598816,
+        0.5710148811340332
+      ],
+      [
+        -13.965346336364746,
+        -4.590930938720703,
+        -9.201629638671875,
+        -1.9708988666534424,
+        21.591615676879883,
+        5.282991409301758,
+        -8.22792911529541,
+        4.968110084533691,
+        -0.08810655772686005,
+        3.955451726913452
+      ],
+      [
+        -11.479857444763184,
+        -12.573090553283691,
+        -2.255455255508423,
+        3.6738739013671875,
+        -0.9546419382095337,
+        21.539798736572266,
+        -2.8399155139923096,
+        -3.7996749877929688,
+        1.2133859395980835,
+        4.144527912139893
+      ],
+      [
+        -4.718846797943115,
+        -13.615692138671875,
+        5.414640426635742,
+        -4.662715435028076,
+        -2.651707887649536,
+        14.48794937133789,
+        7.946188449859619,
+        -7.8229899406433105,
+        7.7101922035217285,
+        -6.710867404937744
+      ],
+      [
+        -5.530721664428711,
+        1.9759302139282227,
+        16.03118133544922,
+        15.341334342956543,
+        -9.236355781555176,
+        -7.769153594970703,
+        -13.602601051330566,
+        12.365694999694824,
+        -9.229839324951172,
+        -2.4160385131835938
+      ]
+    ],
+    "probabilities": [
+      [
+        0.06543468493008445,
+        2.9075267465430853e-08,
+        0.931927723337362,
+        0.002296044241440294,
+        3.94284132865713e-08,
+        6.5993877760113e-06,
+        9.056566155004205e-05,
+        2.201232880234466e-06,
+        0.00024211171215668845,
+        9.930695260131894e-10
+      ],
+      [
+        0.00018426829360960092,
+        0.04232791660646593,
+        0.0047385043863818225,
+        0.8475493459144863,
+        0.0465218948338769,
+        0.00018433218324277677,
+        1.2332632278157247e-06,
+        0.05798982718926318,
+        1.1782400239170208e-05,
+        0.0004908949292062644
+      ],
+      [
+        1.203923815549534e-12,
+        3.5516071876579197e-16,
+        0.9999999999840716,
+        7.28592991537776e-12,
+        5.76463612925134e-14,
+        7.980932757746676e-20,
+        1.197425504420433e-16,
+        6.10757685958528e-14,
+        7.31920863517626e-12,
+        6.851521680736399e-19
+      ],
+      [
+        1.3773313898762638e-13,
+        2.452913731879851e-10,
+        0.012445856511431342,
+        0.987551890657366,
+        1.3715635077304361e-09,
+        6.550550204101302e-08,
+        9.411762398465391e-18,
+        2.1624003133963394e-06,
+        3.860067808463127e-09,
+        1.944832655412569e-08
+      ],
+      [
+        3.6124973118780527e-16,
+        4.256615389521495e-12,
+        4.2331475627824046e-14,
+        5.846956760829002e-11,
+        0.9999998346613832,
+        8.265219684657645e-08,
+        1.120820774632998e-13,
+        6.032581244751946e-08,
+        3.8425204942761286e-10,
+        2.1913474501089516e-08
+      ],
+      [
+        4.568204167598082e-15,
+        1.53094785708306e-15,
+        4.632895190598399e-11,
+        1.7415157621901875e-08,
+        1.7013298468751822e-10,
+        0.9999999529631423,
+        2.582406523769321e-11,
+        9.890229439701604e-12,
+        1.4871372942928643e-09,
+        2.788238048444673e-08
+      ],
+      [
+        4.5438641666240594e-09,
+        6.216908884463868e-13,
+        0.00011437811219348517,
+        4.8062115343261415e-09,
+        3.5906441140542396e-08,
+        0.9973117402572974,
+        0.00143807077809321,
+        2.0385112017519486e-10,
+        0.001135764771554712,
+        6.198716621320107e-10
+      ],
+      [
+        2.830581731630492e-10,
+        5.151968366732575e-07,
+        0.6547736466856874,
+        0.3284690462179012,
+        6.9588784441011705e-12,
+        3.018123896022083e-11,
+        8.836962725164638e-14,
+        0.016756785196032586,
+        7.004373746583469e-12,
+        6.376251003665947e-09
+      ]
+    ],
+    "predictions": [
+      2,
+      3,
+      2,
+      3,
+      4,
+      5,
+      5,
+      2
+    ],
+    "status": "completed",
+    "usable": true,
+    "observations": [
+      {
+        "id": "image-batch-1",
+        "generation": 1,
+        "resource": "inference",
+        "kind": "submitted",
+        "at": 43783.484,
+        "stale": null
+      },
+      {
+        "id": "image-batch-1",
+        "generation": 1,
+        "resource": "inference",
+        "kind": "started",
+        "at": 43783.484,
+        "stale": null
+      },
+      {
+        "id": "image-batch-1",
+        "generation": 1,
+        "resource": "inference",
+        "kind": "completed",
+        "at": 43783.625,
+        "stale": null
+      },
+      {
+        "id": "image-batch-1",
+        "generation": 1,
+        "resource": "inference",
+        "kind": "reconciled",
+        "at": 43783.625,
+        "stale": false
+      }
+    ],
+    "placement": {
+      "provider_events": {
+        "CUDAExecutionProvider": 64
+      },
+      "node_events": [
+        {
+          "name": "Convolution28_kernel_time",
+          "provider": "CUDAExecutionProvider",
+          "op": "Conv"
+        },
+        {
+          "name": "ReLU32_kernel_time",
+          "provider": "CUDAExecutionProvider",
+          "op": "Relu"
+        },
+        {
+          "name": "Pooling66_kernel_time",
+          "provider": "CUDAExecutionProvider",
+          "op": "MaxPool"
+        },
+        {
+          "name": "Convolution110_kernel_time",
+          "provider": "CUDAExecutionProvider",
+          "op": "Conv"
+        },
+        {
+          "name": "ReLU114_kernel_time",
+          "provider": "CUDAExecutionProvider",
+          "op": "Relu"
+        },
+        {
+          "name": "Pooling160_kernel_time",
+          "provider": "CUDAExecutionProvider",
+          "op": "MaxPool"
+        },
+        {
+          "name": "Times212_reshape0_kernel_time",
+          "provider": "CUDAExecutionProvider",
+          "op": "Reshape"
+        },
+        {
+          "name": "Times212/MatMulAddFusion_kernel_time",
+          "provider": "CUDAExecutionProvider",
+          "op": "Gemm"
+        },
+        {
+          "name": "Convolution28_kernel_time",
+          "provider": "CUDAExecutionProvider",
+          "op": "Conv"
+        },
+        {
+          "name": "ReLU32_kernel_time",
+          "provider": "CUDAExecutionProvider",
+          "op": "Relu"
+        },
+        {
+          "name": "Pooling66_kernel_time",
+          "provider": "CUDAExecutionProvider",
+          "op": "MaxPool"
+        },
+        {
+          "name": "Convolution110_kernel_time",
+          "provider": "CUDAExecutionProvider",
+          "op": "Conv"
+        },
+        {
+          "name": "ReLU114_kernel_time",
+          "provider": "CUDAExecutionProvider",
+          "op": "Relu"
+        },
+        {
+          "name": "Pooling160_kernel_time",
+          "provider": "CUDAExecutionProvider",
+          "op": "MaxPool"
+        },
+        {
+          "name": "Times212_reshape0_kernel_time",
+          "provider": "CUDAExecutionProvider",
+          "op": "Reshape"
+        },
+        {
+          "name": "Times212/MatMulAddFusion_kernel_time",
+          "provider": "CUDAExecutionProvider",
+          "op": "Gemm"
+        },
+        {
+          "name": "Convolution28_kernel_time",
+          "provider": "CUDAExecutionProvider",
+          "op": "Conv"
+        },
+        {
+          "name": "ReLU32_kernel_time",
+          "provider": "CUDAExecutionProvider",
+          "op": "Relu"
+        },
+        {
+          "name": "Pooling66_kernel_time",
+          "provider": "CUDAExecutionProvider",
+          "op": "MaxPool"
+        },
+        {
+          "name": "Convolution110_kernel_time",
+          "provider": "CUDAExecutionProvider",
+          "op": "Conv"
+        },
+        {
+          "name": "ReLU114_kernel_time",
+          "provider": "CUDAExecutionProvider",
+          "op": "Relu"
+        },
+        {
+          "name": "Pooling160_kernel_time",
+          "provider": "CUDAExecutionProvider",
+          "op": "MaxPool"
+        },
+        {
+          "name": "Times212_reshape0_kernel_time",
+          "provider": "CUDAExecutionProvider",
+          "op": "Reshape"
+        },
+        {
+          "name": "Times212/MatMulAddFusion_kernel_time",
+          "provider": "CUDAExecutionProvider",
+          "op": "Gemm"
+        },
+        {
+          "name": "Convolution28_kernel_time",
+          "provider": "CUDAExecutionProvider",
+          "op": "Conv"
+        },
+        {
+          "name": "ReLU32_kernel_time",
+          "provider": "CUDAExecutionProvider",
+          "op": "Relu"
+        },
+        {
+          "name": "Pooling66_kernel_time",
+          "provider": "CUDAExecutionProvider",
+          "op": "MaxPool"
+        },
+        {
+          "name": "Convolution110_kernel_time",
+          "provider": "CUDAExecutionProvider",
+          "op": "Conv"
+        },
+        {
+          "name": "ReLU114_kernel_time",
+          "provider": "CUDAExecutionProvider",
+          "op": "Relu"
+        },
+        {
+          "name": "Pooling160_kernel_time",
+          "provider": "CUDAExecutionProvider",
+          "op": "MaxPool"
+        },
+        {
+          "name": "Times212_reshape0_kernel_time",
+          "provider": "CUDAExecutionProvider",
+          "op": "Reshape"
+        },
+        {
+          "name": "Times212/MatMulAddFusion_kernel_time",
+          "provider": "CUDAExecutionProvider",
+          "op": "Gemm"
+        },
+        {
+          "name": "Convolution28_kernel_time",
+          "provider": "CUDAExecutionProvider",
+          "op": "Conv"
+        },
+        {
+          "name": "ReLU32_kernel_time",
+          "provider": "CUDAExecutionProvider",
+          "op": "Relu"
+        },
+        {
+          "name": "Pooling66_kernel_time",
+          "provider": "CUDAExecutionProvider",
+          "op": "MaxPool"
+        },
+        {
+          "name": "Convolution110_kernel_time",
+          "provider": "CUDAExecutionProvider",
+          "op": "Conv"
+        },
+        {
+          "name": "ReLU114_kernel_time",
+          "provider": "CUDAExecutionProvider",
+          "op": "Relu"
+        },
+        {
+          "name": "Pooling160_kernel_time",
+          "provider": "CUDAExecutionProvider",
+          "op": "MaxPool"
+        },
+        {
+          "name": "Times212_reshape0_kernel_time",
+          "provider": "CUDAExecutionProvider",
+          "op": "Reshape"
+        },
+        {
+          "name": "Times212/MatMulAddFusion_kernel_time",
+          "provider": "CUDAExecutionProvider",
+          "op": "Gemm"
+        },
+        {
+          "name": "Convolution28_kernel_time",
+          "provider": "CUDAExecutionProvider",
+          "op": "Conv"
+        },
+        {
+          "name": "ReLU32_kernel_time",
+          "provider": "CUDAExecutionProvider",
+          "op": "Relu"
+        },
+        {
+          "name": "Pooling66_kernel_time",
+          "provider": "CUDAExecutionProvider",
+          "op": "MaxPool"
+        },
+        {
+          "name": "Convolution110_kernel_time",
+          "provider": "CUDAExecutionProvider",
+          "op": "Conv"
+        },
+        {
+          "name": "ReLU114_kernel_time",
+          "provider": "CUDAExecutionProvider",
+          "op": "Relu"
+        },
+        {
+          "name": "Pooling160_kernel_time",
+          "provider": "CUDAExecutionProvider",
+          "op": "MaxPool"
+        },
+        {
+          "name": "Times212_reshape0_kernel_time",
+          "provider": "CUDAExecutionProvider",
+          "op": "Reshape"
+        },
+        {
+          "name": "Times212/MatMulAddFusion_kernel_time",
+          "provider": "CUDAExecutionProvider",
+          "op": "Gemm"
+        },
+        {
+          "name": "Convolution28_kernel_time",
+          "provider": "CUDAExecutionProvider",
+          "op": "Conv"
+        },
+        {
+          "name": "ReLU32_kernel_time",
+          "provider": "CUDAExecutionProvider",
+          "op": "Relu"
+        },
+        {
+          "name": "Pooling66_kernel_time",
+          "provider": "CUDAExecutionProvider",
+          "op": "MaxPool"
+        },
+        {
+          "name": "Convolution110_kernel_time",
+          "provider": "CUDAExecutionProvider",
+          "op": "Conv"
+        },
+        {
+          "name": "ReLU114_kernel_time",
+          "provider": "CUDAExecutionProvider",
+          "op": "Relu"
+        },
+        {
+          "name": "Pooling160_kernel_time",
+          "provider": "CUDAExecutionProvider",
+          "op": "MaxPool"
+        },
+        {
+          "name": "Times212_reshape0_kernel_time",
+          "provider": "CUDAExecutionProvider",
+          "op": "Reshape"
+        },
+        {
+          "name": "Times212/MatMulAddFusion_kernel_time",
+          "provider": "CUDAExecutionProvider",
+          "op": "Gemm"
+        },
+        {
+          "name": "Convolution28_kernel_time",
+          "provider": "CUDAExecutionProvider",
+          "op": "Conv"
+        },
+        {
+          "name": "ReLU32_kernel_time",
+          "provider": "CUDAExecutionProvider",
+          "op": "Relu"
+        },
+        {
+          "name": "Pooling66_kernel_time",
+          "provider": "CUDAExecutionProvider",
+          "op": "MaxPool"
+        },
+        {
+          "name": "Convolution110_kernel_time",
+          "provider": "CUDAExecutionProvider",
+          "op": "Conv"
+        },
+        {
+          "name": "ReLU114_kernel_time",
+          "provider": "CUDAExecutionProvider",
+          "op": "Relu"
+        },
+        {
+          "name": "Pooling160_kernel_time",
+          "provider": "CUDAExecutionProvider",
+          "op": "MaxPool"
+        },
+        {
+          "name": "Times212_reshape0_kernel_time",
+          "provider": "CUDAExecutionProvider",
+          "op": "Reshape"
+        },
+        {
+          "name": "Times212/MatMulAddFusion_kernel_time",
+          "provider": "CUDAExecutionProvider",
+          "op": "Gemm"
+        }
+      ],
+      "raw_sha256": "79b4f4a9542c0e695498702cc62d975c245d9b5e0088172c64e445b102daa97f",
+      "meaning": "ORT operation placement from this run; event counts are not hardware counters or elapsed inference time"
+    }
+  },
+  "reference": {
+    "full_output_pass": true,
+    "shape": [
+      8,
+      10
+    ],
+    "rtol": 1e-05,
+    "atol": 2e-05,
+    "max_absolute_logit_difference": 5.7220458984375e-06,
+    "expected_logits": [
+      [
+        7.303240776062012,
+        -7.3234357833862305,
+        9.959443092346191,
+        3.9533779621124268,
+        -7.0188374519348145,
+        -1.8985893726348877,
+        0.7205085158348083,
+        -2.996549129486084,
+        1.7038319110870361,
+        -10.700278282165527
+      ],
+      [
+        -2.033200979232788,
+        3.403608560562134,
+        1.2138844728469849,
+        6.400512218475342,
+        3.498086452484131,
+        -2.0328550338745117,
+        -7.03993034362793,
+        3.718428373336792,
+        -4.782986164093018,
+        -1.0533638000488281
+      ],
+      [
+        2.0847716331481934,
+        -6.043756008148193,
+        29.530202865600586,
+        3.8851282596588135,
+        -0.9542456269264221,
+        -14.444443702697754,
+        -7.130984783172607,
+        -0.8964546322822571,
+        3.889690399169922,
+        -12.29444408416748
+      ],
+      [
+        -11.28693962097168,
+        -3.8020575046539307,
+        13.94015121459961,
+        18.313993453979492,
+        -2.0807948112487793,
+        1.7853877544403076,
+        -20.878055572509766,
+        5.282229900360107,
+        -1.046059250831604,
+        0.5710147023200989
+      ],
+      [
+        -13.96534538269043,
+        -4.590931415557861,
+        -9.201629638671875,
+        -1.970900297164917,
+        21.59161949157715,
+        5.2829909324646,
+        -8.227927207946777,
+        4.968111991882324,
+        -0.088107168674469,
+        3.955449342727661
+      ],
+      [
+        -11.479859352111816,
+        -12.573089599609375,
+        -2.2554569244384766,
+        3.673872232437134,
+        -0.95464026927948,
+        21.539793014526367,
+        -2.839911699295044,
+        -3.799675703048706,
+        1.2133867740631104,
+        4.144526958465576
+      ],
+      [
+        -4.71884822845459,
+        -13.615694046020508,
+        5.414639472961426,
+        -4.662716865539551,
+        -2.651704788208008,
+        14.487950325012207,
+        7.946187496185303,
+        -7.8229875564575195,
+        7.710191249847412,
+        -6.710870265960693
+      ],
+      [
+        -5.530722141265869,
+        1.9759291410446167,
+        16.03118133544922,
+        15.34133529663086,
+        -9.236357688903809,
+        -7.769154071807861,
+        -13.602598190307617,
+        12.365694046020508,
+        -9.229837417602539,
+        -2.416038990020752
+      ]
+    ]
+  },
+  "comparison": {
+    "schema_version": 1,
+    "contract": "prepared tensor, owned admission/input copy, completed host logits; PNG decode and normalization excluded equally",
+    "model_sha256": "2f06e72de813a8635c9bc0397ac447a601bdbfa7df4bebc278723b958831c9bf",
+    "protocol": "docs/inference-protocol.md",
+    "ort_version": "1.30.0",
+    "platform": "Windows",
+    "python": "3.11.8",
+    "samples": 20,
+    "warmups": 5,
+    "rows": [
+      {
+        "batch": 8,
+        "mode": "cpp-reused",
+        "phase": "setup",
+        "seconds": 0.23870529999840073,
+        "input_sha256": "2852d857cb28a2210ad6bdb2499381884a183cc6b49e2c6d4faa2545814c3aac"
+      },
+      {
+        "batch": 8,
+        "mode": "cpp-fresh",
+        "phase": "first_invocation",
+        "sample": -6,
+        "seconds": 0.1552125000016531,
+        "validation_seconds": 0.018588300001283642,
+        "input_sha256": "2852d857cb28a2210ad6bdb2499381884a183cc6b49e2c6d4faa2545814c3aac",
+        "max_absolute_logit_difference": 5.7220458984375e-06,
+        "provider_requested": "cuda-required"
+      },
+      {
+        "batch": 8,
+        "mode": "cpp-reused",
+        "phase": "first_invocation",
+        "sample": -6,
+        "seconds": 0.00478339999972377,
+        "validation_seconds": 9.649999992689118e-05,
+        "input_sha256": "2852d857cb28a2210ad6bdb2499381884a183cc6b49e2c6d4faa2545814c3aac",
+        "max_absolute_logit_difference": 5.7220458984375e-06,
+        "provider_requested": "cuda-required"
+      },
+      {
+        "batch": 8,
+        "mode": "python-cpu-reused",
+        "phase": "first_invocation",
+        "sample": -6,
+        "seconds": 0.000555599996005185,
+        "validation_seconds": 6.909999501658604e-05,
+        "input_sha256": "2852d857cb28a2210ad6bdb2499381884a183cc6b49e2c6d4faa2545814c3aac",
+        "max_absolute_logit_difference": 1.33514404296875e-05,
+        "provider_requested": "cpu"
+      },
+      {
+        "batch": 8,
+        "mode": "python-cpu-reused",
+        "phase": "warmup",
+        "sample": -5,
+        "seconds": 0.0003079000016441569,
+        "validation_seconds": 6.369999755406752e-05,
+        "input_sha256": "2852d857cb28a2210ad6bdb2499381884a183cc6b49e2c6d4faa2545814c3aac",
+        "max_absolute_logit_difference": 1.33514404296875e-05,
+        "provider_requested": "cpu"
+      },
+      {
+        "batch": 8,
+        "mode": "cpp-reused",
+        "phase": "warmup",
+        "sample": -5,
+        "seconds": 0.0025855999992927536,
+        "validation_seconds": 7.210000330815092e-05,
+        "input_sha256": "2852d857cb28a2210ad6bdb2499381884a183cc6b49e2c6d4faa2545814c3aac",
+        "max_absolute_logit_difference": 5.7220458984375e-06,
+        "provider_requested": "cuda-required"
+      },
+      {
+        "batch": 8,
+        "mode": "cpp-fresh",
+        "phase": "warmup",
+        "sample": -5,
+        "seconds": 0.011672999993606936,
+        "validation_seconds": 9.449999924981967e-05,
+        "input_sha256": "2852d857cb28a2210ad6bdb2499381884a183cc6b49e2c6d4faa2545814c3aac",
+        "max_absolute_logit_difference": 5.7220458984375e-06,
+        "provider_requested": "cuda-required"
+      },
+      {
+        "batch": 8,
+        "mode": "cpp-fresh",
+        "phase": "warmup",
+        "sample": -4,
+        "seconds": 0.009493799996562302,
+        "validation_seconds": 8.689999958733097e-05,
+        "input_sha256": "2852d857cb28a2210ad6bdb2499381884a183cc6b49e2c6d4faa2545814c3aac",
+        "max_absolute_logit_difference": 5.7220458984375e-06,
+        "provider_requested": "cuda-required"
+      },
+      {
+        "batch": 8,
+        "mode": "cpp-reused",
+        "phase": "warmup",
+        "sample": -4,
+        "seconds": 0.003181599997333251,
+        "validation_seconds": 9.190000128000975e-05,
+        "input_sha256": "2852d857cb28a2210ad6bdb2499381884a183cc6b49e2c6d4faa2545814c3aac",
+        "max_absolute_logit_difference": 5.7220458984375e-06,
+        "provider_requested": "cuda-required"
+      },
+      {
+        "batch": 8,
+        "mode": "python-cpu-reused",
+        "phase": "warmup",
+        "sample": -4,
+        "seconds": 0.0003530999965732917,
+        "validation_seconds": 5.919999966863543e-05,
+        "input_sha256": "2852d857cb28a2210ad6bdb2499381884a183cc6b49e2c6d4faa2545814c3aac",
+        "max_absolute_logit_difference": 1.33514404296875e-05,
+        "provider_requested": "cpu"
+      },
+      {
+        "batch": 8,
+        "mode": "python-cpu-reused",
+        "phase": "warmup",
+        "sample": -3,
+        "seconds": 0.00028780000138795003,
+        "validation_seconds": 5.1399998483248055e-05,
+        "input_sha256": "2852d857cb28a2210ad6bdb2499381884a183cc6b49e2c6d4faa2545814c3aac",
+        "max_absolute_logit_difference": 1.33514404296875e-05,
+        "provider_requested": "cpu"
+      },
+      {
+        "batch": 8,
+        "mode": "cpp-reused",
+        "phase": "warmup",
+        "sample": -3,
+        "seconds": 0.0036362000028020702,
+        "validation_seconds": 7.580000237794593e-05,
+        "input_sha256": "2852d857cb28a2210ad6bdb2499381884a183cc6b49e2c6d4faa2545814c3aac",
+        "max_absolute_logit_difference": 5.7220458984375e-06,
+        "provider_requested": "cuda-required"
+      },
+      {
+        "batch": 8,
+        "mode": "cpp-fresh",
+        "phase": "warmup",
+        "sample": -3,
+        "seconds": 0.011138499998196494,
+        "validation_seconds": 9.879999561235309e-05,
+        "input_sha256": "2852d857cb28a2210ad6bdb2499381884a183cc6b49e2c6d4faa2545814c3aac",
+        "max_absolute_logit_difference": 5.7220458984375e-06,
+        "provider_requested": "cuda-required"
+      },
+      {
+        "batch": 8,
+        "mode": "cpp-fresh",
+        "phase": "warmup",
+        "sample": -2,
+        "seconds": 0.011429900005168747,
+        "validation_seconds": 9.100000170292333e-05,
+        "input_sha256": "2852d857cb28a2210ad6bdb2499381884a183cc6b49e2c6d4faa2545814c3aac",
+        "max_absolute_logit_difference": 5.7220458984375e-06,
+        "provider_requested": "cuda-required"
+      },
+      {
+        "batch": 8,
+        "mode": "cpp-reused",
+        "phase": "warmup",
+        "sample": -2,
+        "seconds": 0.002378399993176572,
+        "validation_seconds": 9.720000525703654e-05,
+        "input_sha256": "2852d857cb28a2210ad6bdb2499381884a183cc6b49e2c6d4faa2545814c3aac",
+        "max_absolute_logit_difference": 5.7220458984375e-06,
+        "provider_requested": "cuda-required"
+      },
+      {
+        "batch": 8,
+        "mode": "python-cpu-reused",
+        "phase": "warmup",
+        "sample": -2,
+        "seconds": 0.0005443999980343506,
+        "validation_seconds": 8.250000246334821e-05,
+        "input_sha256": "2852d857cb28a2210ad6bdb2499381884a183cc6b49e2c6d4faa2545814c3aac",
+        "max_absolute_logit_difference": 1.33514404296875e-05,
+        "provider_requested": "cpu"
+      },
+      {
+        "batch": 8,
+        "mode": "python-cpu-reused",
+        "phase": "warmup",
+        "sample": -1,
+        "seconds": 0.00044640000123763457,
+        "validation_seconds": 6.86999992467463e-05,
+        "input_sha256": "2852d857cb28a2210ad6bdb2499381884a183cc6b49e2c6d4faa2545814c3aac",
+        "max_absolute_logit_difference": 1.33514404296875e-05,
+        "provider_requested": "cpu"
+      },
+      {
+        "batch": 8,
+        "mode": "cpp-reused",
+        "phase": "warmup",
+        "sample": -1,
+        "seconds": 0.002440199998090975,
+        "validation_seconds": 6.800000119255856e-05,
+        "input_sha256": "2852d857cb28a2210ad6bdb2499381884a183cc6b49e2c6d4faa2545814c3aac",
+        "max_absolute_logit_difference": 5.7220458984375e-06,
+        "provider_requested": "cuda-required"
+      },
+      {
+        "batch": 8,
+        "mode": "cpp-fresh",
+        "phase": "warmup",
+        "sample": -1,
+        "seconds": 0.009107100006076507,
+        "validation_seconds": 0.00016830000095069408,
+        "input_sha256": "2852d857cb28a2210ad6bdb2499381884a183cc6b49e2c6d4faa2545814c3aac",
+        "max_absolute_logit_difference": 5.7220458984375e-06,
+        "provider_requested": "cuda-required"
+      },
+      {
+        "batch": 8,
+        "mode": "cpp-fresh",
+        "phase": "sample",
+        "sample": 0,
+        "seconds": 0.008011999998416286,
+        "validation_seconds": 7.550000009359792e-05,
+        "input_sha256": "2852d857cb28a2210ad6bdb2499381884a183cc6b49e2c6d4faa2545814c3aac",
+        "max_absolute_logit_difference": 5.7220458984375e-06,
+        "provider_requested": "cuda-required"
+      },
+      {
+        "batch": 8,
+        "mode": "cpp-reused",
+        "phase": "sample",
+        "sample": 0,
+        "seconds": 0.0017942999984370545,
+        "validation_seconds": 6.800000119255856e-05,
+        "input_sha256": "2852d857cb28a2210ad6bdb2499381884a183cc6b49e2c6d4faa2545814c3aac",
+        "max_absolute_logit_difference": 5.7220458984375e-06,
+        "provider_requested": "cuda-required"
+      },
+      {
+        "batch": 8,
+        "mode": "python-cpu-reused",
+        "phase": "sample",
+        "sample": 0,
+        "seconds": 0.0003313999986858107,
+        "validation_seconds": 5.62999994144775e-05,
+        "input_sha256": "2852d857cb28a2210ad6bdb2499381884a183cc6b49e2c6d4faa2545814c3aac",
+        "max_absolute_logit_difference": 1.33514404296875e-05,
+        "provider_requested": "cpu"
+      },
+      {
+        "batch": 8,
+        "mode": "python-cpu-reused",
+        "phase": "sample",
+        "sample": 1,
+        "seconds": 0.00028670000028796494,
+        "validation_seconds": 5.970000347588211e-05,
+        "input_sha256": "2852d857cb28a2210ad6bdb2499381884a183cc6b49e2c6d4faa2545814c3aac",
+        "max_absolute_logit_difference": 1.33514404296875e-05,
+        "provider_requested": "cpu"
+      },
+      {
+        "batch": 8,
+        "mode": "cpp-reused",
+        "phase": "sample",
+        "sample": 1,
+        "seconds": 0.0036593000040738843,
+        "validation_seconds": 8.909999451134354e-05,
+        "input_sha256": "2852d857cb28a2210ad6bdb2499381884a183cc6b49e2c6d4faa2545814c3aac",
+        "max_absolute_logit_difference": 5.7220458984375e-06,
+        "provider_requested": "cuda-required"
+      },
+      {
+        "batch": 8,
+        "mode": "cpp-fresh",
+        "phase": "sample",
+        "sample": 1,
+        "seconds": 0.00949409999884665,
+        "validation_seconds": 7.449999975506216e-05,
+        "input_sha256": "2852d857cb28a2210ad6bdb2499381884a183cc6b49e2c6d4faa2545814c3aac",
+        "max_absolute_logit_difference": 5.7220458984375e-06,
+        "provider_requested": "cuda-required"
+      },
+      {
+        "batch": 8,
+        "mode": "cpp-fresh",
+        "phase": "sample",
+        "sample": 2,
+        "seconds": 0.008385499997530133,
+        "validation_seconds": 7.690000347793102e-05,
+        "input_sha256": "2852d857cb28a2210ad6bdb2499381884a183cc6b49e2c6d4faa2545814c3aac",
+        "max_absolute_logit_difference": 5.7220458984375e-06,
+        "provider_requested": "cuda-required"
+      },
+      {
+        "batch": 8,
+        "mode": "cpp-reused",
+        "phase": "sample",
+        "sample": 2,
+        "seconds": 0.0024851999987731688,
+        "validation_seconds": 9.989999671233818e-05,
+        "input_sha256": "2852d857cb28a2210ad6bdb2499381884a183cc6b49e2c6d4faa2545814c3aac",
+        "max_absolute_logit_difference": 5.7220458984375e-06,
+        "provider_requested": "cuda-required"
+      },
+      {
+        "batch": 8,
+        "mode": "python-cpu-reused",
+        "phase": "sample",
+        "sample": 2,
+        "seconds": 0.0004746999984490685,
+        "validation_seconds": 6.529999518534169e-05,
+        "input_sha256": "2852d857cb28a2210ad6bdb2499381884a183cc6b49e2c6d4faa2545814c3aac",
+        "max_absolute_logit_difference": 1.33514404296875e-05,
+        "provider_requested": "cpu"
+      },
+      {
+        "batch": 8,
+        "mode": "python-cpu-reused",
+        "phase": "sample",
+        "sample": 3,
+        "seconds": 0.0002832000027410686,
+        "validation_seconds": 5.450000026030466e-05,
+        "input_sha256": "2852d857cb28a2210ad6bdb2499381884a183cc6b49e2c6d4faa2545814c3aac",
+        "max_absolute_logit_difference": 1.33514404296875e-05,
+        "provider_requested": "cpu"
+      },
+      {
+        "batch": 8,
+        "mode": "cpp-reused",
+        "phase": "sample",
+        "sample": 3,
+        "seconds": 0.0016871999978320673,
+        "validation_seconds": 9.590000263415277e-05,
+        "input_sha256": "2852d857cb28a2210ad6bdb2499381884a183cc6b49e2c6d4faa2545814c3aac",
+        "max_absolute_logit_difference": 5.7220458984375e-06,
+        "provider_requested": "cuda-required"
+      },
+      {
+        "batch": 8,
+        "mode": "cpp-fresh",
+        "phase": "sample",
+        "sample": 3,
+        "seconds": 0.007854499999666587,
+        "validation_seconds": 6.990000110818073e-05,
+        "input_sha256": "2852d857cb28a2210ad6bdb2499381884a183cc6b49e2c6d4faa2545814c3aac",
+        "max_absolute_logit_difference": 5.7220458984375e-06,
+        "provider_requested": "cuda-required"
+      },
+      {
+        "batch": 8,
+        "mode": "cpp-fresh",
+        "phase": "sample",
+        "sample": 4,
+        "seconds": 0.008391600000322796,
+        "validation_seconds": 8.110000635497272e-05,
+        "input_sha256": "2852d857cb28a2210ad6bdb2499381884a183cc6b49e2c6d4faa2545814c3aac",
+        "max_absolute_logit_difference": 5.7220458984375e-06,
+        "provider_requested": "cuda-required"
+      },
+      {
+        "batch": 8,
+        "mode": "cpp-reused",
+        "phase": "sample",
+        "sample": 4,
+        "seconds": 0.002205800003139302,
+        "validation_seconds": 7.069999992381781e-05,
+        "input_sha256": "2852d857cb28a2210ad6bdb2499381884a183cc6b49e2c6d4faa2545814c3aac",
+        "max_absolute_logit_difference": 5.7220458984375e-06,
+        "provider_requested": "cuda-required"
+      },
+      {
+        "batch": 8,
+        "mode": "python-cpu-reused",
+        "phase": "sample",
+        "sample": 4,
+        "seconds": 0.00033709999843267724,
+        "validation_seconds": 5.529999907594174e-05,
+        "input_sha256": "2852d857cb28a2210ad6bdb2499381884a183cc6b49e2c6d4faa2545814c3aac",
+        "max_absolute_logit_difference": 1.33514404296875e-05,
+        "provider_requested": "cpu"
+      },
+      {
+        "batch": 8,
+        "mode": "python-cpu-reused",
+        "phase": "sample",
+        "sample": 5,
+        "seconds": 0.00029779999749735,
+        "validation_seconds": 5.029999738326296e-05,
+        "input_sha256": "2852d857cb28a2210ad6bdb2499381884a183cc6b49e2c6d4faa2545814c3aac",
+        "max_absolute_logit_difference": 1.33514404296875e-05,
+        "provider_requested": "cpu"
+      },
+      {
+        "batch": 8,
+        "mode": "cpp-reused",
+        "phase": "sample",
+        "sample": 5,
+        "seconds": 0.0015849999981583096,
+        "validation_seconds": 6.690000009257346e-05,
+        "input_sha256": "2852d857cb28a2210ad6bdb2499381884a183cc6b49e2c6d4faa2545814c3aac",
+        "max_absolute_logit_difference": 5.7220458984375e-06,
+        "provider_requested": "cuda-required"
+      },
+      {
+        "batch": 8,
+        "mode": "cpp-fresh",
+        "phase": "sample",
+        "sample": 5,
+        "seconds": 0.008706299995537847,
+        "validation_seconds": 0.00010450000263517722,
+        "input_sha256": "2852d857cb28a2210ad6bdb2499381884a183cc6b49e2c6d4faa2545814c3aac",
+        "max_absolute_logit_difference": 5.7220458984375e-06,
+        "provider_requested": "cuda-required"
+      },
+      {
+        "batch": 8,
+        "mode": "cpp-fresh",
+        "phase": "sample",
+        "sample": 6,
+        "seconds": 0.008825500000966713,
+        "validation_seconds": 8.570000500185415e-05,
+        "input_sha256": "2852d857cb28a2210ad6bdb2499381884a183cc6b49e2c6d4faa2545814c3aac",
+        "max_absolute_logit_difference": 5.7220458984375e-06,
+        "provider_requested": "cuda-required"
+      },
+      {
+        "batch": 8,
+        "mode": "cpp-reused",
+        "phase": "sample",
+        "sample": 6,
+        "seconds": 0.0019288999974378385,
+        "validation_seconds": 6.830000347690657e-05,
+        "input_sha256": "2852d857cb28a2210ad6bdb2499381884a183cc6b49e2c6d4faa2545814c3aac",
+        "max_absolute_logit_difference": 5.7220458984375e-06,
+        "provider_requested": "cuda-required"
+      },
+      {
+        "batch": 8,
+        "mode": "python-cpu-reused",
+        "phase": "sample",
+        "sample": 6,
+        "seconds": 0.0003469000002951361,
+        "validation_seconds": 5.299999611452222e-05,
+        "input_sha256": "2852d857cb28a2210ad6bdb2499381884a183cc6b49e2c6d4faa2545814c3aac",
+        "max_absolute_logit_difference": 1.33514404296875e-05,
+        "provider_requested": "cpu"
+      },
+      {
+        "batch": 8,
+        "mode": "python-cpu-reused",
+        "phase": "sample",
+        "sample": 7,
+        "seconds": 0.00028780000138795003,
+        "validation_seconds": 4.7900000936351717e-05,
+        "input_sha256": "2852d857cb28a2210ad6bdb2499381884a183cc6b49e2c6d4faa2545814c3aac",
+        "max_absolute_logit_difference": 1.33514404296875e-05,
+        "provider_requested": "cpu"
+      },
+      {
+        "batch": 8,
+        "mode": "cpp-reused",
+        "phase": "sample",
+        "sample": 7,
+        "seconds": 0.002355200005695224,
+        "validation_seconds": 7.780000305501744e-05,
+        "input_sha256": "2852d857cb28a2210ad6bdb2499381884a183cc6b49e2c6d4faa2545814c3aac",
+        "max_absolute_logit_difference": 5.7220458984375e-06,
+        "provider_requested": "cuda-required"
+      },
+      {
+        "batch": 8,
+        "mode": "cpp-fresh",
+        "phase": "sample",
+        "sample": 7,
+        "seconds": 0.008870100005879067,
+        "validation_seconds": 7.819999882485718e-05,
+        "input_sha256": "2852d857cb28a2210ad6bdb2499381884a183cc6b49e2c6d4faa2545814c3aac",
+        "max_absolute_logit_difference": 5.7220458984375e-06,
+        "provider_requested": "cuda-required"
+      },
+      {
+        "batch": 8,
+        "mode": "cpp-fresh",
+        "phase": "sample",
+        "sample": 8,
+        "seconds": 0.008029100004932843,
+        "validation_seconds": 8.580000576330349e-05,
+        "input_sha256": "2852d857cb28a2210ad6bdb2499381884a183cc6b49e2c6d4faa2545814c3aac",
+        "max_absolute_logit_difference": 5.7220458984375e-06,
+        "provider_requested": "cuda-required"
+      },
+      {
+        "batch": 8,
+        "mode": "cpp-reused",
+        "phase": "sample",
+        "sample": 8,
+        "seconds": 0.0022110999998403713,
+        "validation_seconds": 9.349999891128391e-05,
+        "input_sha256": "2852d857cb28a2210ad6bdb2499381884a183cc6b49e2c6d4faa2545814c3aac",
+        "max_absolute_logit_difference": 5.7220458984375e-06,
+        "provider_requested": "cuda-required"
+      },
+      {
+        "batch": 8,
+        "mode": "python-cpu-reused",
+        "phase": "sample",
+        "sample": 8,
+        "seconds": 0.0005473999990499578,
+        "validation_seconds": 8.199999865610152e-05,
+        "input_sha256": "2852d857cb28a2210ad6bdb2499381884a183cc6b49e2c6d4faa2545814c3aac",
+        "max_absolute_logit_difference": 1.33514404296875e-05,
+        "provider_requested": "cpu"
+      },
+      {
+        "batch": 8,
+        "mode": "python-cpu-reused",
+        "phase": "sample",
+        "sample": 9,
+        "seconds": 0.0005001000026823021,
+        "validation_seconds": 7.74000000092201e-05,
+        "input_sha256": "2852d857cb28a2210ad6bdb2499381884a183cc6b49e2c6d4faa2545814c3aac",
+        "max_absolute_logit_difference": 1.33514404296875e-05,
+        "provider_requested": "cpu"
+      },
+      {
+        "batch": 8,
+        "mode": "cpp-reused",
+        "phase": "sample",
+        "sample": 9,
+        "seconds": 0.002239900000859052,
+        "validation_seconds": 9.689999569673091e-05,
+        "input_sha256": "2852d857cb28a2210ad6bdb2499381884a183cc6b49e2c6d4faa2545814c3aac",
+        "max_absolute_logit_difference": 5.7220458984375e-06,
+        "provider_requested": "cuda-required"
+      },
+      {
+        "batch": 8,
+        "mode": "cpp-fresh",
+        "phase": "sample",
+        "sample": 9,
+        "seconds": 0.008917899998778012,
+        "validation_seconds": 7.649999315617606e-05,
+        "input_sha256": "2852d857cb28a2210ad6bdb2499381884a183cc6b49e2c6d4faa2545814c3aac",
+        "max_absolute_logit_difference": 5.7220458984375e-06,
+        "provider_requested": "cuda-required"
+      },
+      {
+        "batch": 8,
+        "mode": "cpp-fresh",
+        "phase": "sample",
+        "sample": 10,
+        "seconds": 0.008616400002210867,
+        "validation_seconds": 7.6299998909235e-05,
+        "input_sha256": "2852d857cb28a2210ad6bdb2499381884a183cc6b49e2c6d4faa2545814c3aac",
+        "max_absolute_logit_difference": 5.7220458984375e-06,
+        "provider_requested": "cuda-required"
+      },
+      {
+        "batch": 8,
+        "mode": "cpp-reused",
+        "phase": "sample",
+        "sample": 10,
+        "seconds": 0.0036447000020416453,
+        "validation_seconds": 7.390000246232376e-05,
+        "input_sha256": "2852d857cb28a2210ad6bdb2499381884a183cc6b49e2c6d4faa2545814c3aac",
+        "max_absolute_logit_difference": 5.7220458984375e-06,
+        "provider_requested": "cuda-required"
+      },
+      {
+        "batch": 8,
+        "mode": "python-cpu-reused",
+        "phase": "sample",
+        "sample": 10,
+        "seconds": 0.00039679999463260174,
+        "validation_seconds": 5.77000027988106e-05,
+        "input_sha256": "2852d857cb28a2210ad6bdb2499381884a183cc6b49e2c6d4faa2545814c3aac",
+        "max_absolute_logit_difference": 1.33514404296875e-05,
+        "provider_requested": "cpu"
+      },
+      {
+        "batch": 8,
+        "mode": "python-cpu-reused",
+        "phase": "sample",
+        "sample": 11,
+        "seconds": 0.00029940000240458176,
+        "validation_seconds": 4.999999509891495e-05,
+        "input_sha256": "2852d857cb28a2210ad6bdb2499381884a183cc6b49e2c6d4faa2545814c3aac",
+        "max_absolute_logit_difference": 1.33514404296875e-05,
+        "provider_requested": "cpu"
+      },
+      {
+        "batch": 8,
+        "mode": "cpp-reused",
+        "phase": "sample",
+        "sample": 11,
+        "seconds": 0.0016642000045976602,
+        "validation_seconds": 6.730000313837081e-05,
+        "input_sha256": "2852d857cb28a2210ad6bdb2499381884a183cc6b49e2c6d4faa2545814c3aac",
+        "max_absolute_logit_difference": 5.7220458984375e-06,
+        "provider_requested": "cuda-required"
+      },
+      {
+        "batch": 8,
+        "mode": "cpp-fresh",
+        "phase": "sample",
+        "sample": 11,
+        "seconds": 0.008189200001652353,
+        "validation_seconds": 6.98000003467314e-05,
+        "input_sha256": "2852d857cb28a2210ad6bdb2499381884a183cc6b49e2c6d4faa2545814c3aac",
+        "max_absolute_logit_difference": 5.7220458984375e-06,
+        "provider_requested": "cuda-required"
+      },
+      {
+        "batch": 8,
+        "mode": "cpp-fresh",
+        "phase": "sample",
+        "sample": 12,
+        "seconds": 0.00942850000137696,
+        "validation_seconds": 8.210000669350848e-05,
+        "input_sha256": "2852d857cb28a2210ad6bdb2499381884a183cc6b49e2c6d4faa2545814c3aac",
+        "max_absolute_logit_difference": 5.7220458984375e-06,
+        "provider_requested": "cuda-required"
+      },
+      {
+        "batch": 8,
+        "mode": "cpp-reused",
+        "phase": "sample",
+        "sample": 12,
+        "seconds": 0.0027339000007486902,
+        "validation_seconds": 0.00010309999925084412,
+        "input_sha256": "2852d857cb28a2210ad6bdb2499381884a183cc6b49e2c6d4faa2545814c3aac",
+        "max_absolute_logit_difference": 5.7220458984375e-06,
+        "provider_requested": "cuda-required"
+      },
+      {
+        "batch": 8,
+        "mode": "python-cpu-reused",
+        "phase": "sample",
+        "sample": 12,
+        "seconds": 0.0005464999994728714,
+        "validation_seconds": 8.480000542476773e-05,
+        "input_sha256": "2852d857cb28a2210ad6bdb2499381884a183cc6b49e2c6d4faa2545814c3aac",
+        "max_absolute_logit_difference": 1.33514404296875e-05,
+        "provider_requested": "cpu"
+      },
+      {
+        "batch": 8,
+        "mode": "python-cpu-reused",
+        "phase": "sample",
+        "sample": 13,
+        "seconds": 0.0003237000055378303,
+        "validation_seconds": 5.919999966863543e-05,
+        "input_sha256": "2852d857cb28a2210ad6bdb2499381884a183cc6b49e2c6d4faa2545814c3aac",
+        "max_absolute_logit_difference": 1.33514404296875e-05,
+        "provider_requested": "cpu"
+      },
+      {
+        "batch": 8,
+        "mode": "cpp-reused",
+        "phase": "sample",
+        "sample": 13,
+        "seconds": 0.0029531000036513433,
+        "validation_seconds": 6.880000000819564e-05,
+        "input_sha256": "2852d857cb28a2210ad6bdb2499381884a183cc6b49e2c6d4faa2545814c3aac",
+        "max_absolute_logit_difference": 5.7220458984375e-06,
+        "provider_requested": "cuda-required"
+      },
+      {
+        "batch": 8,
+        "mode": "cpp-fresh",
+        "phase": "sample",
+        "sample": 13,
+        "seconds": 0.010478099997271784,
+        "validation_seconds": 9.699999645818025e-05,
+        "input_sha256": "2852d857cb28a2210ad6bdb2499381884a183cc6b49e2c6d4faa2545814c3aac",
+        "max_absolute_logit_difference": 5.7220458984375e-06,
+        "provider_requested": "cuda-required"
+      },
+      {
+        "batch": 8,
+        "mode": "cpp-fresh",
+        "phase": "sample",
+        "sample": 14,
+        "seconds": 0.00939959999959683,
+        "validation_seconds": 8.469999738736078e-05,
+        "input_sha256": "2852d857cb28a2210ad6bdb2499381884a183cc6b49e2c6d4faa2545814c3aac",
+        "max_absolute_logit_difference": 5.7220458984375e-06,
+        "provider_requested": "cuda-required"
+      },
+      {
+        "batch": 8,
+        "mode": "cpp-reused",
+        "phase": "sample",
+        "sample": 14,
+        "seconds": 0.001650799997150898,
+        "validation_seconds": 7.539999933214858e-05,
+        "input_sha256": "2852d857cb28a2210ad6bdb2499381884a183cc6b49e2c6d4faa2545814c3aac",
+        "max_absolute_logit_difference": 5.7220458984375e-06,
+        "provider_requested": "cuda-required"
+      },
+      {
+        "batch": 8,
+        "mode": "python-cpu-reused",
+        "phase": "sample",
+        "sample": 14,
+        "seconds": 0.0003728000010596588,
+        "validation_seconds": 5.94000011915341e-05,
+        "input_sha256": "2852d857cb28a2210ad6bdb2499381884a183cc6b49e2c6d4faa2545814c3aac",
+        "max_absolute_logit_difference": 1.33514404296875e-05,
+        "provider_requested": "cpu"
+      },
+      {
+        "batch": 8,
+        "mode": "python-cpu-reused",
+        "phase": "sample",
+        "sample": 15,
+        "seconds": 0.00029969999741297215,
+        "validation_seconds": 5.4700001783203334e-05,
+        "input_sha256": "2852d857cb28a2210ad6bdb2499381884a183cc6b49e2c6d4faa2545814c3aac",
+        "max_absolute_logit_difference": 1.33514404296875e-05,
+        "provider_requested": "cpu"
+      },
+      {
+        "batch": 8,
+        "mode": "cpp-reused",
+        "phase": "sample",
+        "sample": 15,
+        "seconds": 0.0027039999986300245,
+        "validation_seconds": 7.349999941652641e-05,
+        "input_sha256": "2852d857cb28a2210ad6bdb2499381884a183cc6b49e2c6d4faa2545814c3aac",
+        "max_absolute_logit_difference": 5.7220458984375e-06,
+        "provider_requested": "cuda-required"
+      },
+      {
+        "batch": 8,
+        "mode": "cpp-fresh",
+        "phase": "sample",
+        "sample": 15,
+        "seconds": 0.009914499998558313,
+        "validation_seconds": 8.140000136336312e-05,
+        "input_sha256": "2852d857cb28a2210ad6bdb2499381884a183cc6b49e2c6d4faa2545814c3aac",
+        "max_absolute_logit_difference": 5.7220458984375e-06,
+        "provider_requested": "cuda-required"
+      },
+      {
+        "batch": 8,
+        "mode": "cpp-fresh",
+        "phase": "sample",
+        "sample": 16,
+        "seconds": 0.008305499999551103,
+        "validation_seconds": 7.760000153211877e-05,
+        "input_sha256": "2852d857cb28a2210ad6bdb2499381884a183cc6b49e2c6d4faa2545814c3aac",
+        "max_absolute_logit_difference": 5.7220458984375e-06,
+        "provider_requested": "cuda-required"
+      },
+      {
+        "batch": 8,
+        "mode": "cpp-reused",
+        "phase": "sample",
+        "sample": 16,
+        "seconds": 0.0016646000003674999,
+        "validation_seconds": 6.0500002291519195e-05,
+        "input_sha256": "2852d857cb28a2210ad6bdb2499381884a183cc6b49e2c6d4faa2545814c3aac",
+        "max_absolute_logit_difference": 5.7220458984375e-06,
+        "provider_requested": "cuda-required"
+      },
+      {
+        "batch": 8,
+        "mode": "python-cpu-reused",
+        "phase": "sample",
+        "sample": 16,
+        "seconds": 0.0003375000014784746,
+        "validation_seconds": 5.129999772179872e-05,
+        "input_sha256": "2852d857cb28a2210ad6bdb2499381884a183cc6b49e2c6d4faa2545814c3aac",
+        "max_absolute_logit_difference": 1.33514404296875e-05,
+        "provider_requested": "cpu"
+      },
+      {
+        "batch": 8,
+        "mode": "python-cpu-reused",
+        "phase": "sample",
+        "sample": 17,
+        "seconds": 0.0002913999996962957,
+        "validation_seconds": 4.7599998652003706e-05,
+        "input_sha256": "2852d857cb28a2210ad6bdb2499381884a183cc6b49e2c6d4faa2545814c3aac",
+        "max_absolute_logit_difference": 1.33514404296875e-05,
+        "provider_requested": "cpu"
+      },
+      {
+        "batch": 8,
+        "mode": "cpp-reused",
+        "phase": "sample",
+        "sample": 17,
+        "seconds": 0.002315199999429751,
+        "validation_seconds": 6.690000009257346e-05,
+        "input_sha256": "2852d857cb28a2210ad6bdb2499381884a183cc6b49e2c6d4faa2545814c3aac",
+        "max_absolute_logit_difference": 5.7220458984375e-06,
+        "provider_requested": "cuda-required"
+      },
+      {
+        "batch": 8,
+        "mode": "cpp-fresh",
+        "phase": "sample",
+        "sample": 17,
+        "seconds": 0.009884499995678198,
+        "validation_seconds": 8.550000347895548e-05,
+        "input_sha256": "2852d857cb28a2210ad6bdb2499381884a183cc6b49e2c6d4faa2545814c3aac",
+        "max_absolute_logit_difference": 5.7220458984375e-06,
+        "provider_requested": "cuda-required"
+      },
+      {
+        "batch": 8,
+        "mode": "cpp-fresh",
+        "phase": "sample",
+        "sample": 18,
+        "seconds": 0.008408399997279048,
+        "validation_seconds": 8.330000127898529e-05,
+        "input_sha256": "2852d857cb28a2210ad6bdb2499381884a183cc6b49e2c6d4faa2545814c3aac",
+        "max_absolute_logit_difference": 5.7220458984375e-06,
+        "provider_requested": "cuda-required"
+      },
+      {
+        "batch": 8,
+        "mode": "cpp-reused",
+        "phase": "sample",
+        "sample": 18,
+        "seconds": 0.0015776000000187196,
+        "validation_seconds": 7.240000559249893e-05,
+        "input_sha256": "2852d857cb28a2210ad6bdb2499381884a183cc6b49e2c6d4faa2545814c3aac",
+        "max_absolute_logit_difference": 5.7220458984375e-06,
+        "provider_requested": "cuda-required"
+      },
+      {
+        "batch": 8,
+        "mode": "python-cpu-reused",
+        "phase": "sample",
+        "sample": 18,
+        "seconds": 0.0003515999997034669,
+        "validation_seconds": 5.529999907594174e-05,
+        "input_sha256": "2852d857cb28a2210ad6bdb2499381884a183cc6b49e2c6d4faa2545814c3aac",
+        "max_absolute_logit_difference": 1.33514404296875e-05,
+        "provider_requested": "cpu"
+      },
+      {
+        "batch": 8,
+        "mode": "python-cpu-reused",
+        "phase": "sample",
+        "sample": 19,
+        "seconds": 0.0003263000035076402,
+        "validation_seconds": 6.090000533731654e-05,
+        "input_sha256": "2852d857cb28a2210ad6bdb2499381884a183cc6b49e2c6d4faa2545814c3aac",
+        "max_absolute_logit_difference": 1.33514404296875e-05,
+        "provider_requested": "cpu"
+      },
+      {
+        "batch": 8,
+        "mode": "cpp-reused",
+        "phase": "sample",
+        "sample": 19,
+        "seconds": 0.0034120999989681877,
+        "validation_seconds": 6.759999814676121e-05,
+        "input_sha256": "2852d857cb28a2210ad6bdb2499381884a183cc6b49e2c6d4faa2545814c3aac",
+        "max_absolute_logit_difference": 5.7220458984375e-06,
+        "provider_requested": "cuda-required"
+      },
+      {
+        "batch": 8,
+        "mode": "cpp-fresh",
+        "phase": "sample",
+        "sample": 19,
+        "seconds": 0.010637799998221453,
+        "validation_seconds": 8.890000026440248e-05,
+        "input_sha256": "2852d857cb28a2210ad6bdb2499381884a183cc6b49e2c6d4faa2545814c3aac",
+        "max_absolute_logit_difference": 5.7220458984375e-06,
+        "provider_requested": "cuda-required"
+      },
+      {
+        "batch": 8,
+        "mode": "cpp-reused",
+        "phase": "retirement",
+        "seconds": 0.011731099999451544,
+        "input_sha256": "2852d857cb28a2210ad6bdb2499381884a183cc6b49e2c6d4faa2545814c3aac"
+      },
+      {
+        "batch": 1,
+        "mode": "cpp-reused",
+        "phase": "setup",
+        "seconds": 0.017593999997188803,
+        "input_sha256": "403459d02d71eddf08c31071e0014e3d72381627fa53041ee4265aa089f4c92b"
+      },
+      {
+        "batch": 1,
+        "mode": "cpp-fresh",
+        "phase": "first_invocation",
+        "sample": -6,
+        "seconds": 0.011711400002241135,
+        "validation_seconds": 0.00011590000212891027,
+        "input_sha256": "403459d02d71eddf08c31071e0014e3d72381627fa53041ee4265aa089f4c92b",
+        "max_absolute_logit_difference": 2.384185791015625e-06,
+        "provider_requested": "cuda-required"
+      },
+      {
+        "batch": 1,
+        "mode": "cpp-reused",
+        "phase": "first_invocation",
+        "sample": -6,
+        "seconds": 0.002201899995270651,
+        "validation_seconds": 8.340000204043463e-05,
+        "input_sha256": "403459d02d71eddf08c31071e0014e3d72381627fa53041ee4265aa089f4c92b",
+        "max_absolute_logit_difference": 2.384185791015625e-06,
+        "provider_requested": "cuda-required"
+      },
+      {
+        "batch": 1,
+        "mode": "python-cpu-reused",
+        "phase": "first_invocation",
+        "sample": -6,
+        "seconds": 0.0001325999983237125,
+        "validation_seconds": 5.650000093737617e-05,
+        "input_sha256": "403459d02d71eddf08c31071e0014e3d72381627fa53041ee4265aa089f4c92b",
+        "max_absolute_logit_difference": 2.86102294921875e-06,
+        "provider_requested": "cpu"
+      },
+      {
+        "batch": 1,
+        "mode": "python-cpu-reused",
+        "phase": "warmup",
+        "sample": -5,
+        "seconds": 5.660000169882551e-05,
+        "validation_seconds": 4.760000592796132e-05,
+        "input_sha256": "403459d02d71eddf08c31071e0014e3d72381627fa53041ee4265aa089f4c92b",
+        "max_absolute_logit_difference": 2.86102294921875e-06,
+        "provider_requested": "cpu"
+      },
+      {
+        "batch": 1,
+        "mode": "cpp-reused",
+        "phase": "warmup",
+        "sample": -5,
+        "seconds": 0.0006254999971133657,
+        "validation_seconds": 6.269999721553177e-05,
+        "input_sha256": "403459d02d71eddf08c31071e0014e3d72381627fa53041ee4265aa089f4c92b",
+        "max_absolute_logit_difference": 2.384185791015625e-06,
+        "provider_requested": "cuda-required"
+      },
+      {
+        "batch": 1,
+        "mode": "cpp-fresh",
+        "phase": "warmup",
+        "sample": -5,
+        "seconds": 0.008140400001138914,
+        "validation_seconds": 0.00011320000339765102,
+        "input_sha256": "403459d02d71eddf08c31071e0014e3d72381627fa53041ee4265aa089f4c92b",
+        "max_absolute_logit_difference": 2.384185791015625e-06,
+        "provider_requested": "cuda-required"
+      },
+      {
+        "batch": 1,
+        "mode": "cpp-fresh",
+        "phase": "warmup",
+        "sample": -4,
+        "seconds": 0.007425600000715349,
+        "validation_seconds": 8.019999950192869e-05,
+        "input_sha256": "403459d02d71eddf08c31071e0014e3d72381627fa53041ee4265aa089f4c92b",
+        "max_absolute_logit_difference": 2.384185791015625e-06,
+        "provider_requested": "cuda-required"
+      },
+      {
+        "batch": 1,
+        "mode": "cpp-reused",
+        "phase": "warmup",
+        "sample": -4,
+        "seconds": 0.00041739999869605526,
+        "validation_seconds": 8.259999594883993e-05,
+        "input_sha256": "403459d02d71eddf08c31071e0014e3d72381627fa53041ee4265aa089f4c92b",
+        "max_absolute_logit_difference": 2.384185791015625e-06,
+        "provider_requested": "cuda-required"
+      },
+      {
+        "batch": 1,
+        "mode": "python-cpu-reused",
+        "phase": "warmup",
+        "sample": -4,
+        "seconds": 0.00011509999603731558,
+        "validation_seconds": 5.77000027988106e-05,
+        "input_sha256": "403459d02d71eddf08c31071e0014e3d72381627fa53041ee4265aa089f4c92b",
+        "max_absolute_logit_difference": 2.86102294921875e-06,
+        "provider_requested": "cpu"
+      },
+      {
+        "batch": 1,
+        "mode": "python-cpu-reused",
+        "phase": "warmup",
+        "sample": -3,
+        "seconds": 7.639999967068434e-05,
+        "validation_seconds": 5.919999966863543e-05,
+        "input_sha256": "403459d02d71eddf08c31071e0014e3d72381627fa53041ee4265aa089f4c92b",
+        "max_absolute_logit_difference": 2.86102294921875e-06,
+        "provider_requested": "cpu"
+      },
+      {
+        "batch": 1,
+        "mode": "cpp-reused",
+        "phase": "warmup",
+        "sample": -3,
+        "seconds": 0.00048270000115735456,
+        "validation_seconds": 7.699999696342275e-05,
+        "input_sha256": "403459d02d71eddf08c31071e0014e3d72381627fa53041ee4265aa089f4c92b",
+        "max_absolute_logit_difference": 2.384185791015625e-06,
+        "provider_requested": "cuda-required"
+      },
+      {
+        "batch": 1,
+        "mode": "cpp-fresh",
+        "phase": "warmup",
+        "sample": -3,
+        "seconds": 0.0071929000041563995,
+        "validation_seconds": 7.320000440813601e-05,
+        "input_sha256": "403459d02d71eddf08c31071e0014e3d72381627fa53041ee4265aa089f4c92b",
+        "max_absolute_logit_difference": 2.384185791015625e-06,
+        "provider_requested": "cuda-required"
+      },
+      {
+        "batch": 1,
+        "mode": "cpp-fresh",
+        "phase": "warmup",
+        "sample": -2,
+        "seconds": 0.008309800003189594,
+        "validation_seconds": 0.00011410000297473744,
+        "input_sha256": "403459d02d71eddf08c31071e0014e3d72381627fa53041ee4265aa089f4c92b",
+        "max_absolute_logit_difference": 2.384185791015625e-06,
+        "provider_requested": "cuda-required"
+      },
+      {
+        "batch": 1,
+        "mode": "cpp-reused",
+        "phase": "warmup",
+        "sample": -2,
+        "seconds": 0.0007770000011078082,
+        "validation_seconds": 0.00010359999578213319,
+        "input_sha256": "403459d02d71eddf08c31071e0014e3d72381627fa53041ee4265aa089f4c92b",
+        "max_absolute_logit_difference": 2.384185791015625e-06,
+        "provider_requested": "cuda-required"
+      },
+      {
+        "batch": 1,
+        "mode": "python-cpu-reused",
+        "phase": "warmup",
+        "sample": -2,
+        "seconds": 0.0001573999979882501,
+        "validation_seconds": 9.549999958835542e-05,
+        "input_sha256": "403459d02d71eddf08c31071e0014e3d72381627fa53041ee4265aa089f4c92b",
+        "max_absolute_logit_difference": 2.86102294921875e-06,
+        "provider_requested": "cpu"
+      },
+      {
+        "batch": 1,
+        "mode": "python-cpu-reused",
+        "phase": "warmup",
+        "sample": -1,
+        "seconds": 9.919999865815043e-05,
+        "validation_seconds": 8.70000003487803e-05,
+        "input_sha256": "403459d02d71eddf08c31071e0014e3d72381627fa53041ee4265aa089f4c92b",
+        "max_absolute_logit_difference": 2.86102294921875e-06,
+        "provider_requested": "cpu"
+      },
+      {
+        "batch": 1,
+        "mode": "cpp-reused",
+        "phase": "warmup",
+        "sample": -1,
+        "seconds": 0.00042380000377306715,
+        "validation_seconds": 6.779999966965988e-05,
+        "input_sha256": "403459d02d71eddf08c31071e0014e3d72381627fa53041ee4265aa089f4c92b",
+        "max_absolute_logit_difference": 2.384185791015625e-06,
+        "provider_requested": "cuda-required"
+      },
+      {
+        "batch": 1,
+        "mode": "cpp-fresh",
+        "phase": "warmup",
+        "sample": -1,
+        "seconds": 0.008416099997702986,
+        "validation_seconds": 7.229999755509198e-05,
+        "input_sha256": "403459d02d71eddf08c31071e0014e3d72381627fa53041ee4265aa089f4c92b",
+        "max_absolute_logit_difference": 2.384185791015625e-06,
+        "provider_requested": "cuda-required"
+      },
+      {
+        "batch": 1,
+        "mode": "cpp-fresh",
+        "phase": "sample",
+        "sample": 0,
+        "seconds": 0.009001999998872634,
+        "validation_seconds": 0.00011180000001331791,
+        "input_sha256": "403459d02d71eddf08c31071e0014e3d72381627fa53041ee4265aa089f4c92b",
+        "max_absolute_logit_difference": 2.384185791015625e-06,
+        "provider_requested": "cuda-required"
+      },
+      {
+        "batch": 1,
+        "mode": "cpp-reused",
+        "phase": "sample",
+        "sample": 0,
+        "seconds": 0.0008087000023806468,
+        "validation_seconds": 9.750000026542693e-05,
+        "input_sha256": "403459d02d71eddf08c31071e0014e3d72381627fa53041ee4265aa089f4c92b",
+        "max_absolute_logit_difference": 2.384185791015625e-06,
+        "provider_requested": "cuda-required"
+      },
+      {
+        "batch": 1,
+        "mode": "python-cpu-reused",
+        "phase": "sample",
+        "sample": 0,
+        "seconds": 0.00013509999553207308,
+        "validation_seconds": 8.779999916441739e-05,
+        "input_sha256": "403459d02d71eddf08c31071e0014e3d72381627fa53041ee4265aa089f4c92b",
+        "max_absolute_logit_difference": 2.86102294921875e-06,
+        "provider_requested": "cpu"
+      },
+      {
+        "batch": 1,
+        "mode": "python-cpu-reused",
+        "phase": "sample",
+        "sample": 1,
+        "seconds": 9.220000356435776e-05,
+        "validation_seconds": 8.099999831756577e-05,
+        "input_sha256": "403459d02d71eddf08c31071e0014e3d72381627fa53041ee4265aa089f4c92b",
+        "max_absolute_logit_difference": 2.86102294921875e-06,
+        "provider_requested": "cpu"
+      },
+      {
+        "batch": 1,
+        "mode": "cpp-reused",
+        "phase": "sample",
+        "sample": 1,
+        "seconds": 0.0006407999971997924,
+        "validation_seconds": 8.789999992586672e-05,
+        "input_sha256": "403459d02d71eddf08c31071e0014e3d72381627fa53041ee4265aa089f4c92b",
+        "max_absolute_logit_difference": 2.384185791015625e-06,
+        "provider_requested": "cuda-required"
+      },
+      {
+        "batch": 1,
+        "mode": "cpp-fresh",
+        "phase": "sample",
+        "sample": 1,
+        "seconds": 0.007511700001487043,
+        "validation_seconds": 7.259999983943999e-05,
+        "input_sha256": "403459d02d71eddf08c31071e0014e3d72381627fa53041ee4265aa089f4c92b",
+        "max_absolute_logit_difference": 2.384185791015625e-06,
+        "provider_requested": "cuda-required"
+      },
+      {
+        "batch": 1,
+        "mode": "cpp-fresh",
+        "phase": "sample",
+        "sample": 2,
+        "seconds": 0.009661500000220258,
+        "validation_seconds": 0.00010520000068936497,
+        "input_sha256": "403459d02d71eddf08c31071e0014e3d72381627fa53041ee4265aa089f4c92b",
+        "max_absolute_logit_difference": 2.384185791015625e-06,
+        "provider_requested": "cuda-required"
+      },
+      {
+        "batch": 1,
+        "mode": "cpp-reused",
+        "phase": "sample",
+        "sample": 2,
+        "seconds": 0.00039760000072419643,
+        "validation_seconds": 7.650000043213367e-05,
+        "input_sha256": "403459d02d71eddf08c31071e0014e3d72381627fa53041ee4265aa089f4c92b",
+        "max_absolute_logit_difference": 2.384185791015625e-06,
+        "provider_requested": "cuda-required"
+      },
+      {
+        "batch": 1,
+        "mode": "python-cpu-reused",
+        "phase": "sample",
+        "sample": 2,
+        "seconds": 0.00011970000196015462,
+        "validation_seconds": 7.60000039008446e-05,
+        "input_sha256": "403459d02d71eddf08c31071e0014e3d72381627fa53041ee4265aa089f4c92b",
+        "max_absolute_logit_difference": 2.86102294921875e-06,
+        "provider_requested": "cpu"
+      },
+      {
+        "batch": 1,
+        "mode": "python-cpu-reused",
+        "phase": "sample",
+        "sample": 3,
+        "seconds": 8.83999964571558e-05,
+        "validation_seconds": 7.360000017797574e-05,
+        "input_sha256": "403459d02d71eddf08c31071e0014e3d72381627fa53041ee4265aa089f4c92b",
+        "max_absolute_logit_difference": 2.86102294921875e-06,
+        "provider_requested": "cpu"
+      },
+      {
+        "batch": 1,
+        "mode": "cpp-reused",
+        "phase": "sample",
+        "sample": 3,
+        "seconds": 0.0005206999994697981,
+        "validation_seconds": 7.560000085504726e-05,
+        "input_sha256": "403459d02d71eddf08c31071e0014e3d72381627fa53041ee4265aa089f4c92b",
+        "max_absolute_logit_difference": 2.384185791015625e-06,
+        "provider_requested": "cuda-required"
+      },
+      {
+        "batch": 1,
+        "mode": "cpp-fresh",
+        "phase": "sample",
+        "sample": 3,
+        "seconds": 0.009328000000095926,
+        "validation_seconds": 8.53000019560568e-05,
+        "input_sha256": "403459d02d71eddf08c31071e0014e3d72381627fa53041ee4265aa089f4c92b",
+        "max_absolute_logit_difference": 2.384185791015625e-06,
+        "provider_requested": "cuda-required"
+      },
+      {
+        "batch": 1,
+        "mode": "cpp-fresh",
+        "phase": "sample",
+        "sample": 4,
+        "seconds": 0.006577899999683723,
+        "validation_seconds": 7.809999806340784e-05,
+        "input_sha256": "403459d02d71eddf08c31071e0014e3d72381627fa53041ee4265aa089f4c92b",
+        "max_absolute_logit_difference": 2.384185791015625e-06,
+        "provider_requested": "cuda-required"
+      },
+      {
+        "batch": 1,
+        "mode": "cpp-reused",
+        "phase": "sample",
+        "sample": 4,
+        "seconds": 0.0004667000030167401,
+        "validation_seconds": 6.930000381544232e-05,
+        "input_sha256": "403459d02d71eddf08c31071e0014e3d72381627fa53041ee4265aa089f4c92b",
+        "max_absolute_logit_difference": 2.384185791015625e-06,
+        "provider_requested": "cuda-required"
+      },
+      {
+        "batch": 1,
+        "mode": "python-cpu-reused",
+        "phase": "sample",
+        "sample": 4,
+        "seconds": 9.750000026542693e-05,
+        "validation_seconds": 6.009999924572185e-05,
+        "input_sha256": "403459d02d71eddf08c31071e0014e3d72381627fa53041ee4265aa089f4c92b",
+        "max_absolute_logit_difference": 2.86102294921875e-06,
+        "provider_requested": "cpu"
+      },
+      {
+        "batch": 1,
+        "mode": "python-cpu-reused",
+        "phase": "sample",
+        "sample": 5,
+        "seconds": 5.6700002460274845e-05,
+        "validation_seconds": 4.799999442184344e-05,
+        "input_sha256": "403459d02d71eddf08c31071e0014e3d72381627fa53041ee4265aa089f4c92b",
+        "max_absolute_logit_difference": 2.86102294921875e-06,
+        "provider_requested": "cpu"
+      },
+      {
+        "batch": 1,
+        "mode": "cpp-reused",
+        "phase": "sample",
+        "sample": 5,
+        "seconds": 0.0003502000035950914,
+        "validation_seconds": 5.560000136028975e-05,
+        "input_sha256": "403459d02d71eddf08c31071e0014e3d72381627fa53041ee4265aa089f4c92b",
+        "max_absolute_logit_difference": 2.384185791015625e-06,
+        "provider_requested": "cuda-required"
+      },
+      {
+        "batch": 1,
+        "mode": "cpp-fresh",
+        "phase": "sample",
+        "sample": 5,
+        "seconds": 0.006811399995058309,
+        "validation_seconds": 7.809999806340784e-05,
+        "input_sha256": "403459d02d71eddf08c31071e0014e3d72381627fa53041ee4265aa089f4c92b",
+        "max_absolute_logit_difference": 2.384185791015625e-06,
+        "provider_requested": "cuda-required"
+      },
+      {
+        "batch": 1,
+        "mode": "cpp-fresh",
+        "phase": "sample",
+        "sample": 6,
+        "seconds": 0.008104900000034831,
+        "validation_seconds": 8.080000407062471e-05,
+        "input_sha256": "403459d02d71eddf08c31071e0014e3d72381627fa53041ee4265aa089f4c92b",
+        "max_absolute_logit_difference": 2.384185791015625e-06,
+        "provider_requested": "cuda-required"
+      },
+      {
+        "batch": 1,
+        "mode": "cpp-reused",
+        "phase": "sample",
+        "sample": 6,
+        "seconds": 0.0004575000057229772,
+        "validation_seconds": 6.580000626854599e-05,
+        "input_sha256": "403459d02d71eddf08c31071e0014e3d72381627fa53041ee4265aa089f4c92b",
+        "max_absolute_logit_difference": 2.384185791015625e-06,
+        "provider_requested": "cuda-required"
+      },
+      {
+        "batch": 1,
+        "mode": "python-cpu-reused",
+        "phase": "sample",
+        "sample": 6,
+        "seconds": 9.31999966269359e-05,
+        "validation_seconds": 5.149999924469739e-05,
+        "input_sha256": "403459d02d71eddf08c31071e0014e3d72381627fa53041ee4265aa089f4c92b",
+        "max_absolute_logit_difference": 2.86102294921875e-06,
+        "provider_requested": "cpu"
+      },
+      {
+        "batch": 1,
+        "mode": "python-cpu-reused",
+        "phase": "sample",
+        "sample": 7,
+        "seconds": 5.62999994144775e-05,
+        "validation_seconds": 4.6399996790569276e-05,
+        "input_sha256": "403459d02d71eddf08c31071e0014e3d72381627fa53041ee4265aa089f4c92b",
+        "max_absolute_logit_difference": 2.86102294921875e-06,
+        "provider_requested": "cpu"
+      },
+      {
+        "batch": 1,
+        "mode": "cpp-reused",
+        "phase": "sample",
+        "sample": 7,
+        "seconds": 0.00037929999962216243,
+        "validation_seconds": 6.759999814676121e-05,
+        "input_sha256": "403459d02d71eddf08c31071e0014e3d72381627fa53041ee4265aa089f4c92b",
+        "max_absolute_logit_difference": 2.384185791015625e-06,
+        "provider_requested": "cuda-required"
+      },
+      {
+        "batch": 1,
+        "mode": "cpp-fresh",
+        "phase": "sample",
+        "sample": 7,
+        "seconds": 0.0068179000008967705,
+        "validation_seconds": 7.249999907799065e-05,
+        "input_sha256": "403459d02d71eddf08c31071e0014e3d72381627fa53041ee4265aa089f4c92b",
+        "max_absolute_logit_difference": 2.384185791015625e-06,
+        "provider_requested": "cuda-required"
+      },
+      {
+        "batch": 1,
+        "mode": "cpp-fresh",
+        "phase": "sample",
+        "sample": 8,
+        "seconds": 0.007165200004237704,
+        "validation_seconds": 0.0001587999940966256,
+        "input_sha256": "403459d02d71eddf08c31071e0014e3d72381627fa53041ee4265aa089f4c92b",
+        "max_absolute_logit_difference": 2.384185791015625e-06,
+        "provider_requested": "cuda-required"
+      },
+      {
+        "batch": 1,
+        "mode": "cpp-reused",
+        "phase": "sample",
+        "sample": 8,
+        "seconds": 0.0004123999970033765,
+        "validation_seconds": 9.03999971342273e-05,
+        "input_sha256": "403459d02d71eddf08c31071e0014e3d72381627fa53041ee4265aa089f4c92b",
+        "max_absolute_logit_difference": 2.384185791015625e-06,
+        "provider_requested": "cuda-required"
+      },
+      {
+        "batch": 1,
+        "mode": "python-cpu-reused",
+        "phase": "sample",
+        "sample": 8,
+        "seconds": 0.0001475000026402995,
+        "validation_seconds": 6.679999933112413e-05,
+        "input_sha256": "403459d02d71eddf08c31071e0014e3d72381627fa53041ee4265aa089f4c92b",
+        "max_absolute_logit_difference": 2.86102294921875e-06,
+        "provider_requested": "cpu"
+      },
+      {
+        "batch": 1,
+        "mode": "python-cpu-reused",
+        "phase": "sample",
+        "sample": 9,
+        "seconds": 6.209999992279336e-05,
+        "validation_seconds": 5.7600002037361264e-05,
+        "input_sha256": "403459d02d71eddf08c31071e0014e3d72381627fa53041ee4265aa089f4c92b",
+        "max_absolute_logit_difference": 2.86102294921875e-06,
+        "provider_requested": "cpu"
+      },
+      {
+        "batch": 1,
+        "mode": "cpp-reused",
+        "phase": "sample",
+        "sample": 9,
+        "seconds": 0.00035989999742014334,
+        "validation_seconds": 5.959999543847516e-05,
+        "input_sha256": "403459d02d71eddf08c31071e0014e3d72381627fa53041ee4265aa089f4c92b",
+        "max_absolute_logit_difference": 2.384185791015625e-06,
+        "provider_requested": "cuda-required"
+      },
+      {
+        "batch": 1,
+        "mode": "cpp-fresh",
+        "phase": "sample",
+        "sample": 9,
+        "seconds": 0.006762600001820829,
+        "validation_seconds": 8.630000229459256e-05,
+        "input_sha256": "403459d02d71eddf08c31071e0014e3d72381627fa53041ee4265aa089f4c92b",
+        "max_absolute_logit_difference": 2.384185791015625e-06,
+        "provider_requested": "cuda-required"
+      },
+      {
+        "batch": 1,
+        "mode": "cpp-fresh",
+        "phase": "sample",
+        "sample": 10,
+        "seconds": 0.006679099999018945,
+        "validation_seconds": 7.200000254670158e-05,
+        "input_sha256": "403459d02d71eddf08c31071e0014e3d72381627fa53041ee4265aa089f4c92b",
+        "max_absolute_logit_difference": 2.384185791015625e-06,
+        "provider_requested": "cuda-required"
+      },
+      {
+        "batch": 1,
+        "mode": "cpp-reused",
+        "phase": "sample",
+        "sample": 10,
+        "seconds": 0.00036359999648993835,
+        "validation_seconds": 7.030000415397808e-05,
+        "input_sha256": "403459d02d71eddf08c31071e0014e3d72381627fa53041ee4265aa089f4c92b",
+        "max_absolute_logit_difference": 2.384185791015625e-06,
+        "provider_requested": "cuda-required"
+      },
+      {
+        "batch": 1,
+        "mode": "python-cpu-reused",
+        "phase": "sample",
+        "sample": 10,
+        "seconds": 9.839999984251335e-05,
+        "validation_seconds": 6.189999839989468e-05,
+        "input_sha256": "403459d02d71eddf08c31071e0014e3d72381627fa53041ee4265aa089f4c92b",
+        "max_absolute_logit_difference": 2.86102294921875e-06,
+        "provider_requested": "cpu"
+      },
+      {
+        "batch": 1,
+        "mode": "python-cpu-reused",
+        "phase": "sample",
+        "sample": 11,
+        "seconds": 7.380000170087442e-05,
+        "validation_seconds": 8.549999620299786e-05,
+        "input_sha256": "403459d02d71eddf08c31071e0014e3d72381627fa53041ee4265aa089f4c92b",
+        "max_absolute_logit_difference": 2.86102294921875e-06,
+        "provider_requested": "cpu"
+      },
+      {
+        "batch": 1,
+        "mode": "cpp-reused",
+        "phase": "sample",
+        "sample": 11,
+        "seconds": 0.0005709000033675693,
+        "validation_seconds": 7.059999916236848e-05,
+        "input_sha256": "403459d02d71eddf08c31071e0014e3d72381627fa53041ee4265aa089f4c92b",
+        "max_absolute_logit_difference": 2.384185791015625e-06,
+        "provider_requested": "cuda-required"
+      },
+      {
+        "batch": 1,
+        "mode": "cpp-fresh",
+        "phase": "sample",
+        "sample": 11,
+        "seconds": 0.007280799996806309,
+        "validation_seconds": 7.840000034775585e-05,
+        "input_sha256": "403459d02d71eddf08c31071e0014e3d72381627fa53041ee4265aa089f4c92b",
+        "max_absolute_logit_difference": 2.384185791015625e-06,
+        "provider_requested": "cuda-required"
+      },
+      {
+        "batch": 1,
+        "mode": "cpp-fresh",
+        "phase": "sample",
+        "sample": 12,
+        "seconds": 0.006942100000742357,
+        "validation_seconds": 7.869999535614625e-05,
+        "input_sha256": "403459d02d71eddf08c31071e0014e3d72381627fa53041ee4265aa089f4c92b",
+        "max_absolute_logit_difference": 2.384185791015625e-06,
+        "provider_requested": "cuda-required"
+      },
+      {
+        "batch": 1,
+        "mode": "cpp-reused",
+        "phase": "sample",
+        "sample": 12,
+        "seconds": 0.0003709999946295284,
+        "validation_seconds": 7.020000339252874e-05,
+        "input_sha256": "403459d02d71eddf08c31071e0014e3d72381627fa53041ee4265aa089f4c92b",
+        "max_absolute_logit_difference": 2.384185791015625e-06,
+        "provider_requested": "cuda-required"
+      },
+      {
+        "batch": 1,
+        "mode": "python-cpu-reused",
+        "phase": "sample",
+        "sample": 12,
+        "seconds": 9.919999865815043e-05,
+        "validation_seconds": 5.300000339047983e-05,
+        "input_sha256": "403459d02d71eddf08c31071e0014e3d72381627fa53041ee4265aa089f4c92b",
+        "max_absolute_logit_difference": 2.86102294921875e-06,
+        "provider_requested": "cpu"
+      },
+      {
+        "batch": 1,
+        "mode": "python-cpu-reused",
+        "phase": "sample",
+        "sample": 13,
+        "seconds": 5.579999560723081e-05,
+        "validation_seconds": 4.669999907491729e-05,
+        "input_sha256": "403459d02d71eddf08c31071e0014e3d72381627fa53041ee4265aa089f4c92b",
+        "max_absolute_logit_difference": 2.86102294921875e-06,
+        "provider_requested": "cpu"
+      },
+      {
+        "batch": 1,
+        "mode": "cpp-reused",
+        "phase": "sample",
+        "sample": 13,
+        "seconds": 0.00038520000089192763,
+        "validation_seconds": 5.909999890718609e-05,
+        "input_sha256": "403459d02d71eddf08c31071e0014e3d72381627fa53041ee4265aa089f4c92b",
+        "max_absolute_logit_difference": 2.384185791015625e-06,
+        "provider_requested": "cuda-required"
+      },
+      {
+        "batch": 1,
+        "mode": "cpp-fresh",
+        "phase": "sample",
+        "sample": 13,
+        "seconds": 0.007071899999573361,
+        "validation_seconds": 7.159999950090423e-05,
+        "input_sha256": "403459d02d71eddf08c31071e0014e3d72381627fa53041ee4265aa089f4c92b",
+        "max_absolute_logit_difference": 2.384185791015625e-06,
+        "provider_requested": "cuda-required"
+      },
+      {
+        "batch": 1,
+        "mode": "cpp-fresh",
+        "phase": "sample",
+        "sample": 14,
+        "seconds": 0.006727100000716746,
+        "validation_seconds": 7.190000178525224e-05,
+        "input_sha256": "403459d02d71eddf08c31071e0014e3d72381627fa53041ee4265aa089f4c92b",
+        "max_absolute_logit_difference": 2.384185791015625e-06,
+        "provider_requested": "cuda-required"
+      },
+      {
+        "batch": 1,
+        "mode": "cpp-reused",
+        "phase": "sample",
+        "sample": 14,
+        "seconds": 0.0003476999991107732,
+        "validation_seconds": 5.77000027988106e-05,
+        "input_sha256": "403459d02d71eddf08c31071e0014e3d72381627fa53041ee4265aa089f4c92b",
+        "max_absolute_logit_difference": 2.384185791015625e-06,
+        "provider_requested": "cuda-required"
+      },
+      {
+        "batch": 1,
+        "mode": "python-cpu-reused",
+        "phase": "sample",
+        "sample": 14,
+        "seconds": 8.390000584768131e-05,
+        "validation_seconds": 4.890000127488747e-05,
+        "input_sha256": "403459d02d71eddf08c31071e0014e3d72381627fa53041ee4265aa089f4c92b",
+        "max_absolute_logit_difference": 2.86102294921875e-06,
+        "provider_requested": "cpu"
+      },
+      {
+        "batch": 1,
+        "mode": "python-cpu-reused",
+        "phase": "sample",
+        "sample": 15,
+        "seconds": 5.5000004067551345e-05,
+        "validation_seconds": 4.419999459059909e-05,
+        "input_sha256": "403459d02d71eddf08c31071e0014e3d72381627fa53041ee4265aa089f4c92b",
+        "max_absolute_logit_difference": 2.86102294921875e-06,
+        "provider_requested": "cpu"
+      },
+      {
+        "batch": 1,
+        "mode": "cpp-reused",
+        "phase": "sample",
+        "sample": 15,
+        "seconds": 0.000567400005820673,
+        "validation_seconds": 6.699999357806519e-05,
+        "input_sha256": "403459d02d71eddf08c31071e0014e3d72381627fa53041ee4265aa089f4c92b",
+        "max_absolute_logit_difference": 2.384185791015625e-06,
+        "provider_requested": "cuda-required"
+      },
+      {
+        "batch": 1,
+        "mode": "cpp-fresh",
+        "phase": "sample",
+        "sample": 15,
+        "seconds": 0.006527099998493213,
+        "validation_seconds": 7.000000186963007e-05,
+        "input_sha256": "403459d02d71eddf08c31071e0014e3d72381627fa53041ee4265aa089f4c92b",
+        "max_absolute_logit_difference": 2.384185791015625e-06,
+        "provider_requested": "cuda-required"
+      },
+      {
+        "batch": 1,
+        "mode": "cpp-fresh",
+        "phase": "sample",
+        "sample": 16,
+        "seconds": 0.006807099998695776,
+        "validation_seconds": 7.990000449353829e-05,
+        "input_sha256": "403459d02d71eddf08c31071e0014e3d72381627fa53041ee4265aa089f4c92b",
+        "max_absolute_logit_difference": 2.384185791015625e-06,
+        "provider_requested": "cuda-required"
+      },
+      {
+        "batch": 1,
+        "mode": "cpp-reused",
+        "phase": "sample",
+        "sample": 16,
+        "seconds": 0.0006549000027007423,
+        "validation_seconds": 6.84000042383559e-05,
+        "input_sha256": "403459d02d71eddf08c31071e0014e3d72381627fa53041ee4265aa089f4c92b",
+        "max_absolute_logit_difference": 2.384185791015625e-06,
+        "provider_requested": "cuda-required"
+      },
+      {
+        "batch": 1,
+        "mode": "python-cpu-reused",
+        "phase": "sample",
+        "sample": 16,
+        "seconds": 8.89999937498942e-05,
+        "validation_seconds": 5.5199998314492404e-05,
+        "input_sha256": "403459d02d71eddf08c31071e0014e3d72381627fa53041ee4265aa089f4c92b",
+        "max_absolute_logit_difference": 2.86102294921875e-06,
+        "provider_requested": "cpu"
+      },
+      {
+        "batch": 1,
+        "mode": "python-cpu-reused",
+        "phase": "sample",
+        "sample": 17,
+        "seconds": 5.650000093737617e-05,
+        "validation_seconds": 4.7599998652003706e-05,
+        "input_sha256": "403459d02d71eddf08c31071e0014e3d72381627fa53041ee4265aa089f4c92b",
+        "max_absolute_logit_difference": 2.86102294921875e-06,
+        "provider_requested": "cpu"
+      },
+      {
+        "batch": 1,
+        "mode": "cpp-reused",
+        "phase": "sample",
+        "sample": 17,
+        "seconds": 0.00037429999792948365,
+        "validation_seconds": 6.720000237692147e-05,
+        "input_sha256": "403459d02d71eddf08c31071e0014e3d72381627fa53041ee4265aa089f4c92b",
+        "max_absolute_logit_difference": 2.384185791015625e-06,
+        "provider_requested": "cuda-required"
+      },
+      {
+        "batch": 1,
+        "mode": "cpp-fresh",
+        "phase": "sample",
+        "sample": 17,
+        "seconds": 0.007145900002797134,
+        "validation_seconds": 0.0001047000041580759,
+        "input_sha256": "403459d02d71eddf08c31071e0014e3d72381627fa53041ee4265aa089f4c92b",
+        "max_absolute_logit_difference": 2.384185791015625e-06,
+        "provider_requested": "cuda-required"
+      },
+      {
+        "batch": 1,
+        "mode": "cpp-fresh",
+        "phase": "sample",
+        "sample": 18,
+        "seconds": 0.006422800004656892,
+        "validation_seconds": 8.960000559454784e-05,
+        "input_sha256": "403459d02d71eddf08c31071e0014e3d72381627fa53041ee4265aa089f4c92b",
+        "max_absolute_logit_difference": 2.384185791015625e-06,
+        "provider_requested": "cuda-required"
+      },
+      {
+        "batch": 1,
+        "mode": "cpp-reused",
+        "phase": "sample",
+        "sample": 18,
+        "seconds": 0.0003772000054595992,
+        "validation_seconds": 7.349999941652641e-05,
+        "input_sha256": "403459d02d71eddf08c31071e0014e3d72381627fa53041ee4265aa089f4c92b",
+        "max_absolute_logit_difference": 2.384185791015625e-06,
+        "provider_requested": "cuda-required"
+      },
+      {
+        "batch": 1,
+        "mode": "python-cpu-reused",
+        "phase": "sample",
+        "sample": 18,
+        "seconds": 0.00010620000102790073,
+        "validation_seconds": 6.040000153006986e-05,
+        "input_sha256": "403459d02d71eddf08c31071e0014e3d72381627fa53041ee4265aa089f4c92b",
+        "max_absolute_logit_difference": 2.86102294921875e-06,
+        "provider_requested": "cpu"
+      },
+      {
+        "batch": 1,
+        "mode": "python-cpu-reused",
+        "phase": "sample",
+        "sample": 19,
+        "seconds": 6.500000017695129e-05,
+        "validation_seconds": 5.5900003644637764e-05,
+        "input_sha256": "403459d02d71eddf08c31071e0014e3d72381627fa53041ee4265aa089f4c92b",
+        "max_absolute_logit_difference": 2.86102294921875e-06,
+        "provider_requested": "cpu"
+      },
+      {
+        "batch": 1,
+        "mode": "cpp-reused",
+        "phase": "sample",
+        "sample": 19,
+        "seconds": 0.00037259999953676015,
+        "validation_seconds": 7.639999967068434e-05,
+        "input_sha256": "403459d02d71eddf08c31071e0014e3d72381627fa53041ee4265aa089f4c92b",
+        "max_absolute_logit_difference": 2.384185791015625e-06,
+        "provider_requested": "cuda-required"
+      },
+      {
+        "batch": 1,
+        "mode": "cpp-fresh",
+        "phase": "sample",
+        "sample": 19,
+        "seconds": 0.007429400000546593,
+        "validation_seconds": 0.00010689999908208847,
+        "input_sha256": "403459d02d71eddf08c31071e0014e3d72381627fa53041ee4265aa089f4c92b",
+        "max_absolute_logit_difference": 2.384185791015625e-06,
+        "provider_requested": "cuda-required"
+      },
+      {
+        "batch": 1,
+        "mode": "cpp-reused",
+        "phase": "retirement",
+        "seconds": 0.01042299999971874,
+        "input_sha256": "403459d02d71eddf08c31071e0014e3d72381627fa53041ee4265aa089f4c92b"
+      },
+      {
+        "batch": 2,
+        "mode": "cpp-reused",
+        "phase": "setup",
+        "seconds": 0.01821850000123959,
+        "input_sha256": "14a1b159ada587676ba5ea696730733e064141012799383595ab76f059eaf0d8"
+      },
+      {
+        "batch": 2,
+        "mode": "cpp-fresh",
+        "phase": "first_invocation",
+        "sample": -6,
+        "seconds": 0.011987300000328105,
+        "validation_seconds": 0.00015110000094864517,
+        "input_sha256": "14a1b159ada587676ba5ea696730733e064141012799383595ab76f059eaf0d8",
+        "max_absolute_logit_difference": 2.384185791015625e-06,
+        "provider_requested": "cuda-required"
+      },
+      {
+        "batch": 2,
+        "mode": "cpp-reused",
+        "phase": "first_invocation",
+        "sample": -6,
+        "seconds": 0.0038175000008777715,
+        "validation_seconds": 0.00014400000509340316,
+        "input_sha256": "14a1b159ada587676ba5ea696730733e064141012799383595ab76f059eaf0d8",
+        "max_absolute_logit_difference": 2.384185791015625e-06,
+        "provider_requested": "cuda-required"
+      },
+      {
+        "batch": 2,
+        "mode": "python-cpu-reused",
+        "phase": "first_invocation",
+        "sample": -6,
+        "seconds": 0.00019869999960064888,
+        "validation_seconds": 6.369999755406752e-05,
+        "input_sha256": "14a1b159ada587676ba5ea696730733e064141012799383595ab76f059eaf0d8",
+        "max_absolute_logit_difference": 2.86102294921875e-06,
+        "provider_requested": "cpu"
+      },
+      {
+        "batch": 2,
+        "mode": "python-cpu-reused",
+        "phase": "warmup",
+        "sample": -5,
+        "seconds": 9.119999594986439e-05,
+        "validation_seconds": 5.18000015290454e-05,
+        "input_sha256": "14a1b159ada587676ba5ea696730733e064141012799383595ab76f059eaf0d8",
+        "max_absolute_logit_difference": 2.86102294921875e-06,
+        "provider_requested": "cpu"
+      },
+      {
+        "batch": 2,
+        "mode": "cpp-reused",
+        "phase": "warmup",
+        "sample": -5,
+        "seconds": 0.0007407999946735799,
+        "validation_seconds": 6.299999949987978e-05,
+        "input_sha256": "14a1b159ada587676ba5ea696730733e064141012799383595ab76f059eaf0d8",
+        "max_absolute_logit_difference": 2.384185791015625e-06,
+        "provider_requested": "cuda-required"
+      },
+      {
+        "batch": 2,
+        "mode": "cpp-fresh",
+        "phase": "warmup",
+        "sample": -5,
+        "seconds": 0.008909000003768597,
+        "validation_seconds": 8.359999628737569e-05,
+        "input_sha256": "14a1b159ada587676ba5ea696730733e064141012799383595ab76f059eaf0d8",
+        "max_absolute_logit_difference": 2.384185791015625e-06,
+        "provider_requested": "cuda-required"
+      },
+      {
+        "batch": 2,
+        "mode": "cpp-fresh",
+        "phase": "warmup",
+        "sample": -4,
+        "seconds": 0.008010500001546461,
+        "validation_seconds": 0.00012399999832268804,
+        "input_sha256": "14a1b159ada587676ba5ea696730733e064141012799383595ab76f059eaf0d8",
+        "max_absolute_logit_difference": 2.384185791015625e-06,
+        "provider_requested": "cuda-required"
+      },
+      {
+        "batch": 2,
+        "mode": "cpp-reused",
+        "phase": "warmup",
+        "sample": -4,
+        "seconds": 0.0010792999964905903,
+        "validation_seconds": 8.189999789465219e-05,
+        "input_sha256": "14a1b159ada587676ba5ea696730733e064141012799383595ab76f059eaf0d8",
+        "max_absolute_logit_difference": 2.384185791015625e-06,
+        "provider_requested": "cuda-required"
+      },
+      {
+        "batch": 2,
+        "mode": "python-cpu-reused",
+        "phase": "warmup",
+        "sample": -4,
+        "seconds": 0.00017159999697469175,
+        "validation_seconds": 5.690000398317352e-05,
+        "input_sha256": "14a1b159ada587676ba5ea696730733e064141012799383595ab76f059eaf0d8",
+        "max_absolute_logit_difference": 2.86102294921875e-06,
+        "provider_requested": "cpu"
+      },
+      {
+        "batch": 2,
+        "mode": "python-cpu-reused",
+        "phase": "warmup",
+        "sample": -3,
+        "seconds": 9.809999755816534e-05,
+        "validation_seconds": 4.8000001697801054e-05,
+        "input_sha256": "14a1b159ada587676ba5ea696730733e064141012799383595ab76f059eaf0d8",
+        "max_absolute_logit_difference": 2.86102294921875e-06,
+        "provider_requested": "cpu"
+      },
+      {
+        "batch": 2,
+        "mode": "cpp-reused",
+        "phase": "warmup",
+        "sample": -3,
+        "seconds": 0.0005975999956717715,
+        "validation_seconds": 5.710000550607219e-05,
+        "input_sha256": "14a1b159ada587676ba5ea696730733e064141012799383595ab76f059eaf0d8",
+        "max_absolute_logit_difference": 2.384185791015625e-06,
+        "provider_requested": "cuda-required"
+      },
+      {
+        "batch": 2,
+        "mode": "cpp-fresh",
+        "phase": "warmup",
+        "sample": -3,
+        "seconds": 0.008400500002608169,
+        "validation_seconds": 0.00010200000542681664,
+        "input_sha256": "14a1b159ada587676ba5ea696730733e064141012799383595ab76f059eaf0d8",
+        "max_absolute_logit_difference": 2.384185791015625e-06,
+        "provider_requested": "cuda-required"
+      },
+      {
+        "batch": 2,
+        "mode": "cpp-fresh",
+        "phase": "warmup",
+        "sample": -2,
+        "seconds": 0.008856599997670855,
+        "validation_seconds": 9.229999704984948e-05,
+        "input_sha256": "14a1b159ada587676ba5ea696730733e064141012799383595ab76f059eaf0d8",
+        "max_absolute_logit_difference": 2.384185791015625e-06,
+        "provider_requested": "cuda-required"
+      },
+      {
+        "batch": 2,
+        "mode": "cpp-reused",
+        "phase": "warmup",
+        "sample": -2,
+        "seconds": 0.0010914000013144687,
+        "validation_seconds": 7.94000006862916e-05,
+        "input_sha256": "14a1b159ada587676ba5ea696730733e064141012799383595ab76f059eaf0d8",
+        "max_absolute_logit_difference": 2.384185791015625e-06,
+        "provider_requested": "cuda-required"
+      },
+      {
+        "batch": 2,
+        "mode": "python-cpu-reused",
+        "phase": "warmup",
+        "sample": -2,
+        "seconds": 0.00015460000577149913,
+        "validation_seconds": 5.989999772282317e-05,
+        "input_sha256": "14a1b159ada587676ba5ea696730733e064141012799383595ab76f059eaf0d8",
+        "max_absolute_logit_difference": 2.86102294921875e-06,
+        "provider_requested": "cpu"
+      },
+      {
+        "batch": 2,
+        "mode": "python-cpu-reused",
+        "phase": "warmup",
+        "sample": -1,
+        "seconds": 9.330000466434285e-05,
+        "validation_seconds": 4.810000245925039e-05,
+        "input_sha256": "14a1b159ada587676ba5ea696730733e064141012799383595ab76f059eaf0d8",
+        "max_absolute_logit_difference": 2.86102294921875e-06,
+        "provider_requested": "cpu"
+      },
+      {
+        "batch": 2,
+        "mode": "cpp-reused",
+        "phase": "warmup",
+        "sample": -1,
+        "seconds": 0.0005409000004874542,
+        "validation_seconds": 6.090000533731654e-05,
+        "input_sha256": "14a1b159ada587676ba5ea696730733e064141012799383595ab76f059eaf0d8",
+        "max_absolute_logit_difference": 2.384185791015625e-06,
+        "provider_requested": "cuda-required"
+      },
+      {
+        "batch": 2,
+        "mode": "cpp-fresh",
+        "phase": "warmup",
+        "sample": -1,
+        "seconds": 0.0074789999998756684,
+        "validation_seconds": 7.380000170087442e-05,
+        "input_sha256": "14a1b159ada587676ba5ea696730733e064141012799383595ab76f059eaf0d8",
+        "max_absolute_logit_difference": 2.384185791015625e-06,
+        "provider_requested": "cuda-required"
+      },
+      {
+        "batch": 2,
+        "mode": "cpp-fresh",
+        "phase": "sample",
+        "sample": 0,
+        "seconds": 0.007306300001800992,
+        "validation_seconds": 8.199999865610152e-05,
+        "input_sha256": "14a1b159ada587676ba5ea696730733e064141012799383595ab76f059eaf0d8",
+        "max_absolute_logit_difference": 2.384185791015625e-06,
+        "provider_requested": "cuda-required"
+      },
+      {
+        "batch": 2,
+        "mode": "cpp-reused",
+        "phase": "sample",
+        "sample": 0,
+        "seconds": 0.0009186000024783425,
+        "validation_seconds": 7.01000026310794e-05,
+        "input_sha256": "14a1b159ada587676ba5ea696730733e064141012799383595ab76f059eaf0d8",
+        "max_absolute_logit_difference": 2.384185791015625e-06,
+        "provider_requested": "cuda-required"
+      },
+      {
+        "batch": 2,
+        "mode": "python-cpu-reused",
+        "phase": "sample",
+        "sample": 0,
+        "seconds": 0.00013040000339969993,
+        "validation_seconds": 5.289999535307288e-05,
+        "input_sha256": "14a1b159ada587676ba5ea696730733e064141012799383595ab76f059eaf0d8",
+        "max_absolute_logit_difference": 2.86102294921875e-06,
+        "provider_requested": "cpu"
+      },
+      {
+        "batch": 2,
+        "mode": "python-cpu-reused",
+        "phase": "sample",
+        "sample": 1,
+        "seconds": 9.280000085709617e-05,
+        "validation_seconds": 4.7900000936351717e-05,
+        "input_sha256": "14a1b159ada587676ba5ea696730733e064141012799383595ab76f059eaf0d8",
+        "max_absolute_logit_difference": 2.86102294921875e-06,
+        "provider_requested": "cpu"
+      },
+      {
+        "batch": 2,
+        "mode": "cpp-reused",
+        "phase": "sample",
+        "sample": 1,
+        "seconds": 0.0009037999989232048,
+        "validation_seconds": 7.009999535512179e-05,
+        "input_sha256": "14a1b159ada587676ba5ea696730733e064141012799383595ab76f059eaf0d8",
+        "max_absolute_logit_difference": 2.384185791015625e-06,
+        "provider_requested": "cuda-required"
+      },
+      {
+        "batch": 2,
+        "mode": "cpp-fresh",
+        "phase": "sample",
+        "sample": 1,
+        "seconds": 0.00788520000060089,
+        "validation_seconds": 7.94000006862916e-05,
+        "input_sha256": "14a1b159ada587676ba5ea696730733e064141012799383595ab76f059eaf0d8",
+        "max_absolute_logit_difference": 2.384185791015625e-06,
+        "provider_requested": "cuda-required"
+      },
+      {
+        "batch": 2,
+        "mode": "cpp-fresh",
+        "phase": "sample",
+        "sample": 2,
+        "seconds": 0.007801300002029166,
+        "validation_seconds": 7.819999882485718e-05,
+        "input_sha256": "14a1b159ada587676ba5ea696730733e064141012799383595ab76f059eaf0d8",
+        "max_absolute_logit_difference": 2.384185791015625e-06,
+        "provider_requested": "cuda-required"
+      },
+      {
+        "batch": 2,
+        "mode": "cpp-reused",
+        "phase": "sample",
+        "sample": 2,
+        "seconds": 0.0005866999999852851,
+        "validation_seconds": 7.059999916236848e-05,
+        "input_sha256": "14a1b159ada587676ba5ea696730733e064141012799383595ab76f059eaf0d8",
+        "max_absolute_logit_difference": 2.384185791015625e-06,
+        "provider_requested": "cuda-required"
+      },
+      {
+        "batch": 2,
+        "mode": "python-cpu-reused",
+        "phase": "sample",
+        "sample": 2,
+        "seconds": 0.00013469999976223335,
+        "validation_seconds": 5.37999949301593e-05,
+        "input_sha256": "14a1b159ada587676ba5ea696730733e064141012799383595ab76f059eaf0d8",
+        "max_absolute_logit_difference": 2.86102294921875e-06,
+        "provider_requested": "cpu"
+      },
+      {
+        "batch": 2,
+        "mode": "python-cpu-reused",
+        "phase": "sample",
+        "sample": 3,
+        "seconds": 8.890000026440248e-05,
+        "validation_seconds": 4.7599998652003706e-05,
+        "input_sha256": "14a1b159ada587676ba5ea696730733e064141012799383595ab76f059eaf0d8",
+        "max_absolute_logit_difference": 2.86102294921875e-06,
+        "provider_requested": "cpu"
+      },
+      {
+        "batch": 2,
+        "mode": "cpp-reused",
+        "phase": "sample",
+        "sample": 3,
+        "seconds": 0.00048270000115735456,
+        "validation_seconds": 8.140000136336312e-05,
+        "input_sha256": "14a1b159ada587676ba5ea696730733e064141012799383595ab76f059eaf0d8",
+        "max_absolute_logit_difference": 2.384185791015625e-06,
+        "provider_requested": "cuda-required"
+      },
+      {
+        "batch": 2,
+        "mode": "cpp-fresh",
+        "phase": "sample",
+        "sample": 3,
+        "seconds": 0.007352199994784314,
+        "validation_seconds": 8.510000043315813e-05,
+        "input_sha256": "14a1b159ada587676ba5ea696730733e064141012799383595ab76f059eaf0d8",
+        "max_absolute_logit_difference": 2.384185791015625e-06,
+        "provider_requested": "cuda-required"
+      },
+      {
+        "batch": 2,
+        "mode": "cpp-fresh",
+        "phase": "sample",
+        "sample": 4,
+        "seconds": 0.007407699995383155,
+        "validation_seconds": 7.249999907799065e-05,
+        "input_sha256": "14a1b159ada587676ba5ea696730733e064141012799383595ab76f059eaf0d8",
+        "max_absolute_logit_difference": 2.384185791015625e-06,
+        "provider_requested": "cuda-required"
+      },
+      {
+        "batch": 2,
+        "mode": "cpp-reused",
+        "phase": "sample",
+        "sample": 4,
+        "seconds": 0.0010565999982645735,
+        "validation_seconds": 6.649999704677612e-05,
+        "input_sha256": "14a1b159ada587676ba5ea696730733e064141012799383595ab76f059eaf0d8",
+        "max_absolute_logit_difference": 2.384185791015625e-06,
+        "provider_requested": "cuda-required"
+      },
+      {
+        "batch": 2,
+        "mode": "python-cpu-reused",
+        "phase": "sample",
+        "sample": 4,
+        "seconds": 0.00013249999756226316,
+        "validation_seconds": 5.5000004067551345e-05,
+        "input_sha256": "14a1b159ada587676ba5ea696730733e064141012799383595ab76f059eaf0d8",
+        "max_absolute_logit_difference": 2.86102294921875e-06,
+        "provider_requested": "cpu"
+      },
+      {
+        "batch": 2,
+        "mode": "python-cpu-reused",
+        "phase": "sample",
+        "sample": 5,
+        "seconds": 9.159999899566174e-05,
+        "validation_seconds": 5.01000031363219e-05,
+        "input_sha256": "14a1b159ada587676ba5ea696730733e064141012799383595ab76f059eaf0d8",
+        "max_absolute_logit_difference": 2.86102294921875e-06,
+        "provider_requested": "cpu"
+      },
+      {
+        "batch": 2,
+        "mode": "cpp-reused",
+        "phase": "sample",
+        "sample": 5,
+        "seconds": 0.0010660999978426844,
+        "validation_seconds": 9.289999434258789e-05,
+        "input_sha256": "14a1b159ada587676ba5ea696730733e064141012799383595ab76f059eaf0d8",
+        "max_absolute_logit_difference": 2.384185791015625e-06,
+        "provider_requested": "cuda-required"
+      },
+      {
+        "batch": 2,
+        "mode": "cpp-fresh",
+        "phase": "sample",
+        "sample": 5,
+        "seconds": 0.008071700001892168,
+        "validation_seconds": 0.00010990000009769574,
+        "input_sha256": "14a1b159ada587676ba5ea696730733e064141012799383595ab76f059eaf0d8",
+        "max_absolute_logit_difference": 2.384185791015625e-06,
+        "provider_requested": "cuda-required"
+      },
+      {
+        "batch": 2,
+        "mode": "cpp-fresh",
+        "phase": "sample",
+        "sample": 6,
+        "seconds": 0.007923499993921723,
+        "validation_seconds": 7.490000280085951e-05,
+        "input_sha256": "14a1b159ada587676ba5ea696730733e064141012799383595ab76f059eaf0d8",
+        "max_absolute_logit_difference": 2.384185791015625e-06,
+        "provider_requested": "cuda-required"
+      },
+      {
+        "batch": 2,
+        "mode": "cpp-reused",
+        "phase": "sample",
+        "sample": 6,
+        "seconds": 0.0007887000028858893,
+        "validation_seconds": 7.080000068526715e-05,
+        "input_sha256": "14a1b159ada587676ba5ea696730733e064141012799383595ab76f059eaf0d8",
+        "max_absolute_logit_difference": 2.384185791015625e-06,
+        "provider_requested": "cuda-required"
+      },
+      {
+        "batch": 2,
+        "mode": "python-cpu-reused",
+        "phase": "sample",
+        "sample": 6,
+        "seconds": 0.0001325999983237125,
+        "validation_seconds": 5.409999721450731e-05,
+        "input_sha256": "14a1b159ada587676ba5ea696730733e064141012799383595ab76f059eaf0d8",
+        "max_absolute_logit_difference": 2.86102294921875e-06,
+        "provider_requested": "cpu"
+      },
+      {
+        "batch": 2,
+        "mode": "python-cpu-reused",
+        "phase": "sample",
+        "sample": 7,
+        "seconds": 0.00010990000009769574,
+        "validation_seconds": 5.3800002206116915e-05,
+        "input_sha256": "14a1b159ada587676ba5ea696730733e064141012799383595ab76f059eaf0d8",
+        "max_absolute_logit_difference": 2.86102294921875e-06,
+        "provider_requested": "cpu"
+      },
+      {
+        "batch": 2,
+        "mode": "cpp-reused",
+        "phase": "sample",
+        "sample": 7,
+        "seconds": 0.0006327000010060146,
+        "validation_seconds": 6.529999518534169e-05,
+        "input_sha256": "14a1b159ada587676ba5ea696730733e064141012799383595ab76f059eaf0d8",
+        "max_absolute_logit_difference": 2.384185791015625e-06,
+        "provider_requested": "cuda-required"
+      },
+      {
+        "batch": 2,
+        "mode": "cpp-fresh",
+        "phase": "sample",
+        "sample": 7,
+        "seconds": 0.007560500002000481,
+        "validation_seconds": 7.219999679364264e-05,
+        "input_sha256": "14a1b159ada587676ba5ea696730733e064141012799383595ab76f059eaf0d8",
+        "max_absolute_logit_difference": 2.384185791015625e-06,
+        "provider_requested": "cuda-required"
+      },
+      {
+        "batch": 2,
+        "mode": "cpp-fresh",
+        "phase": "sample",
+        "sample": 8,
+        "seconds": 0.008223799995903391,
+        "validation_seconds": 7.370000093942508e-05,
+        "input_sha256": "14a1b159ada587676ba5ea696730733e064141012799383595ab76f059eaf0d8",
+        "max_absolute_logit_difference": 2.384185791015625e-06,
+        "provider_requested": "cuda-required"
+      },
+      {
+        "batch": 2,
+        "mode": "cpp-reused",
+        "phase": "sample",
+        "sample": 8,
+        "seconds": 0.0006490999949164689,
+        "validation_seconds": 7.049999840091914e-05,
+        "input_sha256": "14a1b159ada587676ba5ea696730733e064141012799383595ab76f059eaf0d8",
+        "max_absolute_logit_difference": 2.384185791015625e-06,
+        "provider_requested": "cuda-required"
+      },
+      {
+        "batch": 2,
+        "mode": "python-cpu-reused",
+        "phase": "sample",
+        "sample": 8,
+        "seconds": 0.00013590000162366778,
+        "validation_seconds": 7.100000220816582e-05,
+        "input_sha256": "14a1b159ada587676ba5ea696730733e064141012799383595ab76f059eaf0d8",
+        "max_absolute_logit_difference": 2.86102294921875e-06,
+        "provider_requested": "cpu"
+      },
+      {
+        "batch": 2,
+        "mode": "python-cpu-reused",
+        "phase": "sample",
+        "sample": 9,
+        "seconds": 0.00010199999815085903,
+        "validation_seconds": 7.2900002123788e-05,
+        "input_sha256": "14a1b159ada587676ba5ea696730733e064141012799383595ab76f059eaf0d8",
+        "max_absolute_logit_difference": 2.86102294921875e-06,
+        "provider_requested": "cpu"
+      },
+      {
+        "batch": 2,
+        "mode": "cpp-reused",
+        "phase": "sample",
+        "sample": 9,
+        "seconds": 0.0009160999979940243,
+        "validation_seconds": 0.00014209999790182337,
+        "input_sha256": "14a1b159ada587676ba5ea696730733e064141012799383595ab76f059eaf0d8",
+        "max_absolute_logit_difference": 2.384185791015625e-06,
+        "provider_requested": "cuda-required"
+      },
+      {
+        "batch": 2,
+        "mode": "cpp-fresh",
+        "phase": "sample",
+        "sample": 9,
+        "seconds": 0.010132099996553734,
+        "validation_seconds": 0.00011999999696854502,
+        "input_sha256": "14a1b159ada587676ba5ea696730733e064141012799383595ab76f059eaf0d8",
+        "max_absolute_logit_difference": 2.384185791015625e-06,
+        "provider_requested": "cuda-required"
+      },
+      {
+        "batch": 2,
+        "mode": "cpp-fresh",
+        "phase": "sample",
+        "sample": 10,
+        "seconds": 0.008524800003215205,
+        "validation_seconds": 8.150000212481245e-05,
+        "input_sha256": "14a1b159ada587676ba5ea696730733e064141012799383595ab76f059eaf0d8",
+        "max_absolute_logit_difference": 2.384185791015625e-06,
+        "provider_requested": "cuda-required"
+      },
+      {
+        "batch": 2,
+        "mode": "cpp-reused",
+        "phase": "sample",
+        "sample": 10,
+        "seconds": 0.000942900005611591,
+        "validation_seconds": 9.539999882690609e-05,
+        "input_sha256": "14a1b159ada587676ba5ea696730733e064141012799383595ab76f059eaf0d8",
+        "max_absolute_logit_difference": 2.384185791015625e-06,
+        "provider_requested": "cuda-required"
+      },
+      {
+        "batch": 2,
+        "mode": "python-cpu-reused",
+        "phase": "sample",
+        "sample": 10,
+        "seconds": 0.0001880999989225529,
+        "validation_seconds": 8.710000111022964e-05,
+        "input_sha256": "14a1b159ada587676ba5ea696730733e064141012799383595ab76f059eaf0d8",
+        "max_absolute_logit_difference": 2.86102294921875e-06,
+        "provider_requested": "cpu"
+      },
+      {
+        "batch": 2,
+        "mode": "python-cpu-reused",
+        "phase": "sample",
+        "sample": 11,
+        "seconds": 0.00015500000154133886,
+        "validation_seconds": 8.679999882588163e-05,
+        "input_sha256": "14a1b159ada587676ba5ea696730733e064141012799383595ab76f059eaf0d8",
+        "max_absolute_logit_difference": 2.86102294921875e-06,
+        "provider_requested": "cpu"
+      },
+      {
+        "batch": 2,
+        "mode": "cpp-reused",
+        "phase": "sample",
+        "sample": 11,
+        "seconds": 0.0010368000002927147,
+        "validation_seconds": 6.659999780822545e-05,
+        "input_sha256": "14a1b159ada587676ba5ea696730733e064141012799383595ab76f059eaf0d8",
+        "max_absolute_logit_difference": 2.384185791015625e-06,
+        "provider_requested": "cuda-required"
+      },
+      {
+        "batch": 2,
+        "mode": "cpp-fresh",
+        "phase": "sample",
+        "sample": 11,
+        "seconds": 0.008106600005703513,
+        "validation_seconds": 7.320000440813601e-05,
+        "input_sha256": "14a1b159ada587676ba5ea696730733e064141012799383595ab76f059eaf0d8",
+        "max_absolute_logit_difference": 2.384185791015625e-06,
+        "provider_requested": "cuda-required"
+      },
+      {
+        "batch": 2,
+        "mode": "cpp-fresh",
+        "phase": "sample",
+        "sample": 12,
+        "seconds": 0.00913589999981923,
+        "validation_seconds": 7.820000610081479e-05,
+        "input_sha256": "14a1b159ada587676ba5ea696730733e064141012799383595ab76f059eaf0d8",
+        "max_absolute_logit_difference": 2.384185791015625e-06,
+        "provider_requested": "cuda-required"
+      },
+      {
+        "batch": 2,
+        "mode": "cpp-reused",
+        "phase": "sample",
+        "sample": 12,
+        "seconds": 0.0005491999982041307,
+        "validation_seconds": 7.869999535614625e-05,
+        "input_sha256": "14a1b159ada587676ba5ea696730733e064141012799383595ab76f059eaf0d8",
+        "max_absolute_logit_difference": 2.384185791015625e-06,
+        "provider_requested": "cuda-required"
+      },
+      {
+        "batch": 2,
+        "mode": "python-cpu-reused",
+        "phase": "sample",
+        "sample": 12,
+        "seconds": 0.00013770000077784061,
+        "validation_seconds": 5.289999535307288e-05,
+        "input_sha256": "14a1b159ada587676ba5ea696730733e064141012799383595ab76f059eaf0d8",
+        "max_absolute_logit_difference": 2.86102294921875e-06,
+        "provider_requested": "cpu"
+      },
+      {
+        "batch": 2,
+        "mode": "python-cpu-reused",
+        "phase": "sample",
+        "sample": 13,
+        "seconds": 9.190000128000975e-05,
+        "validation_seconds": 4.850000550504774e-05,
+        "input_sha256": "14a1b159ada587676ba5ea696730733e064141012799383595ab76f059eaf0d8",
+        "max_absolute_logit_difference": 2.86102294921875e-06,
+        "provider_requested": "cpu"
+      },
+      {
+        "batch": 2,
+        "mode": "cpp-reused",
+        "phase": "sample",
+        "sample": 13,
+        "seconds": 0.0009114999993471429,
+        "validation_seconds": 6.569999823113903e-05,
+        "input_sha256": "14a1b159ada587676ba5ea696730733e064141012799383595ab76f059eaf0d8",
+        "max_absolute_logit_difference": 2.384185791015625e-06,
+        "provider_requested": "cuda-required"
+      },
+      {
+        "batch": 2,
+        "mode": "cpp-fresh",
+        "phase": "sample",
+        "sample": 13,
+        "seconds": 0.009132400002272334,
+        "validation_seconds": 0.00011569999333005399,
+        "input_sha256": "14a1b159ada587676ba5ea696730733e064141012799383595ab76f059eaf0d8",
+        "max_absolute_logit_difference": 2.384185791015625e-06,
+        "provider_requested": "cuda-required"
+      },
+      {
+        "batch": 2,
+        "mode": "cpp-fresh",
+        "phase": "sample",
+        "sample": 14,
+        "seconds": 0.008094599994365126,
+        "validation_seconds": 8.140000136336312e-05,
+        "input_sha256": "14a1b159ada587676ba5ea696730733e064141012799383595ab76f059eaf0d8",
+        "max_absolute_logit_difference": 2.384185791015625e-06,
+        "provider_requested": "cuda-required"
+      },
+      {
+        "batch": 2,
+        "mode": "cpp-reused",
+        "phase": "sample",
+        "sample": 14,
+        "seconds": 0.0005429000011645257,
+        "validation_seconds": 7.049999840091914e-05,
+        "input_sha256": "14a1b159ada587676ba5ea696730733e064141012799383595ab76f059eaf0d8",
+        "max_absolute_logit_difference": 2.384185791015625e-06,
+        "provider_requested": "cuda-required"
+      },
+      {
+        "batch": 2,
+        "mode": "python-cpu-reused",
+        "phase": "sample",
+        "sample": 14,
+        "seconds": 0.00013210000179242343,
+        "validation_seconds": 5.360000068321824e-05,
+        "input_sha256": "14a1b159ada587676ba5ea696730733e064141012799383595ab76f059eaf0d8",
+        "max_absolute_logit_difference": 2.86102294921875e-06,
+        "provider_requested": "cpu"
+      },
+      {
+        "batch": 2,
+        "mode": "python-cpu-reused",
+        "phase": "sample",
+        "sample": 15,
+        "seconds": 8.879999950295314e-05,
+        "validation_seconds": 4.7900000936351717e-05,
+        "input_sha256": "14a1b159ada587676ba5ea696730733e064141012799383595ab76f059eaf0d8",
+        "max_absolute_logit_difference": 2.86102294921875e-06,
+        "provider_requested": "cpu"
+      },
+      {
+        "batch": 2,
+        "mode": "cpp-reused",
+        "phase": "sample",
+        "sample": 15,
+        "seconds": 0.0005499999970197678,
+        "validation_seconds": 6.919999577803537e-05,
+        "input_sha256": "14a1b159ada587676ba5ea696730733e064141012799383595ab76f059eaf0d8",
+        "max_absolute_logit_difference": 2.384185791015625e-06,
+        "provider_requested": "cuda-required"
+      },
+      {
+        "batch": 2,
+        "mode": "cpp-fresh",
+        "phase": "sample",
+        "sample": 15,
+        "seconds": 0.007092600004398264,
+        "validation_seconds": 7.159999950090423e-05,
+        "input_sha256": "14a1b159ada587676ba5ea696730733e064141012799383595ab76f059eaf0d8",
+        "max_absolute_logit_difference": 2.384185791015625e-06,
+        "provider_requested": "cuda-required"
+      },
+      {
+        "batch": 2,
+        "mode": "cpp-fresh",
+        "phase": "sample",
+        "sample": 16,
+        "seconds": 0.007881600002292544,
+        "validation_seconds": 8.900000102585182e-05,
+        "input_sha256": "14a1b159ada587676ba5ea696730733e064141012799383595ab76f059eaf0d8",
+        "max_absolute_logit_difference": 2.384185791015625e-06,
+        "provider_requested": "cuda-required"
+      },
+      {
+        "batch": 2,
+        "mode": "cpp-reused",
+        "phase": "sample",
+        "sample": 16,
+        "seconds": 0.0011162000009790063,
+        "validation_seconds": 7.270000060088933e-05,
+        "input_sha256": "14a1b159ada587676ba5ea696730733e064141012799383595ab76f059eaf0d8",
+        "max_absolute_logit_difference": 2.384185791015625e-06,
+        "provider_requested": "cuda-required"
+      },
+      {
+        "batch": 2,
+        "mode": "python-cpu-reused",
+        "phase": "sample",
+        "sample": 16,
+        "seconds": 0.00012909999350085855,
+        "validation_seconds": 5.5500000598840415e-05,
+        "input_sha256": "14a1b159ada587676ba5ea696730733e064141012799383595ab76f059eaf0d8",
+        "max_absolute_logit_difference": 2.86102294921875e-06,
+        "provider_requested": "cpu"
+      },
+      {
+        "batch": 2,
+        "mode": "python-cpu-reused",
+        "phase": "sample",
+        "sample": 17,
+        "seconds": 9.750000026542693e-05,
+        "validation_seconds": 4.839999746764079e-05,
+        "input_sha256": "14a1b159ada587676ba5ea696730733e064141012799383595ab76f059eaf0d8",
+        "max_absolute_logit_difference": 2.86102294921875e-06,
+        "provider_requested": "cpu"
+      },
+      {
+        "batch": 2,
+        "mode": "cpp-reused",
+        "phase": "sample",
+        "sample": 17,
+        "seconds": 0.0006966000000829808,
+        "validation_seconds": 6.820000271545723e-05,
+        "input_sha256": "14a1b159ada587676ba5ea696730733e064141012799383595ab76f059eaf0d8",
+        "max_absolute_logit_difference": 2.384185791015625e-06,
+        "provider_requested": "cuda-required"
+      },
+      {
+        "batch": 2,
+        "mode": "cpp-fresh",
+        "phase": "sample",
+        "sample": 17,
+        "seconds": 0.007939499999338295,
+        "validation_seconds": 7.380000170087442e-05,
+        "input_sha256": "14a1b159ada587676ba5ea696730733e064141012799383595ab76f059eaf0d8",
+        "max_absolute_logit_difference": 2.384185791015625e-06,
+        "provider_requested": "cuda-required"
+      },
+      {
+        "batch": 2,
+        "mode": "cpp-fresh",
+        "phase": "sample",
+        "sample": 18,
+        "seconds": 0.007002300000749528,
+        "validation_seconds": 7.999999797903001e-05,
+        "input_sha256": "14a1b159ada587676ba5ea696730733e064141012799383595ab76f059eaf0d8",
+        "max_absolute_logit_difference": 2.384185791015625e-06,
+        "provider_requested": "cuda-required"
+      },
+      {
+        "batch": 2,
+        "mode": "cpp-reused",
+        "phase": "sample",
+        "sample": 18,
+        "seconds": 0.0007145999989006668,
+        "validation_seconds": 8.349999552592635e-05,
+        "input_sha256": "14a1b159ada587676ba5ea696730733e064141012799383595ab76f059eaf0d8",
+        "max_absolute_logit_difference": 2.384185791015625e-06,
+        "provider_requested": "cuda-required"
+      },
+      {
+        "batch": 2,
+        "mode": "python-cpu-reused",
+        "phase": "sample",
+        "sample": 18,
+        "seconds": 0.00016060000052675605,
+        "validation_seconds": 6.72999958624132e-05,
+        "input_sha256": "14a1b159ada587676ba5ea696730733e064141012799383595ab76f059eaf0d8",
+        "max_absolute_logit_difference": 2.86102294921875e-06,
+        "provider_requested": "cpu"
+      },
+      {
+        "batch": 2,
+        "mode": "python-cpu-reused",
+        "phase": "sample",
+        "sample": 19,
+        "seconds": 0.00012430000060703605,
+        "validation_seconds": 6.22000006842427e-05,
+        "input_sha256": "14a1b159ada587676ba5ea696730733e064141012799383595ab76f059eaf0d8",
+        "max_absolute_logit_difference": 2.86102294921875e-06,
+        "provider_requested": "cpu"
+      },
+      {
+        "batch": 2,
+        "mode": "cpp-reused",
+        "phase": "sample",
+        "sample": 19,
+        "seconds": 0.0010007000018958934,
+        "validation_seconds": 6.549999670824036e-05,
+        "input_sha256": "14a1b159ada587676ba5ea696730733e064141012799383595ab76f059eaf0d8",
+        "max_absolute_logit_difference": 2.384185791015625e-06,
+        "provider_requested": "cuda-required"
+      },
+      {
+        "batch": 2,
+        "mode": "cpp-fresh",
+        "phase": "sample",
+        "sample": 19,
+        "seconds": 0.007696799999393988,
+        "validation_seconds": 8.240000170189887e-05,
+        "input_sha256": "14a1b159ada587676ba5ea696730733e064141012799383595ab76f059eaf0d8",
+        "max_absolute_logit_difference": 2.384185791015625e-06,
+        "provider_requested": "cuda-required"
+      },
+      {
+        "batch": 2,
+        "mode": "cpp-reused",
+        "phase": "retirement",
+        "seconds": 0.011651000000711065,
+        "input_sha256": "14a1b159ada587676ba5ea696730733e064141012799383595ab76f059eaf0d8"
+      }
+    ],
+    "memory": "not instrumented by this timing runner; separate process/device memory acceptance required",
+    "device_intervals": "not supplied; host completed-call seconds are not kernel intervals",
+    "provider_placement": "requires a separately retained actual operator profile for the executed provider"
+  },
+  "corrected_memory": {
+    "schema_version": 1,
+    "status": "completed",
+    "source_sha256": "a858722e94591d6ddc7b5d5ba6798c92a45977b08fecb02df52a70cc1264244b",
+    "protocol": "docs/inference-cuda-protocol.md",
+    "python": "3.11.8",
+    "windows_version": "10.0.26200",
+    "snapshots": [
+      {
+        "phase": "after_imports_reference_and_cuda_context_initialization",
+        "completed_requests": 0,
+        "outstanding_requests": 0,
+        "device_free_bytes": 24154996736,
+        "device_total_bytes": 25756696576,
+        "working_set_bytes": 437772288,
+        "peak_working_set_bytes": 437772288,
+        "private_usage_bytes": 1580150784,
+        "peak_commit_bytes": 1580175360
+      },
+      {
+        "phase": "after_session_creation",
+        "completed_requests": 0,
+        "outstanding_requests": 0,
+        "device_free_bytes": 24142413824,
+        "device_total_bytes": 25756696576,
+        "working_set_bytes": 476278784,
+        "peak_working_set_bytes": 476278784,
+        "private_usage_bytes": 1622528000,
+        "peak_commit_bytes": 1622528000
+      },
+      {
+        "phase": "after_completed_requests",
+        "completed_requests": 8,
+        "outstanding_requests": 0,
+        "device_free_bytes": 24131928064,
+        "device_total_bytes": 25756696576,
+        "working_set_bytes": 736722944,
+        "peak_working_set_bytes": 736722944,
+        "private_usage_bytes": 1944588288,
+        "peak_commit_bytes": 1944588288
+      },
+      {
+        "phase": "after_completed_requests",
+        "completed_requests": 16,
+        "outstanding_requests": 0,
+        "device_free_bytes": 24131928064,
+        "device_total_bytes": 25756696576,
+        "working_set_bytes": 736722944,
+        "peak_working_set_bytes": 736722944,
+        "private_usage_bytes": 1944588288,
+        "peak_commit_bytes": 1944588288
+      },
+      {
+        "phase": "after_completed_requests",
+        "completed_requests": 32,
+        "outstanding_requests": 0,
+        "device_free_bytes": 24131928064,
+        "device_total_bytes": 25756696576,
+        "working_set_bytes": 736727040,
+        "peak_working_set_bytes": 736727040,
+        "private_usage_bytes": 1944588288,
+        "peak_commit_bytes": 1944588288
+      },
+      {
+        "phase": "after_completed_requests",
+        "completed_requests": 64,
+        "outstanding_requests": 0,
+        "device_free_bytes": 24131928064,
+        "device_total_bytes": 25756696576,
+        "working_set_bytes": 736731136,
+        "peak_working_set_bytes": 736731136,
+        "private_usage_bytes": 1944588288,
+        "peak_commit_bytes": 1944588288
+      },
+      {
+        "phase": "after_explicit_close",
+        "completed_requests": 64,
+        "outstanding_requests": 0,
+        "device_free_bytes": 24150802432,
+        "device_total_bytes": 25756696576,
+        "working_set_bytes": 727031808,
+        "peak_working_set_bytes": 736808960,
+        "private_usage_bytes": 1936302080,
+        "peak_commit_bytes": 1944588288
+      },
+      {
+        "phase": "after_close_executor_release_and_gc",
+        "completed_requests": 64,
+        "outstanding_requests": 0,
+        "device_free_bytes": 24150802432,
+        "device_total_bytes": 25756696576,
+        "working_set_bytes": 727031808,
+        "peak_working_set_bytes": 736808960,
+        "private_usage_bytes": 1936302080,
+        "peak_commit_bytes": 1944588288
+      }
+    ],
+    "scope": "64 serial completed eight-image requests, one owner and no overlapping requests. Separate from timing collection.",
+    "device_scope": "cudaMemGetInfo after context initialization reports shared-device OS free bytes, not this process's live allocations. Other applications can affect every sample.",
+    "process_gpu_memory": "unavailable through this probe. No process allocation bound or GPU leak verdict is established.",
+    "deadline": "30-second cooperative decision limit includes initialization. Synchronous initialization and safe retirement are not forcibly interrupted, so this is not a hard process wall-time cap.",
+    "host_scope": "whole current-process working set, private commit and lifetime peaks. Imports, validator, loaded libraries and allocator caches are included.",
+    "device_api": "https://docs.nvidia.com/cuda/cuda-runtime-api/cuda_runtime_api/group__CUDART__MEMORY.html",
+    "provider_requested": "cuda-required",
+    "model_sha256": "2f06e72de813a8635c9bc0397ac447a601bdbfa7df4bebc278723b958831c9bf",
+    "input_sha256": "2852d857cb28a2210ad6bdb2499381884a183cc6b49e2c6d4faa2545814c3aac",
+    "input_shape": [
+      8,
+      1,
+      28,
+      28
+    ],
+    "ort_version": "1.30.0",
+    "available_providers": [
+      "TensorrtExecutionProvider",
+      "CUDAExecutionProvider",
+      "CPUExecutionProvider"
+    ],
+    "cuda_runtime_library_sha256": "d26fd1c2629594759af569a5252f94e4568d4ebeca67dc323834deb141aa278a",
+    "rtol": 1e-05,
+    "atol": 2e-05,
+    "completed_requests": 64,
+    "full_output_checks": 64,
+    "maximum_absolute_logit_difference": 5.7220458984375e-06
+  },
+  "checks": {
+    "automatic_loader_regressions": {
+      "before": {
+        "failed": 2,
+        "passed": 2
+      },
+      "after": {
+        "passed": 4
+      }
+    },
+    "installed_gpu_package_contracts": {
+      "passed": 31,
+      "skipped": 1,
+      "meaning": "existing CPU and loader tests; required-CUDA rejection check skipped because this package includes CUDA"
+    },
+    "actual_required_cuda_contracts": {
+      "passed": 9,
+      "meaning": "full logits at0/1/2/8 images, ownership, host-gated queued/running cancellation and staleness, waiting close, host failure, closed session and finite identity history"
+    },
+    "memory_failure_fixtures": {
+      "passed": 3
+    },
+    "fresh_cpu_only_contracts": {
+      "passed": 35,
+      "skipped": 9,
+      "meaning": "Fresh CPU-only wheel installation, current source and explicit GPU cases skipped without opt-in"
+    },
+    "evidence_relabeling_fixtures": {
+      "passed": 6,
+      "meaning": "Metadata verification only: model,input,provider,setup/retirement,tolerance and memory summary tampering. No inference or device fault."
+    }
+  },
+  "installed_application_wheel_sha256": "bef95b1b783ecab48b45d77838e15e77bbdd5cd67be3ff1e1883eceb7bae75d1",
+  "limitations": [
+    "Shared workstation with ordinary user applications. No other task performance workload or named native game/profiler was observed when this unit started.",
+    "First invocation is separate and is not a cold-process sample.",
+    "ORT profiles supply operation placement, not device intervals or hardware counters.",
+    "Host gated cancellation is not interruption of an active GPU kernel.",
+    "Shared-device free memory and process totals do not isolate live allocations or prove a leak-free implementation.",
+    "ERR_NVGPUCTRPERM and WDDM sanitizer initialization remain separate unresolved diagnostics. Linux GPU and second-vendor execution were not performed."
+  ]
+}
