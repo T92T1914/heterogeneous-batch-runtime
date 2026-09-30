@@ -1,0 +1,127 @@
+{
+  "schema_version": 1,
+  "status": "completed",
+  "probe": "windows_cpu_current_process_memory_64_requests",
+  "source_sha256": "c7866c83b1083ccdfeceb43325caebb2082ec7f91c6145ac796ebb9642d88de4",
+  "python": "3.11.8",
+  "windows_version": "10.0.26200",
+  "pointer_bits": 64,
+  "snapshots": [
+    {
+      "phase": "after_imports_model_and_input_preparation",
+      "completed_requests": 0,
+      "outstanding_requests": 0,
+      "working_set_bytes": 85934080,
+      "peak_working_set_bytes": 85934080,
+      "private_usage_bytes": 63729664,
+      "peak_commit_bytes": 63729664
+    },
+    {
+      "phase": "after_session_creation",
+      "completed_requests": 0,
+      "outstanding_requests": 0,
+      "working_set_bytes": 103886848,
+      "peak_working_set_bytes": 103886848,
+      "private_usage_bytes": 75034624,
+      "peak_commit_bytes": 75034624
+    },
+    {
+      "phase": "after_completed_requests",
+      "completed_requests": 8,
+      "outstanding_requests": 0,
+      "working_set_bytes": 105267200,
+      "peak_working_set_bytes": 105267200,
+      "private_usage_bytes": 76988416,
+      "peak_commit_bytes": 76988416
+    },
+    {
+      "phase": "after_completed_requests",
+      "completed_requests": 16,
+      "outstanding_requests": 0,
+      "working_set_bytes": 105275392,
+      "peak_working_set_bytes": 105275392,
+      "private_usage_bytes": 76988416,
+      "peak_commit_bytes": 76988416
+    },
+    {
+      "phase": "after_completed_requests",
+      "completed_requests": 32,
+      "outstanding_requests": 0,
+      "working_set_bytes": 105345024,
+      "peak_working_set_bytes": 105345024,
+      "private_usage_bytes": 76988416,
+      "peak_commit_bytes": 76988416
+    },
+    {
+      "phase": "after_completed_requests",
+      "completed_requests": 64,
+      "outstanding_requests": 0,
+      "working_set_bytes": 105611264,
+      "peak_working_set_bytes": 105611264,
+      "private_usage_bytes": 77185024,
+      "peak_commit_bytes": 77185024
+    },
+    {
+      "phase": "after_explicit_close",
+      "completed_requests": 64,
+      "outstanding_requests": 0,
+      "working_set_bytes": 105570304,
+      "peak_working_set_bytes": 105631744,
+      "private_usage_bytes": 76111872,
+      "peak_commit_bytes": 77185024
+    },
+    {
+      "phase": "after_close_executor_release_and_gc",
+      "completed_requests": 64,
+      "outstanding_requests": 0,
+      "working_set_bytes": 105566208,
+      "peak_working_set_bytes": 105631744,
+      "private_usage_bytes": 76046336,
+      "peak_commit_bytes": 77185024
+    }
+  ],
+  "definitions": {
+    "working_set_bytes": "Current resident working set for the whole process, including shared pages.",
+    "peak_working_set_bytes": "Cumulative process-lifetime working-set peak, including activity before this probe.",
+    "private_usage_bytes": "Current private committed bytes for the whole process, not resident bytes or live tensor bytes.",
+    "peak_commit_bytes": "Cumulative process-lifetime private-commit peak, including activity before this probe."
+  },
+  "scope": "One CPU session and 64 serial completed/reconciled requests of eight prepared example images. No latency measurements or GPU execution.",
+  "retained_at_final_snapshot": "Imports, model bytes, prepared input, independent ONNX evaluator and report rows remain alive. The executor and its session are explicitly retired.",
+  "interpretation": "Totals include the independent validator, Python, libraries, executor bookkeeping and allocator caches. They do not isolate live session allocations, establish a strict memory cap, prove absence of leaks or promise lower memory after close.",
+  "api_documentation": [
+    "https://learn.microsoft.com/en-us/windows/win32/api/psapi/nf-psapi-getprocessmemoryinfo",
+    "https://learn.microsoft.com/en-us/windows/win32/api/psapi/ns-psapi-process_memory_counters_ex",
+    "https://learn.microsoft.com/en-us/windows/win32/api/processthreadsapi/nf-processthreadsapi-getcurrentprocess"
+  ],
+  "model_sha256": "2f06e72de813a8635c9bc0397ac447a601bdbfa7df4bebc278723b958831c9bf",
+  "input_sha256": "2852d857cb28a2210ad6bdb2499381884a183cc6b49e2c6d4faa2545814c3aac",
+  "input_shape": [
+    8,
+    1,
+    28,
+    28
+  ],
+  "provider_requested": "cpu",
+  "ort_version": "1.30.0",
+  "application_version": "0.1.0",
+  "numpy_version": "2.4.6",
+  "onnx_version": "1.23.1",
+  "request_limit": 64,
+  "completed_requests": 64,
+  "full_output_checks": 64,
+  "maximum_absolute_logit_difference": 1.33514404296875e-05,
+  "rtol": 1e-05,
+  "atol": 2e-05,
+  "observed_transitions": 256,
+  "thread_budget": {
+    "executor_workers": 1,
+    "ort_intra_op_threads": 1,
+    "ort_inter_op_threads": 1,
+    "ort_execution": "sequential"
+  },
+  "source_revision": "550e5b94abeffcbcf30f5cbd081ddc6b4c429a47",
+  "protocol_revision": "4ee7ee0b79c7331feb536242dbb766ae746e6024",
+  "installed_consumer_source_fingerprint": "1224d6e334b4294935df47922db51c0737ff01cc1f9563e268c68ec0c9c62f9a",
+  "installed_wheel_sha256": "23a5865f4d521cf6b5b524287757bf47f66b855983ee579f9a0b2204d3ad9bed"
+}

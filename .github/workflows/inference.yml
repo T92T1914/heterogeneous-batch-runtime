@@ -1,0 +1,42 @@
+name: Optional inference consumer
+on: [push, pull_request]
+permissions:
+  contents: read
+jobs:
+  inference-cpu:
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu-latest, windows-latest]
+    runs-on: ${{ matrix.os }}
+    env:
+      CMAKE_BUILD_PARALLEL_LEVEL: '1'
+      OPENBLAS_NUM_THREADS: '1'
+      OMP_NUM_THREADS: '1'
+    steps:
+      - uses: actions/checkout@fbc6f3992d24b796d5a048ff273f7fcc4a7b6c09
+      - uses: actions/setup-python@ece7cb06caefa5fff74198d8649806c4678c61a1
+        with:
+          python-version: '3.11'
+      - run: python examples/image_classifier/acquire.py artifacts
+      - run: python -m pip install "git+https://github.com/T92T1914/adaptive-timing-engine.git@f6e0564474b053212f722e107b55b619aa8e50d9"
+      - name: Linux consumer wheel
+        if: runner.os != 'Windows'
+        run: python -m pip install "./examples/image_classifier[cpu,test]" -Ccmake.define.HBR_ORT_INCLUDE="$PWD/artifacts/sdk/include"
+      - name: Windows consumer wheel
+        if: runner.os == 'Windows'
+        shell: pwsh
+        run: |
+          cmake -S . -B generator-probe
+          $line = Get-Content generator-probe/CMakeCache.txt | Where-Object { $_.StartsWith('CMAKE_GENERATOR:INTERNAL=') }
+          if (-not $line) { throw 'Native configure did not record its generator' }
+          $env:CMAKE_GENERATOR = $line.Substring('CMAKE_GENERATOR:INTERNAL='.Length)
+          python -m pip install "./examples/image_classifier[cpu,test]" "-Ccmake.define.HBR_ORT_INCLUDE=$PWD/artifacts/sdk/include"
+      - name: Installed consumer contracts
+        shell: bash
+        run: HBR_MNIST_MODEL="$PWD/artifacts/mnist-8.onnx" python -m pytest examples/image_classifier/tests -q
+      - name: Bounded Windows CPU memory probe
+        if: runner.os == 'Windows'
+        shell: pwsh
+        run: python examples/image_classifier/memory_check.py --model artifacts/mnist-8.onnx --output artifacts/windows-memory.json
+      - run: python tools/check_inference_evidence.py

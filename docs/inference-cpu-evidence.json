@@ -1,0 +1,702 @@
+{
+  "schema_version": 1,
+  "execution": "actual Windows CPU clean installed consumer",
+  "source_files": [
+    {
+      "path": "examples/image_classifier/acquire.py",
+      "sha256": "066d0c17dad698607fc931ca64327b2bd826107c1714d861f497ca32c221fb6d"
+    },
+    {
+      "path": "examples/image_classifier/artifacts.json",
+      "sha256": "940ad73b40a93bcad720b002bf5d9449715559e64c2a832db952ad50160b42c6"
+    },
+    {
+      "path": "examples/image_classifier/CMakeLists.txt",
+      "sha256": "b726a4459164cf25ed11e54b9809ec6d2f67630d559f7c2d39727854833e26b8"
+    },
+    {
+      "path": "examples/image_classifier/compare.py",
+      "sha256": "4eec251e7fe7bd0e143d3d362433f6588421d78e4a001d914f2d4907c36a5089"
+    },
+    {
+      "path": "examples/image_classifier/LICENSE",
+      "sha256": "4a0c167c3e57f46605c607890e29afd8f26d6f3e5a6915f4163b53710d5fadbd"
+    },
+    {
+      "path": "examples/image_classifier/pyproject.toml",
+      "sha256": "c6105d67cf85870d273485d206fca5db4441bd81c78656479e0bc5360f570708"
+    },
+    {
+      "path": "examples/image_classifier/python/hbr_image_classifier/__init__.py",
+      "sha256": "b05452dfde98f1a24d61810be608b52a0be283857282a6e337c07f4d5320f720"
+    },
+    {
+      "path": "examples/image_classifier/python/hbr_image_classifier/cli.py",
+      "sha256": "f8f17f7f6a93ca1977e6e7c473e9340e60a1c9cc8bc4d244c5d150d0f8d77ceb"
+    },
+    {
+      "path": "examples/image_classifier/python/hbr_image_classifier/executor.py",
+      "sha256": "678272352652ea27ac7bceea5d4ba030a8086f2b6f785375eb2625849d74fe13"
+    },
+    {
+      "path": "examples/image_classifier/python/hbr_image_classifier/model.py",
+      "sha256": "d9f4b4245802777a3447e8915c060deb5e46410ad0216f826ffee2b88e97c420"
+    },
+    {
+      "path": "examples/image_classifier/python/hbr_image_classifier/session.py",
+      "sha256": "5709d56184150cf005b91c434fb3a3094b1bb275e02cbbd9bd8aa94509f7bdde"
+    },
+    {
+      "path": "examples/image_classifier/README.md",
+      "sha256": "732ca0f33b5a88798b154c1b92610272dfffbede1264a5048c2334ed00f4a900"
+    },
+    {
+      "path": "examples/image_classifier/session.cpp",
+      "sha256": "e7228c37fe87800d46a905e04731254710a642ead69875d003e63e5055104e8b"
+    },
+    {
+      "path": "examples/image_classifier/tests/test_acquisition.py",
+      "sha256": "4adefc08b351443d04f030678508a2922d4acceaf2edb98a10c1a0da30c4584e"
+    },
+    {
+      "path": "examples/image_classifier/tests/test_comparison_report.py",
+      "sha256": "36ce4ad2efc5cc591f8e32d9688f2780e43c5135478978e84328ffd6c23b0127"
+    },
+    {
+      "path": "examples/image_classifier/tests/test_inference.py",
+      "sha256": "618cd9b016c4c4511fb294d7bf52d6b33b36849b53aa90fd99a4303171aae0e2"
+    }
+  ],
+  "source_fingerprint": "1224d6e334b4294935df47922db51c0737ff01cc1f9563e268c68ec0c9c62f9a",
+  "model_sha256": "2f06e72de813a8635c9bc0397ac447a601bdbfa7df4bebc278723b958831c9bf",
+  "ort_version": "1.30.0",
+  "python": "3.11.8",
+  "os": "Windows",
+  "os_version": "10.0.26200",
+  "dependencies": {
+    "onnx": "1.23.1",
+    "numpy": "2.4.6",
+    "Pillow": "12.3.0",
+    "adaptive-timing-engine": "0.1.0"
+  },
+  "application": {
+    "schema_version": 1,
+    "model_sha256": "2f06e72de813a8635c9bc0397ac447a601bdbfa7df4bebc278723b958831c9bf",
+    "input_sha256": "2852d857cb28a2210ad6bdb2499381884a183cc6b49e2c6d4faa2545814c3aac",
+    "provider_requested": "cpu",
+    "batch_shape": [
+      8,
+      1,
+      28,
+      28
+    ],
+    "input_kind": "original geometric example digits, not an accuracy dataset",
+    "contract": "serial one-image calls, completed host outputs, no asynchronous GPU interface",
+    "logits": [
+      [
+        7.303241729736328,
+        -7.323437213897705,
+        9.95944595336914,
+        3.953380584716797,
+        -7.018839359283447,
+        -1.8985905647277832,
+        0.7205092906951904,
+        -2.996548891067505,
+        1.7038311958312988,
+        -10.700276374816895
+      ],
+      [
+        -2.033200740814209,
+        3.403609037399292,
+        1.213883876800537,
+        6.400511741638184,
+        3.49808669090271,
+        -2.0328547954559326,
+        -7.039929389953613,
+        3.7184298038482666,
+        -4.78298807144165,
+        -1.05336332321167
+      ],
+      [
+        2.084770917892456,
+        -6.043757915496826,
+        29.530202865600586,
+        3.8851318359375,
+        -0.9542461633682251,
+        -14.444445610046387,
+        -7.130982875823975,
+        -0.8964550495147705,
+        3.889688491821289,
+        -12.294445991516113
+      ],
+      [
+        -11.286942481994629,
+        -3.802055597305298,
+        13.940152168273926,
+        18.313993453979492,
+        -2.0807950496673584,
+        1.785388469696045,
+        -20.878053665161133,
+        5.282233715057373,
+        -1.04606032371521,
+        0.5710145235061646
+      ],
+      [
+        -13.965350151062012,
+        -4.590933799743652,
+        -9.201630592346191,
+        -1.970900297164917,
+        21.591617584228516,
+        5.282992362976074,
+        -8.22793197631836,
+        4.968111038208008,
+        -0.0881064385175705,
+        3.9554502964019775
+      ],
+      [
+        -11.479857444763184,
+        -12.573092460632324,
+        -2.2554562091827393,
+        3.673872709274292,
+        -0.9546424150466919,
+        21.539806365966797,
+        -2.839914560317993,
+        -3.7996749877929688,
+        1.213385820388794,
+        4.144527912139893
+      ],
+      [
+        -4.718847751617432,
+        -13.615691184997559,
+        5.414643287658691,
+        -4.662715911865234,
+        -2.651704788208008,
+        14.487950325012207,
+        7.946187496185303,
+        -7.822989463806152,
+        7.710191249847412,
+        -6.710870265960693
+      ],
+      [
+        -5.5307230949401855,
+        1.975930094718933,
+        16.031187057495117,
+        15.34133529663086,
+        -9.236352920532227,
+        -7.769157886505127,
+        -13.602602005004883,
+        12.365694999694824,
+        -9.229836463928223,
+        -2.41603946685791
+      ]
+    ],
+    "probabilities": [
+      [
+        0.06543459719142979,
+        2.9075117566627784e-08,
+        0.9319278068866037,
+        0.0022960493740675717,
+        3.9428172410022394e-08,
+        6.599369486685458e-06,
+        9.056555630868533e-05,
+        2.201228879064635e-06,
+        0.00024211089686688357,
+        9.930677209157534e-10
+      ],
+      [
+        0.00018426811899897367,
+        0.04232789668050252,
+        0.004738502720593569,
+        0.8475493510716237,
+        0.04652193948370931,
+        0.00018433187672712886,
+        1.2332626472542435e-06,
+        0.05798979989041959,
+        1.1782372219465408e-05,
+        0.0004908945225587621
+      ],
+      [
+        1.2039275470467878e-12,
+        3.5516088811966018e-16,
+        0.9999999999840716,
+        7.285966394591296e-12,
+        5.764637503647858e-14,
+        7.980917535340008e-20,
+        1.1974277883305095e-16,
+        6.107596881815304e-14,
+        7.319241790922491e-12,
+        6.851502078403675e-19
+      ],
+      [
+        1.377326135766918e-13,
+        2.452911392569721e-10,
+        0.012445856511276998,
+        0.9875518906451192,
+        1.3715631807072436e-09,
+        6.550553327566557e-08,
+        9.411744446853652e-18,
+        2.1624126867587678e-06,
+        3.8600719498209486e-09,
+        1.9448319598622174e-08
+      ],
+      [
+        3.612476641062525e-16,
+        4.256595092446924e-12,
+        4.233135451668296e-14,
+        5.846937244539079e-11,
+        0.9999998346615935,
+        8.265211802335408e-08,
+        1.1208154301560456e-13,
+        6.032575491638163e-08,
+        3.8425136233210065e-10,
+        2.191340135710384e-08
+      ],
+      [
+        4.568169315100876e-15,
+        1.5309332568967504e-15,
+        4.632855426312424e-11,
+        1.7415003994992105e-08,
+        1.7013160555578074e-10,
+        0.9999999529635222,
+        2.582389284404411e-11,
+        9.890153983530804e-12,
+        1.487125771100353e-09,
+        2.7882167759587616e-08
+      ],
+      [
+        4.54385552121435e-09,
+        6.216908913627256e-13,
+        0.00011437833088917547,
+        4.8062046815361145e-09,
+        3.5906518355925875e-08,
+        0.9973117449356658,
+        0.0014380680419394402,
+        2.0385102392769006e-10,
+        0.0011357626105852323,
+        6.198693004215801e-10
+      ],
+      [
+        2.830566190614986e-10,
+        5.151946836139158e-07,
+        0.6547747350159809,
+        0.32846802592052715,
+        6.958870101267119e-12,
+        3.0180986904638e-11,
+        8.836918420507126e-14,
+        0.016756717165299945,
+        7.004365349206182e-12,
+        6.376219035938379e-09
+      ]
+    ],
+    "predictions": [
+      2,
+      3,
+      2,
+      3,
+      4,
+      5,
+      5,
+      2
+    ],
+    "status": "completed",
+    "usable": true,
+    "observations": [
+      {
+        "id": "image-batch-1",
+        "generation": 1,
+        "resource": "inference",
+        "kind": "submitted",
+        "at": 0.0,
+        "stale": null
+      },
+      {
+        "id": "image-batch-1",
+        "generation": 1,
+        "resource": "inference",
+        "kind": "started",
+        "at": 0.0,
+        "stale": null
+      },
+      {
+        "id": "image-batch-1",
+        "generation": 1,
+        "resource": "inference",
+        "kind": "completed",
+        "at": 0.0,
+        "stale": null
+      },
+      {
+        "id": "image-batch-1",
+        "generation": 1,
+        "resource": "inference",
+        "kind": "reconciled",
+        "at": 0.0,
+        "stale": false
+      }
+    ],
+    "placement": {
+      "provider_events": {
+        "CPUExecutionProvider": 64
+      },
+      "node_events": [
+        {
+          "name": "ReLU32_Output_0_nchwc_kernel_time",
+          "provider": "CPUExecutionProvider",
+          "op": "Conv"
+        },
+        {
+          "name": "ReorderOutput_token_5_kernel_time",
+          "provider": "CPUExecutionProvider",
+          "op": "ReorderOutput"
+        },
+        {
+          "name": "Pooling66_kernel_time",
+          "provider": "CPUExecutionProvider",
+          "op": "MaxPool"
+        },
+        {
+          "name": "ReLU114_Output_0_nchwc_kernel_time",
+          "provider": "CPUExecutionProvider",
+          "op": "Conv"
+        },
+        {
+          "name": "Pooling160_Output_0_nchwc_kernel_time",
+          "provider": "CPUExecutionProvider",
+          "op": "MaxPool"
+        },
+        {
+          "name": "ReorderOutput_kernel_time",
+          "provider": "CPUExecutionProvider",
+          "op": "ReorderOutput"
+        },
+        {
+          "name": "Times212_reshape0_kernel_time",
+          "provider": "CPUExecutionProvider",
+          "op": "Reshape"
+        },
+        {
+          "name": "Times212/MatMulAddFusion_kernel_time",
+          "provider": "CPUExecutionProvider",
+          "op": "Gemm"
+        },
+        {
+          "name": "ReLU32_Output_0_nchwc_kernel_time",
+          "provider": "CPUExecutionProvider",
+          "op": "Conv"
+        },
+        {
+          "name": "ReorderOutput_token_5_kernel_time",
+          "provider": "CPUExecutionProvider",
+          "op": "ReorderOutput"
+        },
+        {
+          "name": "Pooling66_kernel_time",
+          "provider": "CPUExecutionProvider",
+          "op": "MaxPool"
+        },
+        {
+          "name": "ReLU114_Output_0_nchwc_kernel_time",
+          "provider": "CPUExecutionProvider",
+          "op": "Conv"
+        },
+        {
+          "name": "Pooling160_Output_0_nchwc_kernel_time",
+          "provider": "CPUExecutionProvider",
+          "op": "MaxPool"
+        },
+        {
+          "name": "ReorderOutput_kernel_time",
+          "provider": "CPUExecutionProvider",
+          "op": "ReorderOutput"
+        },
+        {
+          "name": "Times212_reshape0_kernel_time",
+          "provider": "CPUExecutionProvider",
+          "op": "Reshape"
+        },
+        {
+          "name": "Times212/MatMulAddFusion_kernel_time",
+          "provider": "CPUExecutionProvider",
+          "op": "Gemm"
+        },
+        {
+          "name": "ReLU32_Output_0_nchwc_kernel_time",
+          "provider": "CPUExecutionProvider",
+          "op": "Conv"
+        },
+        {
+          "name": "ReorderOutput_token_5_kernel_time",
+          "provider": "CPUExecutionProvider",
+          "op": "ReorderOutput"
+        },
+        {
+          "name": "Pooling66_kernel_time",
+          "provider": "CPUExecutionProvider",
+          "op": "MaxPool"
+        },
+        {
+          "name": "ReLU114_Output_0_nchwc_kernel_time",
+          "provider": "CPUExecutionProvider",
+          "op": "Conv"
+        },
+        {
+          "name": "Pooling160_Output_0_nchwc_kernel_time",
+          "provider": "CPUExecutionProvider",
+          "op": "MaxPool"
+        },
+        {
+          "name": "ReorderOutput_kernel_time",
+          "provider": "CPUExecutionProvider",
+          "op": "ReorderOutput"
+        },
+        {
+          "name": "Times212_reshape0_kernel_time",
+          "provider": "CPUExecutionProvider",
+          "op": "Reshape"
+        },
+        {
+          "name": "Times212/MatMulAddFusion_kernel_time",
+          "provider": "CPUExecutionProvider",
+          "op": "Gemm"
+        },
+        {
+          "name": "ReLU32_Output_0_nchwc_kernel_time",
+          "provider": "CPUExecutionProvider",
+          "op": "Conv"
+        },
+        {
+          "name": "ReorderOutput_token_5_kernel_time",
+          "provider": "CPUExecutionProvider",
+          "op": "ReorderOutput"
+        },
+        {
+          "name": "Pooling66_kernel_time",
+          "provider": "CPUExecutionProvider",
+          "op": "MaxPool"
+        },
+        {
+          "name": "ReLU114_Output_0_nchwc_kernel_time",
+          "provider": "CPUExecutionProvider",
+          "op": "Conv"
+        },
+        {
+          "name": "Pooling160_Output_0_nchwc_kernel_time",
+          "provider": "CPUExecutionProvider",
+          "op": "MaxPool"
+        },
+        {
+          "name": "ReorderOutput_kernel_time",
+          "provider": "CPUExecutionProvider",
+          "op": "ReorderOutput"
+        },
+        {
+          "name": "Times212_reshape0_kernel_time",
+          "provider": "CPUExecutionProvider",
+          "op": "Reshape"
+        },
+        {
+          "name": "Times212/MatMulAddFusion_kernel_time",
+          "provider": "CPUExecutionProvider",
+          "op": "Gemm"
+        },
+        {
+          "name": "ReLU32_Output_0_nchwc_kernel_time",
+          "provider": "CPUExecutionProvider",
+          "op": "Conv"
+        },
+        {
+          "name": "ReorderOutput_token_5_kernel_time",
+          "provider": "CPUExecutionProvider",
+          "op": "ReorderOutput"
+        },
+        {
+          "name": "Pooling66_kernel_time",
+          "provider": "CPUExecutionProvider",
+          "op": "MaxPool"
+        },
+        {
+          "name": "ReLU114_Output_0_nchwc_kernel_time",
+          "provider": "CPUExecutionProvider",
+          "op": "Conv"
+        },
+        {
+          "name": "Pooling160_Output_0_nchwc_kernel_time",
+          "provider": "CPUExecutionProvider",
+          "op": "MaxPool"
+        },
+        {
+          "name": "ReorderOutput_kernel_time",
+          "provider": "CPUExecutionProvider",
+          "op": "ReorderOutput"
+        },
+        {
+          "name": "Times212_reshape0_kernel_time",
+          "provider": "CPUExecutionProvider",
+          "op": "Reshape"
+        },
+        {
+          "name": "Times212/MatMulAddFusion_kernel_time",
+          "provider": "CPUExecutionProvider",
+          "op": "Gemm"
+        },
+        {
+          "name": "ReLU32_Output_0_nchwc_kernel_time",
+          "provider": "CPUExecutionProvider",
+          "op": "Conv"
+        },
+        {
+          "name": "ReorderOutput_token_5_kernel_time",
+          "provider": "CPUExecutionProvider",
+          "op": "ReorderOutput"
+        },
+        {
+          "name": "Pooling66_kernel_time",
+          "provider": "CPUExecutionProvider",
+          "op": "MaxPool"
+        },
+        {
+          "name": "ReLU114_Output_0_nchwc_kernel_time",
+          "provider": "CPUExecutionProvider",
+          "op": "Conv"
+        },
+        {
+          "name": "Pooling160_Output_0_nchwc_kernel_time",
+          "provider": "CPUExecutionProvider",
+          "op": "MaxPool"
+        },
+        {
+          "name": "ReorderOutput_kernel_time",
+          "provider": "CPUExecutionProvider",
+          "op": "ReorderOutput"
+        },
+        {
+          "name": "Times212_reshape0_kernel_time",
+          "provider": "CPUExecutionProvider",
+          "op": "Reshape"
+        },
+        {
+          "name": "Times212/MatMulAddFusion_kernel_time",
+          "provider": "CPUExecutionProvider",
+          "op": "Gemm"
+        },
+        {
+          "name": "ReLU32_Output_0_nchwc_kernel_time",
+          "provider": "CPUExecutionProvider",
+          "op": "Conv"
+        },
+        {
+          "name": "ReorderOutput_token_5_kernel_time",
+          "provider": "CPUExecutionProvider",
+          "op": "ReorderOutput"
+        },
+        {
+          "name": "Pooling66_kernel_time",
+          "provider": "CPUExecutionProvider",
+          "op": "MaxPool"
+        },
+        {
+          "name": "ReLU114_Output_0_nchwc_kernel_time",
+          "provider": "CPUExecutionProvider",
+          "op": "Conv"
+        },
+        {
+          "name": "Pooling160_Output_0_nchwc_kernel_time",
+          "provider": "CPUExecutionProvider",
+          "op": "MaxPool"
+        },
+        {
+          "name": "ReorderOutput_kernel_time",
+          "provider": "CPUExecutionProvider",
+          "op": "ReorderOutput"
+        },
+        {
+          "name": "Times212_reshape0_kernel_time",
+          "provider": "CPUExecutionProvider",
+          "op": "Reshape"
+        },
+        {
+          "name": "Times212/MatMulAddFusion_kernel_time",
+          "provider": "CPUExecutionProvider",
+          "op": "Gemm"
+        },
+        {
+          "name": "ReLU32_Output_0_nchwc_kernel_time",
+          "provider": "CPUExecutionProvider",
+          "op": "Conv"
+        },
+        {
+          "name": "ReorderOutput_token_5_kernel_time",
+          "provider": "CPUExecutionProvider",
+          "op": "ReorderOutput"
+        },
+        {
+          "name": "Pooling66_kernel_time",
+          "provider": "CPUExecutionProvider",
+          "op": "MaxPool"
+        },
+        {
+          "name": "ReLU114_Output_0_nchwc_kernel_time",
+          "provider": "CPUExecutionProvider",
+          "op": "Conv"
+        },
+        {
+          "name": "Pooling160_Output_0_nchwc_kernel_time",
+          "provider": "CPUExecutionProvider",
+          "op": "MaxPool"
+        },
+        {
+          "name": "ReorderOutput_kernel_time",
+          "provider": "CPUExecutionProvider",
+          "op": "ReorderOutput"
+        },
+        {
+          "name": "Times212_reshape0_kernel_time",
+          "provider": "CPUExecutionProvider",
+          "op": "Reshape"
+        },
+        {
+          "name": "Times212/MatMulAddFusion_kernel_time",
+          "provider": "CPUExecutionProvider",
+          "op": "Gemm"
+        }
+      ],
+      "raw_sha256": "feec976eb102a19208506de847f9910145be04b0e7937a85d1e58028e0fa8719",
+      "meaning": "ORT operation placement from this run; event counts are not hardware counters or elapsed inference time"
+    }
+  },
+  "reference": {
+    "engine": "onnx.reference.ReferenceEvaluator",
+    "rtol": 1e-05,
+    "atol": 2e-05,
+    "max_absolute_logit_difference": 1.33514404296875e-05,
+    "full_output_pass": true
+  },
+  "checks": [
+    {
+      "name": "clean-install",
+      "exit_code": 0,
+      "log_sha256": "8e991999e523f9ccb868b3e38871ea16cf5421832d672a6559a087548f67f7d3"
+    },
+    {
+      "name": "clean-dependencies",
+      "exit_code": 0,
+      "log_sha256": "672aec65a45bed50e70229c70934a7eebf0462595c459b83023027645d57cccf"
+    },
+    {
+      "name": "clean-contracts",
+      "exit_code": 0,
+      "log_sha256": "6448dbcb9d9719264b8a30b3e6031fb37ece6443276d25afd89ab4da0a7c7ee3"
+    },
+    {
+      "name": "clean-cli",
+      "exit_code": 0,
+      "log_sha256": "0ef6621921250136500efcf6bb4ad8ced590c608647c91bb09bf51754595e6e4"
+    }
+  ],
+  "wheel_sha256": "23a5865f4d521cf6b5b524287757bf47f66b855983ee579f9a0b2204d3ad9bed",
+  "contract_tests_passed": 26,
+  "performance": "not collected while shared-workstation performance slot was occupied",
+  "cuda": "not executed; compatible provider dependency and exclusive GPU slot pending",
+  "linux": "hosted optional-consumer check pending; not inferred from prior core checks",
+  "source_inventory_scope": "application source and fixtures, normalized LF bytes; output and source identities are separate from wheel byte reproducibility"
+}

@@ -1,0 +1,26 @@
+[build-system]
+requires = ["scikit-build-core==0.11.6", "pybind11==3.1.0"]
+build-backend = "scikit_build_core.build"
+
+[project]
+name = "hbr-image-classifier"
+version = "0.1.0"
+description = "Optional bounded ONNX image classification consumer"
+requires-python = ">=3.11"
+license = "MIT"
+dependencies = ["numpy>=1.26", "Pillow==12.3.0", "onnx==1.23.1", "adaptive-timing-engine @ git+https://github.com/T92T1914/adaptive-timing-engine.git@f6e0564474b053212f722e107b55b619aa8e50d9"]
+
+[project.optional-dependencies]
+cpu = ["onnxruntime==1.30.0"]
+test = ["pytest==8.4.2"]
+
+[project.scripts]
+hbr-classify = "hbr_image_classifier.cli:main"
+
+[tool.scikit-build]
+wheel.packages = ["python/hbr_image_classifier"]
+wheel.license-files = ["LICENSE"]
+cmake.build-type = "Release"
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]

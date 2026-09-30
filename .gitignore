@@ -1,7 +1,9 @@
 build/
+examples/image_classifier/.artifacts/
 dist/
 *.egg-info/
 .venv/
+.venv-inference/
 __pycache__/
 .pytest_cache/
 *.pyd
