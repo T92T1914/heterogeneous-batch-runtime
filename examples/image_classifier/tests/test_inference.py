@@ -172,6 +172,49 @@ def test_cpu_package_cannot_silently_satisfy_required_cuda(model):
         pytest.skip('this test exercises a CPU-only provider package, not GPU acceptance')
     with pytest.raises(RuntimeError):InferenceExecutor(model,provider='cuda-required')
 
+@pytest.mark.parametrize('provider', ['cpu', 'cuda-required'])
+def test_automatic_runtime_preloads_only_for_required_cuda(model, monkeypatch, provider):
+    import sys
+    from types import SimpleNamespace
+    from hbr_image_classifier import _session
+    from hbr_image_classifier import session as wrapper
+    calls=[]
+    runtime=SimpleNamespace(get_available_providers=lambda:['CUDAExecutionProvider'],
+        preload_dlls=lambda **kwargs:calls.append(('preload',kwargs)))
+    monkeypatch.setitem(sys.modules,'onnxruntime',runtime)
+    monkeypatch.setattr(wrapper,'runtime_library',lambda:'reviewed-runtime')
+    def construct(library, data, requested, prefix):
+        calls.append(('construct',library,requested))
+        return SimpleNamespace(close=lambda:None)
+    monkeypatch.setattr(_session,'Session',construct)
+    wrapped=Session(model,provider=provider)
+    wrapped.close()
+    if provider=='cuda-required':
+        assert calls==[('preload',{'cuda':True,'cudnn':True,'msvc':True,'directory':''}),
+                       ('construct','reviewed-runtime',provider)]
+    else:
+        assert calls==[('construct','reviewed-runtime',provider)]
+
+def test_automatic_required_cuda_rejects_unavailable_provider_before_construction(model, monkeypatch):
+    import sys
+    from types import SimpleNamespace
+    from hbr_image_classifier import _session
+    monkeypatch.setitem(sys.modules,'onnxruntime',SimpleNamespace(get_available_providers=lambda:['CPUExecutionProvider']))
+    monkeypatch.setattr(_session,'Session',lambda *args:pytest.fail('unavailable CUDA cannot construct a session'))
+    with pytest.raises(RuntimeError,match='CUDAExecutionProvider'):
+        Session(model,provider='cuda-required')
+
+def test_explicit_library_preserves_caller_dependency_loading_contract(model, monkeypatch):
+    from types import SimpleNamespace
+    from hbr_image_classifier import _session
+    from hbr_image_classifier import session as wrapper
+    monkeypatch.setattr(wrapper,'runtime_library',lambda:pytest.fail('explicit library must not be replaced'))
+    calls=[]
+    monkeypatch.setattr(_session,'Session',lambda library,*args:(calls.append(library) or SimpleNamespace(close=lambda:None)))
+    wrapped=Session(model,provider='cuda-required',library='explicit-reviewed-library')
+    wrapped.close()
+    assert calls==['explicit-reviewed-library']
+
 def test_probability_math():
     logits=np.array([[1000,1001]+[0]*8],np.float32)
     values=probabilities(logits)

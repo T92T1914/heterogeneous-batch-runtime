@@ -37,7 +37,9 @@ Pass up to eight PNG paths after the options to classify supplied images. PNG fi
 
 ## Provider and lifecycle limits
 
-The tested installation uses ONNX Runtime's CPU package and API version 30. The separately implemented `cuda-required` mode needs a compatible GPU provider package and its documented toolkit dependencies. It disables CPU fallback and fails if CUDA cannot initialize. An actual operator profile is still required to establish execution placement. GPU execution, device memory and timing have not been established by a CPU package or this option's presence.
+The CPU installation uses ONNX Runtime's CPU package and API version 30. Use a separate environment for ONNX Runtime GPU 1.30.0 and its compatible CUDA and cuDNN dependencies. The official package supports `onnxruntime-gpu[cuda,cudnn]==1.30.0`. Its vendor libraries remain outside the default installation.
+
+The automatic `cuda-required` path calls ONNX Runtime's documented `preload_dlls(directory="")` operation to resolve the installed NVIDIA wheels before creating the C++ session. It leaves system paths and settings unchanged. An explicitly supplied runtime library retains the caller's dependency loading contract. Required CUDA disables CPU fallback and fails visibly if CUDA cannot initialize. Available provider names alone do not prove operation placement. The [CUDA protocol](../../docs/inference-cuda-protocol.md) defines the separate actual output, placement, memory and comparison evidence.
 
 Each request owns its snapshot and results. An immutable generation does not cancel physical work. Running cancellation prevents adoption while synchronous inference finishes. Queued cancellation can stop admission. Closing waits for work and closes the session on its owner worker. Capacity includes completed results until reconciliation. Close the executor after at most 256 admitted requests and start a new session for a longer run. Errors do not reuse a request identity or silently adopt a stale result.
 

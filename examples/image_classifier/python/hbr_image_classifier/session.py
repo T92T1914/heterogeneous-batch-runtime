@@ -24,6 +24,14 @@ class Session:
             raise TypeError("a reviewed Model is required")
         if model.sha256 != MODEL_SHA256 or sha256(model.data).hexdigest() != MODEL_SHA256:
             raise ValueError("model does not match the reviewed artifact")
+        if library is None and provider == "cuda-required":
+            import onnxruntime as runtime
+            if "CUDAExecutionProvider" not in runtime.get_available_providers():
+                raise RuntimeError("installed runtime does not provide CUDAExecutionProvider")
+            # Use ORT's documented vendor-wheel search, without changing PATH
+            # or loading an unrelated Torch installation. Explicit library
+            # callers retain responsibility for their chosen dependencies.
+            runtime.preload_dlls(cuda=True, cudnn=True, msvc=True, directory="")
         from ._session import Session as NativeSession
         self._native = NativeSession(library or runtime_library(), model.data, provider, str(profile_prefix))
         self.provider = provider
