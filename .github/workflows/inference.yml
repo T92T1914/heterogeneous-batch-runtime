@@ -42,3 +42,4 @@ jobs:
         shell: pwsh
         run: python examples/image_classifier/memory_check.py --model artifacts/mnist-8.onnx --output artifacts/windows-memory.json
       - run: python tools/check_inference_evidence.py
+      - run: python tools/check_inference_cuda_evidence.py
