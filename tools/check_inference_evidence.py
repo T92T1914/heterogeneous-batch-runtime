@@ -28,6 +28,33 @@ def verify(root):
     if app['placement']['provider_events']!={'CPUExecutionProvider':64}:raise ValueError('recorded CPU placement changed')
     if any(x['exit_code'] for x in data['checks']):raise ValueError('a recorded check failed')
     if data['contract_tests_passed']!=26:raise ValueError('unexpected executed contract count')
+    comparison=json.loads((root/'docs/inference-cpu-reuse.json').read_text())
+    if comparison['model_sha256']!=data['model_sha256'] or (comparison['samples'],comparison['warmups'])!=(20,5):
+        raise ValueError('comparison contract changed')
+    if comparison['installed_consumer_source_fingerprint']!=fingerprint or len(comparison['rows'])!=240:
+        raise ValueError('comparison source or row coverage changed')
+    for count in (1,2,8):
+        for mode in ('cpp-fresh','cpp-reused','python-cpu-reused'):
+            rows=[r for r in comparison['rows'] if r['batch']==count and r['mode']==mode and r['phase']=='sample']
+            if len(rows)!=20 or {r['sample'] for r in rows}!=set(range(20)):
+                raise ValueError('incomplete or duplicate comparison samples')
+    for row in comparison['rows']:
+        if not math.isfinite(row['seconds']) or row['seconds']<0:
+            raise ValueError('invalid completed-call duration')
+    memory=json.loads((root/'docs/inference-cpu-memory.json').read_text())
+    if memory['status']!='completed' or (memory['completed_requests'],memory['full_output_checks'])!=(64,64):
+        raise ValueError('incomplete memory probe')
+    if memory['installed_consumer_source_fingerprint']!=fingerprint or memory['model_sha256']!=data['model_sha256']:
+        raise ValueError('memory probe source or model changed')
+    if sha256((root/'examples/image_classifier/memory_check.py').read_bytes()).hexdigest()!=memory['source_sha256']:
+        raise ValueError('memory probe identity changed')
+    if [r['completed_requests'] for r in memory['snapshots']]!=[0,0,8,16,32,64,64,64]:
+        raise ValueError('incomplete memory checkpoints')
+    for row in memory['snapshots']:
+        if row['outstanding_requests']!=0 or min(row['working_set_bytes'],row['private_usage_bytes'])<0:
+            raise ValueError('invalid quiescent memory sample')
+        if row['peak_working_set_bytes']<row['working_set_bytes']:
+            raise ValueError('invalid process peak')
     return data['source_fingerprint']
 
 if __name__=='__main__':

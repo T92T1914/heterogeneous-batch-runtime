@@ -35,4 +35,8 @@ jobs:
       - name: Installed consumer contracts
         shell: bash
         run: HBR_MNIST_MODEL="$PWD/artifacts/mnist-8.onnx" python -m pytest examples/image_classifier/tests -q
+      - name: Bounded Windows CPU memory probe
+        if: runner.os == 'Windows'
+        shell: pwsh
+        run: python examples/image_classifier/memory_check.py --model artifacts/mnist-8.onnx --output artifacts/windows-memory.json
       - run: python tools/check_inference_evidence.py
