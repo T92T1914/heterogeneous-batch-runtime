@@ -61,6 +61,6 @@ histogram.close();
 
 ## Source and dependencies
 
-The [Adaptive CUDA application](https://github.com/T92T1914/adaptive-timing-engine/blob/main/examples/cuda_histogram.py) uses bounded submission, physical completion and generation reconciliation. Its host asynchronous admission is separate from GPU concurrency. The optional interface documentation defines input mutation, explicit close and diagnostic limitations.
+The [Adaptive CUDA application](https://github.com/T92T1914/adaptive-timing-engine/blob/main/examples/cuda_histogram.py) uses bounded submission, physical completion and generation reconciliation. Its host asynchronous admission is separate from GPU concurrency. The [Python application verification](docs/python-cuda-results.md) separates actual RTX 4090 output checks, fresh installs, hosted Clang/TSan results and the local WSL initialization restriction. The optional interface documentation defines input mutation, explicit close and diagnostic limitations.
 
 This runtime is independently authored for these numerical examples. It contains no source from private applications. C++ standard library facilities provide the runtime. pybind11, scikit-build-core and NumPy are optional packaging/interface dependencies with their own licenses. No toolkit, driver, font or third-party binary is vendored.
