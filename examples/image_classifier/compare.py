@@ -20,22 +20,25 @@ def run_owned(execution, batch, ident):
     execution.observations()
     return result.value
 
-def collect(model, *, provider='cpu', samples=20, warmups=5, deadline_seconds=120):
+def collect(model, *, provider='cpu', samples=20, warmups=5, deadline_seconds=120, on_record=None):
     if (samples,warmups)!=(20,5):raise ValueError('the committed protocol requires 20 samples and five warmups')
     import onnxruntime as ort
     if ort.__version__!='1.30.0':raise ValueError('protocol requires ONNX Runtime 1.30.0')
     opts=ort.SessionOptions();opts.intra_op_num_threads=1;opts.inter_op_num_threads=1
     opts.execution_mode=ort.ExecutionMode.ORT_SEQUENTIAL;opts.graph_optimization_level=ort.GraphOptimizationLevel.ORT_ENABLE_ALL
     rows=[];deadline=time.perf_counter()+deadline_seconds
+    def retain(row):
+        rows.append(row)
+        if on_record is not None:on_record(row)
     reference=ReferenceEvaluator(onnx.load_model_from_string(model.data))
     for count in (8,1,2):
         batch=prepare_arrays(example_images()[:count]);input_hash=sha256(batch.tobytes()).hexdigest()
         expected=np.concatenate([reference.run(None,{'Input3':x[None]})[0] for x in batch])
         setup=time.perf_counter();reused=InferenceExecutor(model,provider=provider);setup_seconds=time.perf_counter()-setup
-        rows.append({'batch':count,'mode':'cpp-reused','phase':'setup','seconds':setup_seconds,'input_sha256':input_hash})
+        retain({'batch':count,'mode':'cpp-reused','phase':'setup','seconds':setup_seconds,'input_sha256':input_hash})
         python=ort.InferenceSession(model.data,opts,providers=['CPUExecutionProvider'])
         try:
-            for iteration in range(-warmups,samples):
+            for iteration in range(-warmups-1,samples):
                 # Alternating order is fixed in advance, not chosen after a fast sample.
                 modes=('cpp-fresh','cpp-reused','python-cpu-reused') if iteration%2==0 else ('python-cpu-reused','cpp-reused','cpp-fresh')
                 for mode in modes:
@@ -53,12 +56,12 @@ def collect(model, *, provider='cpu', samples=20, warmups=5, deadline_seconds=12
                     # remains mandatory for every result and has a separate duration.
                     check=time.perf_counter();np.testing.assert_allclose(values,expected,rtol=1e-5,atol=2e-5)
                     validation_seconds=time.perf_counter()-check
-                    rows.append({'batch':count,'mode':mode,'phase':'warmup' if iteration<0 else 'sample',
+                    retain({'batch':count,'mode':mode,'phase':'first_invocation' if iteration==-warmups-1 else ('warmup' if iteration<0 else 'sample'),
                         'sample':iteration,'seconds':elapsed,'validation_seconds':validation_seconds,'input_sha256':input_hash,
                         'max_absolute_logit_difference':float(np.abs(values-expected).max()),'provider_requested':provider if mode.startswith('cpp') else 'cpu'})
         finally:
             start=time.perf_counter();reused.close();retirement=time.perf_counter()-start
-            rows.append({'batch':count,'mode':'cpp-reused','phase':'retirement','seconds':retirement,'input_sha256':input_hash})
+            retain({'batch':count,'mode':'cpp-reused','phase':'retirement','seconds':retirement,'input_sha256':input_hash})
     return {'schema_version':1,'contract':'prepared tensor, owned admission/input copy, completed host logits; PNG decode and normalization excluded equally',
         'model_sha256':model.sha256,'protocol':'docs/inference-protocol.md','ort_version':ort.__version__,
         'platform':platform.system(),'python':platform.python_version(),'samples':samples,'warmups':warmups,'rows':rows,
@@ -78,8 +81,21 @@ def table(data):
 def main():
     parser=argparse.ArgumentParser();parser.add_argument('--model',required=True);parser.add_argument('--output',required=True)
     parser.add_argument('--provider',choices=['cpu','cuda-required'],default='cpu');args=parser.parse_args()
-    data=collect(load_model(args.model),provider=args.provider)
-    Path(args.output).write_text(json.dumps(data,indent=2)+'\n',encoding='utf8')
+    destination=Path(args.output)
+    if destination.exists():raise ValueError('preserve the existing result; choose a new output identity')
+    model=load_model(args.model)
+    journal=destination.with_suffix(destination.suffix+'.jsonl')
+    with journal.open('x',encoding='utf8') as stream:
+        def record(row):
+            stream.write(json.dumps(row,sort_keys=True)+'\n');stream.flush()
+        record({'record':'metadata','model_sha256':model.sha256,'protocol_sha256':sha256((Path(__file__).parents[2]/'docs/inference-protocol.md').read_bytes()).hexdigest(),
+                'retention':'each row is appended outside the timed interval; prior rows survive incomplete collection'})
+        try:data=collect(model,provider=args.provider,on_record=record)
+        except BaseException as error:
+            record({'record':'incomplete','error_type':type(error).__name__})
+            raise
+        record({'record':'complete','rows':len(data['rows'])})
+    with destination.open('x',encoding='utf8') as output:output.write(json.dumps(data,indent=2)+'\n')
     print(table(data))
 
 if __name__=='__main__':main()

@@ -71,9 +71,9 @@ struct State {
       Ort::ThrowOnError(Ort::GetApi().CreateCUDAProviderOptions(&raw));
       const auto release = [](OrtCUDAProviderOptionsV2* x) { Ort::GetApi().ReleaseCUDAProviderOptions(x); };
       std::unique_ptr<OrtCUDAProviderOptionsV2, decltype(release)> cuda(raw, release);
-      const char* keys[]{"device_id", "gpu_mem_limit", "arena_extend_strategy", "do_copy_in_default_stream"};
-      const char* values[]{"0", "134217728", "kSameAsRequested", "1"};
-      Ort::ThrowOnError(Ort::GetApi().UpdateCUDAProviderOptions(raw, keys, values, 4));
+      const char* keys[]{"device_id", "gpu_mem_limit", "arena_extend_strategy", "do_copy_in_default_stream", "use_tf32", "cudnn_conv_use_max_workspace"};
+      const char* values[]{"0", "134217728", "kSameAsRequested", "1", "0", "0"};
+      Ort::ThrowOnError(Ort::GetApi().UpdateCUDAProviderOptions(raw, keys, values, 6));
       options.AppendExecutionProvider_CUDA_V2(*raw);
       options.AddConfigEntry("session.disable_cpu_ep_fallback", "1");
     } else if (provider != "cpu") {

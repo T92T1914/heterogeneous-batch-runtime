@@ -6,7 +6,7 @@ The [contract and protocol](../../docs/inference-protocol.md) explain ownership,
 
 ## Source and model
 
-The [ONNX Model Zoo MNIST model](https://huggingface.co/onnxmodelzoo/mnist-8) is pinned to repository revision `a19f9a8c2333de1df9b03f10f5739f468b699a1a`. Its 26,454 bytes have SHA-256 `2f06e72de813a8635c9bc0397ac447a601bdbfa7df4bebc278723b958831c9bf`. The source describes CNTK training, ONNX IR 3 and opset 8. Its model card declares Apache-2.0. This application does not claim to reproduce the published training or accuracy result.
+The [ONNX Model Zoo MNIST model](https://huggingface.co/onnxmodelzoo/mnist-8) is pinned to repository revision `a19f9a8c2333de1df9b03f10f5739f468b699a1a`. Its 26,454 bytes have SHA-256 `2f06e72de813a8635c9bc0397ac447a601bdbfa7df4bebc278723b958831c9bf`. The source describes CNTK training, ONNX IR 3 and opset 8. The card's metadata says Apache-2.0, while its SPDX comment and license section say MIT. The manifest retains that discrepancy. This repository does not redistribute the model or claim to resolve its artifact licensing. It also does not claim to reproduce the published training or accuracy result.
 
 The [artifact manifest](artifacts.json) records the model and ONNX Runtime 1.30 API header identities. Header source is Microsoft's ONNX Runtime repository, under its [MIT license](https://github.com/microsoft/onnxruntime/blob/v1.30.0/LICENSE). Model Zoo's [Apache license](https://github.com/onnx/models/blob/main/LICENSE) applies separately. Models, headers and provider binaries are acquired into a chosen local directory, not committed here or included in the application wheel. Pillow, NumPy, ONNX and ONNX Runtime retain their own licenses. The application source uses the repository's MIT license.
 
@@ -21,11 +21,10 @@ python -m venv .venv-inference
 # Activate the environment using your platform's normal command.
 python -m pip install scikit-build-core==0.11.6 pybind11==3.1.0 cmake==3.31.6 ninja==1.13.0
 python examples/image_classifier/acquire.py examples/image_classifier/.artifacts
-python -m pip install "git+https://github.com/T92T1914/adaptive-timing-engine.git@f6e0564474b053212f722e107b55b619aa8e50d9"
 python -m pip install "./examples/image_classifier[cpu,test]" -Ccmake.define.HBR_ORT_INCLUDE="$PWD/examples/image_classifier/.artifacts/sdk/include"
 ```
 
-PowerShell uses the same final setting with `$PWD` converted to its full path in the quoted argument. Keep build parallelism at one on a shared machine. The exact tested versions and actual executions appear in the [verification report](../../docs/inference-results.md).
+The optional package declares its Adaptive Timing dependency at the exact public revision shown in the verification report. Installation therefore also needs ordinary public Git access. PowerShell uses the same final setting with `$PWD` converted to its full path in the quoted argument. Keep build parallelism at one on a shared machine. The exact tested versions and actual executions appear in the [verification report](../../docs/inference-results.md).
 
 For a separate installed application, set `HBR_MNIST_MODEL` to the acquired model file and run the test directory. This variable is a test input, not a hidden model download.
 

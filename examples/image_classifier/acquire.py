@@ -4,6 +4,31 @@ from hashlib import sha256
 import json
 from pathlib import Path
 import urllib.request
+import os
+import tempfile
+
+def publish(target, data, expected_hash):
+    """Publish complete verified bytes atomically without replacing any file."""
+    target=Path(target)
+    if sha256(data).hexdigest()!=expected_hash:
+        raise ValueError('unverified artifact bytes')
+    temporary=None
+    try:
+        with tempfile.NamedTemporaryFile(dir=target.parent,prefix='.acquire-',suffix='.tmp',delete=False) as output:
+            temporary=Path(output.name)
+            output.write(data)
+            output.flush()
+            os.fsync(output.fileno())
+        try:
+            # A hard link is an atomic exclusive publication on supported local
+            # filesystems. Existing content is never overwritten.
+            os.link(temporary,target)
+        except FileExistsError:
+            if sha256(target.read_bytes()).hexdigest()!=expected_hash:
+                raise ValueError('concurrently created artifact differs; preserved')
+    finally:
+        if temporary is not None:
+            temporary.unlink(missing_ok=True)
 
 def acquire(destination):
     destination=Path(destination)
@@ -22,8 +47,7 @@ def acquire(destination):
             data=response.read(record['bytes']+1)
         if len(data)!=record['bytes'] or sha256(data).hexdigest()!=record['sha256']:
             raise ValueError('acquired artifact failed size or identity validation')
-        # Exclusive create protects a concurrently acquired or changed artifact.
-        with target.open('xb') as output:output.write(data)
+        publish(target,data,record['sha256'])
     return manifest
 
 if __name__=='__main__':
