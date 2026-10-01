@@ -109,9 +109,10 @@ class CudaHistogramContext:
             raise ValueError("fixed two-dimensional image shape required")
         if not image.flags.c_contiguous:
             raise ValueError("C contiguous input required")
+        # Use the base array copy, not an overridable subclass copy method.
         # Snapshot completes here before any native work or GIL release.
-        owned = image.copy(order="C")
-        # An ndarray subclass can close this context during its copy method.
+        owned = np.asarray(image).copy(order="C")
+        # Subclass validation can close this context before snapshotting.
         if self._closed:
             raise RuntimeError("histogram context is closed")
         result = Future()
