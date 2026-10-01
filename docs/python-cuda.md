@@ -44,7 +44,10 @@ context on that same thread. The caller's current device does not redirect it.
 The private binding retains the native creating-thread/current-device checks.
 Do not use the private binding directly or change its owner's current device.
 
-`run` copies the input before admission to its native owner. The binding copies
+`run` converts an accepted array subclass to a base ndarray and copies that
+array before admission to its native owner. It does not call the subclass's
+overridable copy method. The owned snapshot cannot share caller storage.
+The binding copies
 that owned array to a C++ vector while holding the GIL, then releases the GIL
 around synchronous native execution. The input has to remain free of writes
 through the copy. The GIL cannot exclude external native array writers. Caller
@@ -52,7 +55,7 @@ mutation during the snapshot is unsupported even if a Python reference stays
 alive. The Adaptive adapter adds a submission snapshot so caller mutation after
 successful submission returns is supported.
 
-If an array subclass closes the context during its copy method, `run` rejects
+If an array subclass closes the context during input validation, `run` rejects
 the copied input before queueing it. No result is left waiting for an owner
 that has already shut down.
 

@@ -109,7 +109,7 @@ def test_pending_call_keeps_owned_snapshot_until_return(monkeypatch):
     np.testing.assert_array_equal(observed[0], np.full((2, 2), 3, dtype=np.uint8))
 
 
-def test_reentrant_input_copy_cannot_queue_after_owner_shutdown(monkeypatch):
+def test_reentrant_input_validation_cannot_queue_after_owner_shutdown(monkeypatch):
     calls = []
     class Native:
         device_bytes = 42
@@ -130,9 +130,11 @@ def test_reentrant_input_copy_cannot_queue_after_owner_shutdown(monkeypatch):
         return original_put(item, *args, **kwargs)
     monkeypatch.setattr(context._queue, "put", guarded_put)
     class ClosingImage(np.ndarray):
-        def copy(self, *args, **kwargs):
+        @property
+        def dtype(self):
+            # Validation can run owner-thread subclass code before snapshotting.
             context.close()
-            return np.zeros((2, 2), dtype=np.uint8)
+            return np.dtype("uint8")
     image = np.zeros((2, 2), dtype=np.uint8).view(ClosingImage)
     try:
         with pytest.raises(RuntimeError, match="closed"):
@@ -142,6 +144,56 @@ def test_reentrant_input_copy_cannot_queue_after_owner_shutdown(monkeypatch):
         assert context._queue.empty()
     finally:
         context.close()
+
+
+@pytest.mark.parametrize("copy_kind", ["ordinary", "self", "shared_view"])
+def test_subclass_copy_cannot_alias_pending_input(monkeypatch, copy_kind):
+    entered, release = threading.Event(), threading.Event()
+    observed, failures = [], []
+
+    class OverriddenCopy(np.ndarray):
+        def copy(self, *, order="C"):
+            assert order == "C"
+            return self if copy_kind == "self" else self.view(np.ndarray)
+
+    image = np.full((2, 2), 3, dtype=np.uint8)
+    if copy_kind != "ordinary":
+        image = image.view(OverriddenCopy)
+
+    class Native:
+        device_bytes = 42
+        def __init__(self, *args):
+            self.owner = threading.get_ident()
+        def run(self, owned, *args):
+            assert threading.get_ident() == self.owner
+            entered.set()
+            if not release.wait(2):
+                raise TimeoutError("pending subclass snapshot gate")
+            observed.append((np.asarray(owned).tolist(), np.shares_memory(owned, image), type(owned)))
+            return None
+        def close(self):
+            assert threading.get_ident() == self.owner
+
+    monkeypatch.setattr(_native, "cuda_built", True)
+    monkeypatch.setattr(_native, "_cuda_select_device", lambda device: "synthetic host owner", raising=False)
+    monkeypatch.setattr(_native, "_CudaHistogramContext", Native, raising=False)
+    def caller():
+        try:
+            with CudaHistogramContext(2, 2, 1, 1) as context:
+                context.run(image)
+        except BaseException as exc:
+            failures.append(exc)
+    thread = threading.Thread(target=caller)
+    thread.start()
+    try:
+        # The real Python boundary has queued its claimed snapshot already.
+        assert entered.wait(1)
+        image.fill(9)
+    finally:
+        release.set()
+        thread.join(timeout=3)
+    assert not thread.is_alive() and not failures
+    assert observed == [([[3, 3], [3, 3]], False, np.ndarray)]
 
 
 @pytest.mark.parametrize("shape,tile,shared", [((17, 19), (4, 5), True), ((3, 4), (1, 2), False),
