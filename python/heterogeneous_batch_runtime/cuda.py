@@ -111,6 +111,9 @@ class CudaHistogramContext:
             raise ValueError("C contiguous input required")
         # Snapshot completes here before any native work or GIL release.
         owned = image.copy(order="C")
+        # An ndarray subclass can close this context during its copy method.
+        if self._closed:
+            raise RuntimeError("histogram context is closed")
         result = Future()
         self._queue.put((owned, result))
         return result.result()
