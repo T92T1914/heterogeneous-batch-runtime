@@ -109,6 +109,41 @@ def test_pending_call_keeps_owned_snapshot_until_return(monkeypatch):
     np.testing.assert_array_equal(observed[0], np.full((2, 2), 3, dtype=np.uint8))
 
 
+def test_reentrant_input_copy_cannot_queue_after_owner_shutdown(monkeypatch):
+    calls = []
+    class Native:
+        device_bytes = 42
+        def run(self, *args):
+            calls.append("run")
+            raise AssertionError("closed owner must not execute")
+        def close(self):
+            calls.append("close")
+    monkeypatch.setattr(_native, "cuda_built", True)
+    monkeypatch.setattr(_native, "_cuda_select_device", lambda device: "synthetic host owner", raising=False)
+    monkeypatch.setattr(_native, "_CudaHistogramContext", lambda *args: Native(), raising=False)
+    context = CudaHistogramContext(2, 2, 1, 1)
+    original_put = context._queue.put
+    def guarded_put(item, *args, **kwargs):
+        # Turn the old unconsumed queue entry into a failure instead of hanging.
+        if item[0] is not None and context._closed:
+            raise AssertionError("work queued after native owner shutdown")
+        return original_put(item, *args, **kwargs)
+    monkeypatch.setattr(context._queue, "put", guarded_put)
+    class ClosingImage(np.ndarray):
+        def copy(self, *args, **kwargs):
+            context.close()
+            return np.zeros((2, 2), dtype=np.uint8)
+    image = np.zeros((2, 2), dtype=np.uint8).view(ClosingImage)
+    try:
+        with pytest.raises(RuntimeError, match="closed"):
+            context.run(image)
+        assert "run" not in calls
+        assert not context._thread.is_alive()
+        assert context._queue.empty()
+    finally:
+        context.close()
+
+
 @pytest.mark.parametrize("shape,tile,shared", [((17, 19), (4, 5), True), ((3, 4), (1, 2), False),
                                               ((0, 7), (2, 3), True)])
 def test_real_cuda_correctness_and_contract(shape, tile, shared):

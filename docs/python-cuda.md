@@ -52,6 +52,10 @@ mutation during the snapshot is unsupported even if a Python reference stays
 alive. The Adaptive adapter adds a submission snapshot so caller mutation after
 successful submission returns is supported.
 
+If an array subclass closes the context during its copy method, `run` rejects
+the copied input before queueing it. No result is left waiting for an owner
+that has already shut down.
+
 Native return follows upload, kernel execution, download and stream
 synchronization. The result array is constructed after the GIL is reacquired.
 Host asynchronous submission does not establish concurrent GPU work or transfer
