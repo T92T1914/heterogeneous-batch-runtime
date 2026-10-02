@@ -35,3 +35,24 @@ These are total process counters, including Python, the reference evaluator, loa
 Execute preprocessing and entire-logit reference checks, repeated calls, mutable input after admission, independent results, duplicate identity, capacity, queued and running cancellation, stale adoption, failure retirement and waiting shutdown. A CPU-only provider must reject required CUDA. Actual GPU correctness, placement, memory and timings are separate acceptance items.
 
 Build the default CPU runtime without these dependencies. Build and install the optional consumer separately, then exercise it from outside the source directory. Retain actual CPU evidence even when GPU or measurement prerequisites are unavailable. Generate comparison tables from machine-readable rows. No result is filled in before execution, and an unexecuted comparison remains pending.
+
+### Interrupted session initialization
+
+The consumer now pins Adaptive Timing revision
+`b7cd3b716c588cf422320367c26ef3c6841ce5cb`. Its owner initializer closes and
+releases a created session on the worker when the caller interrupts construction.
+The consumer's close override still runs, including its profile cleanup. The
+original `KeyboardInterrupt` or `SystemExit` propagates. A cleanup failure adds
+a diagnostic to that interruption. A factory remains responsible for partial
+resources it never returns, and shutdown cannot force a nonreturning operation
+or survive every repeated interruption.
+
+Four deterministic installed-consumer cases compare this revision with the
+previous `f6e0564474b053212f722e107b55b619aa8e50d9` pin. A thread-bound stand-in
+session exposes missed close calls and final reference release on another thread.
+The older pin fails those checks. The new pin closes and destroys the session on
+its worker, preserves the caller interruption and retires the worker. These
+checks exercise the actual installed `InferenceExecutor` with a substituted
+session. They do not execute ONNX, establish GPU cleanup or measure performance.
+The earlier numerical and inference measurements retain their original source
+and dependency identities.
