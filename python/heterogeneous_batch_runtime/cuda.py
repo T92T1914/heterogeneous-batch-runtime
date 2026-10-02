@@ -84,16 +84,63 @@ class CudaHistogramContext:
         self._thread = threading.Thread(target=_owner,
             args=(self._queue, ready, self._shape, self._tile, device, shared_bins),
             name="hbr-cuda-owner", daemon=True)
-        self._thread.start()
+        retired = threading.Event()
+        owner_queue, owner_thread = self._queue, self._thread
+
+        def abandon_owner():
+            # Capture only worker state, never self. Failed registration setup
+            # may leave this callback registered after explicit retirement.
+            if not retired.is_set():
+                _shutdown(owner_queue, owner_thread)
+
+        finalizer = None
         try:
+            self._thread.start()
             self.device_name, self.device_bytes = ready.result()
-        except BaseException:
-            self._thread.join()
+            # Install abandonment cleanup as part of acquisition. If its setup
+            # fails, the explicit retirement path still owns the live worker.
+            finalizer = weakref.finalize(self, abandon_owner)
+            finalizer.atexit = False
+            self._finalizer = finalizer
+        except BaseException as error:
+            diagnostics = []
+            if finalizer is not None:
+                try:
+                    finalizer.detach()
+                except BaseException as detach_error:
+                    try:
+                        diagnostic = f"{type(detach_error).__name__}: {detach_error}"
+                    except BaseException:
+                        diagnostic = f"{type(detach_error).__name__}: diagnostic unavailable"
+                    diagnostics.append(f"CUDA initialization fallback detach failed: {diagnostic}")
+            # An interrupted caller can leave a successfully initialized owner
+            # waiting for input. Signal retirement before joining that worker.
+            stopped = Future()
+            self._queue.put((None, stopped))
+            # A failed start can leave no thread at all. Only join a worker
+            # whose public identity confirms that startup has completed.
+            if self._thread.ident is not None:
+                self._thread.join()
+            retired.set()
+            # A failed factory exits before reading the queue. Its stop receipt
+            # remains pending and must never be awaited. A live owner's cleanup
+            # failure is additional context, not a replacement caller error.
+            if stopped.done():
+                try:
+                    stopped.result()
+                except BaseException as cleanup_error:
+                    try:
+                        diagnostic = f"{type(cleanup_error).__name__}: {cleanup_error}"
+                    except BaseException:
+                        diagnostic = f"{type(cleanup_error).__name__}: diagnostic unavailable"
+                    diagnostics.append(f"CUDA initialization cleanup failed: {diagnostic}")
+            for diagnostic in diagnostics:
+                try:
+                    error.add_note(diagnostic)
+                except BaseException:
+                    # Diagnostic methods must not replace the acquisition error.
+                    pass
             raise
-        # Ordinary abandonment can signal the owner without destroying CUDA on
-        # a finalizer thread. Interpreter termination is not a supported drain.
-        self._finalizer = weakref.finalize(self, _shutdown, self._queue, self._thread)
-        self._finalizer.atexit = False
 
     def _check_owner(self):
         if threading.get_ident() != self._owner:

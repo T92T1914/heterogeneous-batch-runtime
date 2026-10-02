@@ -74,6 +74,24 @@ permanent retirement and drains before submitted storage is released. Input
 validation failures do not execute work. Existing native fault tests exercise
 the execution retirement path with synthetic host exceptions, not device loss.
 
+Failure during owner initialization or abandonment-cleanup registration signals
+a launched owner to stop before joining it. A created context closes and is
+released on that owner. The original acquisition error propagates, with a
+best-effort diagnostic if cleanup fails. An error's own diagnostic method cannot
+replace that acquisition error. A failed factory does not wait for a
+stop receipt that can never arrive. A start failure before launch does not join
+an unstarted thread. A start call that fully launches its worker before raising
+uses the same retirement path. Cleanup attempts to detach a registered fallback
+if its setup fails. A detach error does not skip explicit retirement. After the
+worker has been joined, a still-registered fallback cannot repeat its shutdown.
+Host tests inject detach failures before and after its effect. Those schedules
+do not establish that CPython's finalizer has either failure mode.
+
+A native factory remains responsible for partial resources it does not return.
+Half-completed OS thread startup, a nonreturning factory and repeated interruption
+remain outside guaranteed shutdown. The host fault checks for this handshake do
+not execute CUDA or establish device recovery.
+
 Ordinary object abandonment signals and joins the dedicated owner, including
 when the last reference is released by a different Python thread. This is a
 fallback for ordinary garbage collection, not the primary shutdown protocol.
