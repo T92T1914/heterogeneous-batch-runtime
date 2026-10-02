@@ -8,7 +8,7 @@ version = "0.1.0"
 description = "Optional bounded ONNX image classification consumer"
 requires-python = ">=3.11"
 license = "MIT"
-dependencies = ["numpy>=1.26", "Pillow==12.3.0", "onnx==1.23.1", "adaptive-timing-engine @ git+https://github.com/T92T1914/adaptive-timing-engine.git@b7cd3b716c588cf422320367c26ef3c6841ce5cb"]
+dependencies = ["numpy>=1.26", "Pillow==12.3.0", "onnx==1.23.1", "adaptive-timing-engine @ git+https://github.com/T92T1914/adaptive-timing-engine.git@bb4f244a998c680ada7d3e316085daa6dfb540df"]
 
 [project.optional-dependencies]
 cpu = ["onnxruntime==1.30.0"]

@@ -38,7 +38,7 @@ Build the default CPU runtime without these dependencies. Build and install the 
 
 ### Interrupted session initialization
 
-The consumer now pins Adaptive Timing revision
+The interrupted-initialization adoption used Adaptive Timing revision
 `b7cd3b716c588cf422320367c26ef3c6841ce5cb`. Its owner initializer closes and
 releases a created session on the worker when the caller interrupts construction.
 The consumer's close override still runs, including its profile cleanup. The
@@ -56,3 +56,21 @@ checks exercise the actual installed `InferenceExecutor` with a substituted
 session. They do not execute ONNX, establish GPU cleanup or measure performance.
 The earlier numerical and inference measurements retain their original source
 and dependency identities.
+
+### Session cleanup failure
+
+The current consumer pins Adaptive Timing revision
+`bb4f244a998c680ada7d3e316085daa6dfb540df`. A failed session close reports a
+`RuntimeError` containing the original error type and message. The executor
+releases its session reference and ordinary cleanup traceback locals on the
+worker before returning that diagnostic. Retaining the caller error no longer
+retains those worker-owned references. Repeated close remains harmless, and a
+failed profile close does not publish a profile path.
+
+Two installed-consumer fault cases exercise ordinary and chained close errors
+with a thread-bound stand-in session. They fail with the prior `b7cd3b7` pin and
+pass with the new pin while the caller retains its diagnostic. This is ownership
+evidence for the installed adapter, not an executed ONNX failure, GPU safety
+check or performance measurement. Resource methods remain responsible for
+external aliases and self-cyclic error graphs. Historical results keep their
+original dependency pins.

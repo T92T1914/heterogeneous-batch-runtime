@@ -21,7 +21,7 @@ jobs:
         with:
           python-version: '3.11'
       - run: python examples/image_classifier/acquire.py artifacts
-      - run: python -m pip install "git+https://github.com/T92T1914/adaptive-timing-engine.git@b7cd3b716c588cf422320367c26ef3c6841ce5cb"
+      - run: python -m pip install "git+https://github.com/T92T1914/adaptive-timing-engine.git@bb4f244a998c680ada7d3e316085daa6dfb540df"
       - name: Linux consumer wheel
         if: runner.os != 'Windows'
         run: python -m pip install "./examples/image_classifier[cpu,test]" -Ccmake.define.HBR_ORT_INCLUDE="$PWD/artifacts/sdk/include"
