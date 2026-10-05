@@ -44,6 +44,8 @@ The optional CUDA backend uses a completed synchronous C++ interface. Configure 
 
 Native installation exports `hbr::hbr` and, when enabled, `hbr::hbr_cuda`. Configure `tests/consumer` against the installed prefix to check a separate application. CUDA consumers also need a compatible CUDA toolkit. No toolkit is bundled.
 
+CMake consumers can require `COMPONENTS cpu` or `COMPONENTS cpu cuda`. A required CUDA component rejects a CPU-only installation during configuration. `OPTIONAL_COMPONENTS cuda` reports the compiled capability through `hbr_cuda_FOUND`. This does not probe a driver or execute a device. The installed consumer runs CPU work by default. Use `-DHBR_CONSUMER_CUDA=ON` only for a separately authorized CUDA check. The [backend discovery contract](docs/backend-discovery.md) records supported requests and the boundaries for future HIP and SYCL work.
+
 Executed results are recorded separately from source capabilities. Cross-vendor comparisons are not established by one CUDA implementation. No hardware-independent speedup is claimed.
 
 The [September execution report](docs/results-2026-09-29.md) includes Windows and WSL verification, fresh package consumers, actual RTX 4090 execution, a CUDA trace and the original slower GPU results. It also records a measured correction to CPU stencil dispatch. Hardware-counter profiling and Windows GPU sanitizer initialization remain restricted in that environment. The [retained evidence check](tools/validate_evidence.py) validates the published sample groups and file identities.
