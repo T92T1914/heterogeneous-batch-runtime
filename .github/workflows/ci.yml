@@ -17,6 +17,10 @@ jobs:
       - run: cmake -S . -B build -DCMAKE_BUILD_TYPE=Release
       - run: cmake --build build --config Release --parallel 2
       - run: ctest --test-dir build -C Release --output-on-failure
+      - name: Install and exercise backend discovery
+        run: |
+          cmake --install build --config Release --prefix installed
+          python tests/package_components.py --prefix installed
       - name: Build Linux wheel
         if: runner.os != 'Windows'
         run: python -m pip install . pytest
