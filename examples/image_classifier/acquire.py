@@ -43,10 +43,17 @@ def acquire(destination):
                 raise ValueError('existing artifact differs; preserved without overwrite')
             continue
         request=urllib.request.Request(record['url'],headers={'User-Agent':'hbr-image-classifier/0.1'})
+        # Name the pinned input without logging a redirect URL or response body.
+        print(f"Acquiring pinned artifact {record['name']} ({record['bytes']} expected bytes)", flush=True)
         with urllib.request.urlopen(request,timeout=30) as response:
             data=response.read(record['bytes']+1)
-        if len(data)!=record['bytes'] or sha256(data).hexdigest()!=record['sha256']:
-            raise ValueError('acquired artifact failed size or identity validation')
+        observed_hash=sha256(data).hexdigest()
+        if len(data)!=record['bytes'] or observed_hash!=record['sha256']:
+            raise ValueError(
+                f"acquired artifact {record['name']} failed size or identity validation: "
+                f"expected {record['bytes']} bytes and sha256 {record['sha256']}; "
+                f"received {len(data)} bytes and sha256 {observed_hash}; "
+                'no artifact published')
         publish(target,data,record['sha256'])
     return manifest
 
