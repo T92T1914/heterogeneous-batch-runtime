@@ -1,0 +1,29 @@
+{
+  "schema_version": 1,
+  "source_revision": "34e2b1151681ba231eb38713bde1a2f21cf8444f",
+  "theme_revision": "7a57fe750ff50205a17e1d342106a0d3f2777159",
+  "files": {
+    "docs/evidence/execution.json": "e24da16890efe03272698bfbffba07d792048f84a96b469ec17af05469f6d8ec",
+    "docs/evidence/baseline-cpu.csv": "9697f4e834c6573517e14a226dbd10a630e51d3a427312076cf759df255f41b6",
+    "docs/evidence/baseline-cuda.csv": "a83f16d5046ff83d719578aad2a5fce03da5b51f2c63a63b3e0b856f75002f11",
+    "docs/evidence/followup-cpu.csv": "cb9eb5e6e8bc11cf6993056d778aea3951ab2b4a1ee044b525c95a1949deea69",
+    "docs/evidence/reuse.csv": "a55877130311d315d9c10774d788a478391c70fb5f240b5c9f14e9d842270e06",
+    "docs/evidence/reuse-execution.json": "0fdd066441d38cd5b381a44b053588f09d01795fa54b94c4cd5eff2c93405ecd",
+    "docs/reuse-protocol.json": "2c68f7b1fef6a29cfae537b1c0c935d1e46df4d31ef926d1b2913d570b25e5f3",
+    "docs/reuse-contract.md": "be8af4cc685e9b442ac3dc7c6378299889a3f369b23a1d51a482919f17a0b39a",
+    "docs/inference-cpu-evidence.json": "6cf2fe3f1c989e980cc7a6f21136852ee23d70bba8bd129639a87ebeffcf84e1",
+    "docs/inference-cpu-reuse.json": "4a4acf2e3dfbb5e7de6f4e14c3ab135cb3f13fd4ab102b5ccc72e9d8aa08a47f",
+    "docs/inference-cpu-memory.json": "4c77de8ed877dce0ea876fbd0724bd0ade30d5af195923ca1669cb36db441092",
+    "docs/inference-cuda-evidence.json": "e10f5b7bff74da840725493561fb0458c576977b328b272b095a5250bce10b32",
+    "docs/inference-protocol.md": "69a9324e3037f95afc792e261d05750f34bc19450d01dbf15b9fbc5d53b50a51",
+    "docs/inference-cuda-protocol.md": "00aaf72f52f0624c4d256ebc2be0b08a0492b9d157e930dd90a7736465797450",
+    "docs/contracts.md": "5e66f2fead2b67a315bfaa933fe437a1ab9d04d3d4ce67ade4b2262df5351850",
+    "docs/backend-discovery.md": "9c6a51d8d0812030ecbfc793b1b88048f13ce79f3480c773a62aeb857d1bcb7c",
+    "docs/python-cuda-results.md": "9f721e894ebf77180d72381942b85744983c0e05cfa6d3effd330f7ba8bbbd11",
+    "docs/results-2026-09-29.md": "d524f77cf7cea14a62070a80e694f18343a0128d6a49b2e149815f424f13204d",
+    "docs/reuse-results.md": "3eae8831affa7cd21acf3297964e53a09605509c325d0f140f005644afda257a",
+    "docs/inference-results.md": "daa89cc158995fa2d8f9d43c215d4f13373f887ad34c3c806e2cdf2b7582ce9d",
+    "docs/inference-cuda-results.md": "befc3795191325500f6f4be30b209d9f3014cee8f38717427151fbf492ba8891",
+    "web/theme-tokens.json": "889df65e0f4f4eea99a81c535d542e7332b537c000c332402a3ffa6a6cbb15b7"
+  }
+}

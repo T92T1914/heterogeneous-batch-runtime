@@ -1,0 +1,88 @@
+name: Runtime page checks and publish
+on:
+  push:
+    branches: [main]
+    paths:
+      - 'web/**'
+      - 'docs/**'
+      - 'tools/build_site.py'
+      - 'tests/test_site.py'
+      - 'tests/site-selection.test.mjs'
+      - 'tests/browser/**'
+      - '.github/workflows/pages.yml'
+  pull_request:
+    paths:
+      - 'web/**'
+      - 'docs/**'
+      - 'tools/build_site.py'
+      - 'tests/test_site.py'
+      - 'tests/site-selection.test.mjs'
+      - 'tests/browser/**'
+      - '.github/workflows/pages.yml'
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  verify:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@fbc6f3992d24b796d5a048ff273f7fcc4a7b6c09
+      - uses: actions/setup-python@ece7cb06caefa5fff74198d8649806c4678c61a1
+        with:
+          python-version: '3.11'
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '24'
+      - run: python tools/build_site.py
+      - run: python -m unittest discover -s tests -p test_site.py -v
+      - run: node --test tests/site-selection.test.mjs
+  browser:
+    needs: verify
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    strategy:
+      fail-fast: false
+      matrix:
+        engine: [chromium, firefox, webkit]
+    steps:
+      - uses: actions/checkout@fbc6f3992d24b796d5a048ff273f7fcc4a7b6c09
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '24'
+      - run: npm ci --ignore-scripts --no-fund
+        working-directory: tests/browser
+      - run: npx playwright install --with-deps ${{ matrix.engine }}
+        working-directory: tests/browser
+      - run: npm test
+        working-directory: tests/browser
+        env:
+          RUNTIME_BROWSER_ENGINE: ${{ matrix.engine }}
+          # Use the hosted Chrome channel, as in the accepted Atlas workflow.
+          RUNTIME_BROWSER_CHANNEL: ${{ matrix.engine == 'chromium' && 'chrome' || '' }}
+  deploy:
+    needs: [verify, browser]
+    if: github.ref == 'refs/heads/main' && github.event_name != 'pull_request'
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    permissions:
+      contents: read
+      pages: write
+      id-token: write
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    concurrency:
+      group: runtime-pages
+      cancel-in-progress: false
+    steps:
+      - uses: actions/checkout@fbc6f3992d24b796d5a048ff273f7fcc4a7b6c09
+      - uses: actions/configure-pages@v5
+      - uses: actions/upload-pages-artifact@v4
+        with:
+          name: github-pages-${{ github.run_attempt }}
+          path: web
+      - uses: actions/deploy-pages@v4
+        id: deployment
+        with:
+          artifact_name: github-pages-${{ github.run_attempt }}
