@@ -58,6 +58,8 @@ jobs:
         working-directory: tests/browser
         env:
           RUNTIME_BROWSER_ENGINE: ${{ matrix.engine }}
+          # Use the hosted Chrome channel, as in the accepted Atlas workflow.
+          RUNTIME_BROWSER_CHANNEL: ${{ matrix.engine == 'chromium' && 'chrome' || '' }}
   deploy:
     needs: [verify, browser]
     if: github.ref == 'refs/heads/main' && github.event_name != 'pull_request'
