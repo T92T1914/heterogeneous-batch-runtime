@@ -6,6 +6,8 @@ The runtime keeps submitted work alive until it actually finishes. Cancelling a 
 
 [Explore the project and its retained measurements](https://t92t1914.github.io/heterogeneous-batch-runtime/). The browser page compares the saved CPU and CUDA results, including cases where an optimized path was slower. It explains what each timing includes and keeps the complete call separate from kernel time.
 
+[![The Runtime project page asks how faster kernels compare with the complete call, then links to retained CPU and CUDA evidence.](docs/runtime-project-page.jpg)](https://t92t1914.github.io/heterogeneous-batch-runtime/)
+
 ## Build and inspect
 
 Use CMake 3.24 or later and a C++20 compiler. Build with a conservative parallel limit on a shared machine.
