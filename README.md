@@ -4,6 +4,8 @@ I am building a small native runtime to compare three numerical workloads across
 
 The runtime keeps submitted work alive until it actually finishes. Cancelling a running operation records a request. It does not pretend that the operation stopped or that its storage can already be reused.
 
+[Explore the project and its retained measurements](https://t92t1914.github.io/heterogeneous-batch-runtime/). The browser page compares the saved CPU and CUDA results, including cases where an optimized path was slower. It explains what each timing includes and keeps the complete call separate from kernel time.
+
 ## Build and inspect
 
 Use CMake 3.24 or later and a C++20 compiler. Build with a conservative parallel limit on a shared machine.
