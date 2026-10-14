@@ -1,0 +1,665 @@
+{
+  "schema_version": 1,
+  "review_date": "2026-10-14",
+  "source_revision": "188a7ec0480d5ec43d7f5e69b541ad8ebbc1b130",
+  "source_files": [
+    {
+      "path": "examples/image_classifier/session.cpp",
+      "sha256": "234afb337421f5663a777aeaa332b20fbead22a695d60fa966675ba83f9a1165"
+    },
+    {
+      "path": "examples/image_classifier/compare_batching.py",
+      "sha256": "dc9557b3768deddbedd546334b925260171935b964fdb81579d266e2a6b79e54"
+    },
+    {
+      "path": "examples/image_classifier/memory_check.py",
+      "sha256": "c7866c83b1083ccdfeceb43325caebb2082ec7f91c6145ac796ebb9642d88de4"
+    },
+    {
+      "path": "examples/image_classifier/python/hbr_image_classifier/model.py",
+      "sha256": "d9f4b4245802777a3447e8915c060deb5e46410ad0216f826ffee2b88e97c420"
+    },
+    {
+      "path": "examples/image_classifier/python/hbr_image_classifier/batching.py",
+      "sha256": "0b2f6f925150c96f7e55dff507545bce4d792b95e635ea6387138a539000e0c7"
+    },
+    {
+      "path": "examples/image_classifier/python/hbr_image_classifier/session.py",
+      "sha256": "a31be59090efeadef3942b4928cce701c5a7860de8d67d2bbbf6cd77fc52e61d"
+    },
+    {
+      "path": "examples/image_classifier/python/hbr_image_classifier/executor.py",
+      "sha256": "88af269b807b6d92e661b828d7f60baeb637ec0b5188e2c98bcbcd68fc482f74"
+    },
+    {
+      "path": "examples/image_classifier/python/hbr_image_classifier/cli.py",
+      "sha256": "423aa79255d845cffc11e3abd5dc13fb8bfc49011cb71bc10dbb5206eb0289c9"
+    },
+    {
+      "path": "docs/batching-performance-protocol.md",
+      "sha256": "d0a8c5997297eaa528f1f069bc6353be1d7ab4eb97d48e20300efa5a06c8f0c8"
+    }
+  ],
+  "source_fingerprint": "0c6d0211adc9d0f9c005e1414537afce89e032a7ddcceb12ad3141d1d5adccf9",
+  "public_reports": [
+    {
+      "provider": "cpu",
+      "public_file": "docs/batching-cpu-evidence.json",
+      "public_sha256": "22ca2dbad77be2fdd4c7b42abb901804b81d01e3502119ed843520550f51f61d",
+      "private_original_sha256": "7477c400529d0697c7393d5d88b923c42d06a5a28de160db63dec491e658dedb",
+      "private_journal_sha256": "afbf6d1839d21bb080a88376628f844b5c30cc535627c75a98f09190968919af",
+      "sanitization": "Only source identity path fields removed. Every row, output, numeric observation, analysis and source hash preserved exactly."
+    },
+    {
+      "provider": "cuda",
+      "public_file": "docs/batching-cuda-evidence.json",
+      "public_sha256": "24e6dd0b0197728fb6599fec627faac15e05d302edbc62dfdcdf87f3b96f6505",
+      "private_original_sha256": "a4e4867d649780cf88026c6ebd9526278f60e5f40c207e93a570a279387a927d",
+      "private_journal_sha256": "8ce1e927981b5114488e247dcdd773db3e55c989998ee692781d4eb7dc6bc422",
+      "sanitization": "Only source identity path fields removed. Every row, output, numeric observation, analysis and source hash preserved exactly."
+    }
+  ],
+  "hardware": {
+    "cpu": "AMD Ryzen 7 7800X3D",
+    "gpu": "NVIDIA GeForce RTX 4090",
+    "driver": "617.42",
+    "gpu_total_mib": 24564
+  },
+  "device_observations": {
+    "before": {
+      "used_mib": 3684,
+      "utilization_percent": 39
+    },
+    "after": {
+      "used_mib": 3690,
+      "utilization_percent": 42
+    },
+    "scope": "Separate before/after device-global observations include other activity. Not per-process GPU allocation, idle proof or exclusive-device evidence."
+  },
+  "source_model_sha256": "2f06e72de813a8635c9bc0397ac447a601bdbfa7df4bebc278723b958831c9bf",
+  "execution_model_sha256": "cfba8152caa873db9563fef0daa1bebe97d2f3dfc3ec23cf72cc5db31a4ee539",
+  "execution_recipe": "mnist-opset8-batch-preserving-reshape-v1",
+  "dependencies": {
+    "adaptive_timing_revision": "bb4f244a998c680ada7d3e316085daa6dfb540df",
+    "onnxruntime": "1.30.0"
+  },
+  "owned_operations": [
+    {
+      "exit_code": 0,
+      "seconds": 0.13999999999941792,
+      "retired": true,
+      "job_empty": true,
+      "job_assigned_before_input": true,
+      "job_commit_bytes": 536870912,
+      "id": "device-before-deciding"
+    },
+    {
+      "exit_code": 0,
+      "seconds": 1.2189999999973224,
+      "retired": true,
+      "job_empty": true,
+      "job_assigned_before_input": true,
+      "job_commit_bytes": 536870912,
+      "id": "deciding-cpu-complete-requests"
+    },
+    {
+      "exit_code": 0,
+      "seconds": 2.9840000000040163,
+      "retired": true,
+      "job_empty": true,
+      "job_assigned_before_input": true,
+      "job_commit_bytes": 2147483648,
+      "id": "deciding-cuda-complete-requests"
+    },
+    {
+      "exit_code": 0,
+      "seconds": 0.11000000000058208,
+      "retired": true,
+      "job_empty": true,
+      "job_assigned_before_input": true,
+      "job_commit_bytes": 536870912,
+      "id": "device-after-deciding"
+    }
+  ],
+  "placement_qualification": {
+    "cpu": {
+      "provider_requested": "cpu",
+      "source_model_sha256": "2f06e72de813a8635c9bc0397ac447a601bdbfa7df4bebc278723b958831c9bf",
+      "execution_model_sha256": "cfba8152caa873db9563fef0daa1bebe97d2f3dfc3ec23cf72cc5db31a4ee539",
+      "execution_mode": "batched",
+      "complete_logits": [
+        [
+          7.303241729736328,
+          -7.323437213897705,
+          9.95944595336914,
+          3.953380584716797,
+          -7.018839359283447,
+          -1.8985905647277832,
+          0.7205092906951904,
+          -2.996548891067505,
+          1.7038311958312988,
+          -10.700276374816895
+        ],
+        [
+          -2.033200740814209,
+          3.403609037399292,
+          1.213883876800537,
+          6.400511741638184,
+          3.49808669090271,
+          -2.0328547954559326,
+          -7.039929389953613,
+          3.7184298038482666,
+          -4.78298807144165,
+          -1.05336332321167
+        ],
+        [
+          2.084770917892456,
+          -6.043757915496826,
+          29.530202865600586,
+          3.8851318359375,
+          -0.9542461633682251,
+          -14.444445610046387,
+          -7.130982875823975,
+          -0.8964550495147705,
+          3.889688491821289,
+          -12.294445991516113
+        ],
+        [
+          -11.286942481994629,
+          -3.802055597305298,
+          13.940152168273926,
+          18.313993453979492,
+          -2.0807950496673584,
+          1.785388469696045,
+          -20.878053665161133,
+          5.282233715057373,
+          -1.04606032371521,
+          0.5710145235061646
+        ],
+        [
+          -13.965350151062012,
+          -4.590933799743652,
+          -9.201630592346191,
+          -1.970900297164917,
+          21.591617584228516,
+          5.282992362976074,
+          -8.22793197631836,
+          4.968111038208008,
+          -0.0881064385175705,
+          3.9554502964019775
+        ],
+        [
+          -11.479857444763184,
+          -12.573092460632324,
+          -2.2554562091827393,
+          3.673872709274292,
+          -0.9546424150466919,
+          21.539806365966797,
+          -2.839914560317993,
+          -3.7996749877929688,
+          1.213385820388794,
+          4.144527912139893
+        ],
+        [
+          -4.718847751617432,
+          -13.615691184997559,
+          5.414643287658691,
+          -4.662715911865234,
+          -2.651704788208008,
+          14.487950325012207,
+          7.946187496185303,
+          -7.822989463806152,
+          7.710191249847412,
+          -6.710870265960693
+        ],
+        [
+          -5.5307230949401855,
+          1.975930094718933,
+          16.031187057495117,
+          15.34133529663086,
+          -9.236352920532227,
+          -7.769157886505127,
+          -13.602602005004883,
+          12.365694999694824,
+          -9.229836463928223,
+          -2.41603946685791
+        ]
+      ],
+      "original_reference_logits": [
+        [
+          7.303240776062012,
+          -7.3234357833862305,
+          9.959443092346191,
+          3.9533779621124268,
+          -7.0188374519348145,
+          -1.8985893726348877,
+          0.7205085158348083,
+          -2.996549129486084,
+          1.7038319110870361,
+          -10.700278282165527
+        ],
+        [
+          -2.033200979232788,
+          3.403608560562134,
+          1.2138844728469849,
+          6.400512218475342,
+          3.498086452484131,
+          -2.0328550338745117,
+          -7.03993034362793,
+          3.718428373336792,
+          -4.782986164093018,
+          -1.0533638000488281
+        ],
+        [
+          2.0847716331481934,
+          -6.043756008148193,
+          29.530202865600586,
+          3.8851282596588135,
+          -0.9542456269264221,
+          -14.444443702697754,
+          -7.130984783172607,
+          -0.8964546322822571,
+          3.889690399169922,
+          -12.29444408416748
+        ],
+        [
+          -11.28693962097168,
+          -3.8020575046539307,
+          13.94015121459961,
+          18.313993453979492,
+          -2.0807948112487793,
+          1.7853877544403076,
+          -20.878055572509766,
+          5.282229900360107,
+          -1.046059250831604,
+          0.5710147023200989
+        ],
+        [
+          -13.96534538269043,
+          -4.590931415557861,
+          -9.201629638671875,
+          -1.970900297164917,
+          21.59161949157715,
+          5.2829909324646,
+          -8.227927207946777,
+          4.968111991882324,
+          -0.088107168674469,
+          3.955449342727661
+        ],
+        [
+          -11.479859352111816,
+          -12.573089599609375,
+          -2.2554569244384766,
+          3.673872232437134,
+          -0.95464026927948,
+          21.539793014526367,
+          -2.839911699295044,
+          -3.799675703048706,
+          1.2133867740631104,
+          4.144526958465576
+        ],
+        [
+          -4.71884822845459,
+          -13.615694046020508,
+          5.414639472961426,
+          -4.662716865539551,
+          -2.651704788208008,
+          14.487950325012207,
+          7.946187496185303,
+          -7.8229875564575195,
+          7.710191249847412,
+          -6.710870265960693
+        ],
+        [
+          -5.530722141265869,
+          1.9759291410446167,
+          16.03118133544922,
+          15.34133529663086,
+          -9.236357688903809,
+          -7.769154071807861,
+          -13.602598190307617,
+          12.365694046020508,
+          -9.229837417602539,
+          -2.416038990020752
+        ]
+      ],
+      "max_absolute_logit_difference": 1.33514404296875e-05,
+      "actual_profile_model_runs": 1,
+      "placement": {
+        "provider_events": {
+          "CPUExecutionProvider": 8
+        },
+        "node_events": [
+          {
+            "name": "ReLU32_Output_0_nchwc_kernel_time",
+            "provider": "CPUExecutionProvider",
+            "op": "Conv"
+          },
+          {
+            "name": "ReorderOutput_kernel_time",
+            "provider": "CPUExecutionProvider",
+            "op": "ReorderOutput"
+          },
+          {
+            "name": "Pooling66_kernel_time",
+            "provider": "CPUExecutionProvider",
+            "op": "MaxPool"
+          },
+          {
+            "name": "ReLU114_Output_0_nchwc_kernel_time",
+            "provider": "CPUExecutionProvider",
+            "op": "Conv"
+          },
+          {
+            "name": "Pooling160_Output_0_nchwc_kernel_time",
+            "provider": "CPUExecutionProvider",
+            "op": "MaxPool"
+          },
+          {
+            "name": "ReorderOutput_token_5_kernel_time",
+            "provider": "CPUExecutionProvider",
+            "op": "ReorderOutput"
+          },
+          {
+            "name": "Times212_reshape0_kernel_time",
+            "provider": "CPUExecutionProvider",
+            "op": "Reshape"
+          },
+          {
+            "name": "Times212/MatMulAddFusion_kernel_time",
+            "provider": "CPUExecutionProvider",
+            "op": "Gemm"
+          }
+        ],
+        "raw_sha256": "ad98de89ef61119d80d297c10e0616b21cf2133c743a322c6b67604267295149",
+        "meaning": "ORT operation placement from this run; event counts are not hardware counters or elapsed inference time"
+      },
+      "meaning": "Executed installed CLI, complete original-reference logits and actual ORT profile placement; no hardware counters."
+    },
+    "cuda": {
+      "provider_requested": "cuda-required",
+      "source_model_sha256": "2f06e72de813a8635c9bc0397ac447a601bdbfa7df4bebc278723b958831c9bf",
+      "execution_model_sha256": "cfba8152caa873db9563fef0daa1bebe97d2f3dfc3ec23cf72cc5db31a4ee539",
+      "execution_mode": "batched",
+      "complete_logits": [
+        [
+          7.303241729736328,
+          -7.3234333992004395,
+          9.959443092346191,
+          3.953375816345215,
+          -7.0188374519348145,
+          -1.8985908031463623,
+          0.7205082774162292,
+          -2.9965507984161377,
+          1.703831434249878,
+          -10.700278282165527
+        ],
+        [
+          -2.03320050239563,
+          3.403608560562134,
+          1.2138843536376953,
+          6.400509357452393,
+          3.4980838298797607,
+          -2.032853603363037,
+          -7.03993034362793,
+          3.7184298038482666,
+          -4.782986640930176,
+          -1.0533628463745117
+        ],
+        [
+          2.0847690105438232,
+          -6.043753623962402,
+          29.530200958251953,
+          3.885129451751709,
+          -0.9542467594146729,
+          -14.444442749023438,
+          -7.130982875823975,
+          -0.8964552283287048,
+          3.8896842002868652,
+          -12.294441223144531
+        ],
+        [
+          -11.28693675994873,
+          -3.8020551204681396,
+          13.940152168273926,
+          18.313993453979492,
+          -2.0807945728302,
+          1.7853856086730957,
+          -20.878049850463867,
+          5.282228469848633,
+          -1.0460593700408936,
+          0.5710153579711914
+        ],
+        [
+          -13.965347290039062,
+          -4.590932846069336,
+          -9.201628684997559,
+          -1.9708983898162842,
+          21.591617584228516,
+          5.282991409301758,
+          -8.227928161621094,
+          4.968109130859375,
+          -0.08810530602931976,
+          3.955451250076294
+        ],
+        [
+          -11.479857444763184,
+          -12.573090553283691,
+          -2.2554569244384766,
+          3.6738734245300293,
+          -0.9546414613723755,
+          21.539794921875,
+          -2.8399131298065186,
+          -3.7996766567230225,
+          1.2133878469467163,
+          4.144527435302734
+        ],
+        [
+          -4.718847274780273,
+          -13.615692138671875,
+          5.414640426635742,
+          -4.662714004516602,
+          -2.651707410812378,
+          14.48794937133789,
+          7.946186542510986,
+          -7.8229899406433105,
+          7.710193634033203,
+          -6.710866928100586
+        ],
+        [
+          -5.530721187591553,
+          1.9759299755096436,
+          16.03118324279785,
+          15.341333389282227,
+          -9.236357688903809,
+          -7.7691545486450195,
+          -13.60260009765625,
+          12.365694999694824,
+          -9.229840278625488,
+          -2.4160397052764893
+        ]
+      ],
+      "original_reference_logits": [
+        [
+          7.303240776062012,
+          -7.3234357833862305,
+          9.959443092346191,
+          3.9533779621124268,
+          -7.0188374519348145,
+          -1.8985893726348877,
+          0.7205085158348083,
+          -2.996549129486084,
+          1.7038319110870361,
+          -10.700278282165527
+        ],
+        [
+          -2.033200979232788,
+          3.403608560562134,
+          1.2138844728469849,
+          6.400512218475342,
+          3.498086452484131,
+          -2.0328550338745117,
+          -7.03993034362793,
+          3.718428373336792,
+          -4.782986164093018,
+          -1.0533638000488281
+        ],
+        [
+          2.0847716331481934,
+          -6.043756008148193,
+          29.530202865600586,
+          3.8851282596588135,
+          -0.9542456269264221,
+          -14.444443702697754,
+          -7.130984783172607,
+          -0.8964546322822571,
+          3.889690399169922,
+          -12.29444408416748
+        ],
+        [
+          -11.28693962097168,
+          -3.8020575046539307,
+          13.94015121459961,
+          18.313993453979492,
+          -2.0807948112487793,
+          1.7853877544403076,
+          -20.878055572509766,
+          5.282229900360107,
+          -1.046059250831604,
+          0.5710147023200989
+        ],
+        [
+          -13.96534538269043,
+          -4.590931415557861,
+          -9.201629638671875,
+          -1.970900297164917,
+          21.59161949157715,
+          5.2829909324646,
+          -8.227927207946777,
+          4.968111991882324,
+          -0.088107168674469,
+          3.955449342727661
+        ],
+        [
+          -11.479859352111816,
+          -12.573089599609375,
+          -2.2554569244384766,
+          3.673872232437134,
+          -0.95464026927948,
+          21.539793014526367,
+          -2.839911699295044,
+          -3.799675703048706,
+          1.2133867740631104,
+          4.144526958465576
+        ],
+        [
+          -4.71884822845459,
+          -13.615694046020508,
+          5.414639472961426,
+          -4.662716865539551,
+          -2.651704788208008,
+          14.487950325012207,
+          7.946187496185303,
+          -7.8229875564575195,
+          7.710191249847412,
+          -6.710870265960693
+        ],
+        [
+          -5.530722141265869,
+          1.9759291410446167,
+          16.03118133544922,
+          15.34133529663086,
+          -9.236357688903809,
+          -7.769154071807861,
+          -13.602598190307617,
+          12.365694046020508,
+          -9.229837417602539,
+          -2.416038990020752
+        ]
+      ],
+      "max_absolute_logit_difference": 6.198883056640625e-06,
+      "actual_profile_model_runs": 1,
+      "placement": {
+        "provider_events": {
+          "CUDAExecutionProvider": 8
+        },
+        "node_events": [
+          {
+            "name": "Convolution28_kernel_time",
+            "provider": "CUDAExecutionProvider",
+            "op": "Conv"
+          },
+          {
+            "name": "ReLU32_kernel_time",
+            "provider": "CUDAExecutionProvider",
+            "op": "Relu"
+          },
+          {
+            "name": "Pooling66_kernel_time",
+            "provider": "CUDAExecutionProvider",
+            "op": "MaxPool"
+          },
+          {
+            "name": "Convolution110_kernel_time",
+            "provider": "CUDAExecutionProvider",
+            "op": "Conv"
+          },
+          {
+            "name": "ReLU114_kernel_time",
+            "provider": "CUDAExecutionProvider",
+            "op": "Relu"
+          },
+          {
+            "name": "Pooling160_kernel_time",
+            "provider": "CUDAExecutionProvider",
+            "op": "MaxPool"
+          },
+          {
+            "name": "Times212_reshape0_kernel_time",
+            "provider": "CUDAExecutionProvider",
+            "op": "Reshape"
+          },
+          {
+            "name": "Times212/MatMulAddFusion_kernel_time",
+            "provider": "CUDAExecutionProvider",
+            "op": "Gemm"
+          }
+        ],
+        "raw_sha256": "cec9459617d72c7a2dc520dfb38cdb1e3788fe9f4691a62039c2bcbec5c429d3",
+        "meaning": "ORT operation placement from this run; event counts are not hardware counters or elapsed inference time"
+      },
+      "meaning": "Executed installed CLI, complete original-reference logits and actual ORT profile placement; no hardware counters."
+    }
+  },
+  "installed_contract_checks": {
+    "cpu_passed_before_new_comparison_fixtures": 89,
+    "cuda_required_passed": 25,
+    "synthetic_comparison_fixtures_passed": 4
+  },
+  "wheel": {
+    "sha256": "c7903a182748a4d7ee3e414da8ce95140bf36a80d9349f91eead069689a59375",
+    "bytes": 113121,
+    "model_files": 0
+  },
+  "setup_diagnostics": [
+    {
+      "job_commit_bytes": 536870912,
+      "outcome": "required-CUDA provider setup failed before model execution; DLL allocation WinError1455"
+    },
+    {
+      "job_commit_bytes": 1073741824,
+      "outcome": "original serial-graph provider setup failed before model execution; CUDA out of memory"
+    },
+    {
+      "job_commit_bytes": 2147483648,
+      "outcome": "original serial-graph setup succeeded; required-CUDA contracts and deciding study completed"
+    }
+  ],
+  "limits": [
+    "Three ordered block replications; 60 samples per condition are not 60 independent replications.",
+    "Primary timing includes preparation through usable reconciled host results, excluding file reading and PNG decoding.",
+    "Retained process counters include reference evaluator, report retention, DLLs and allocator caches.",
+    "Original and derived model bytes are not redistributed. Apache/MIT model-card discrepancy remains unresolved.",
+    "No accuracy dataset, sustained concurrency, device-resident completion or universal speed claim."
+  ]
+}
