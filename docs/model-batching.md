@@ -28,4 +28,4 @@ The existing consumer snapshots, owner thread, cancellation requests, stale-resu
 
 Use one free permitted performance slot and one active owner at a time. The protocol uses reused-session mode blocks, alternates block order and rotates batch order. Its paired samples are nonadjacent within corresponding blocks. Process-memory observations are process counters, and the CUDA arena configuration is not a total GPU memory ceiling. Slower and inconclusive cases remain results. Original timing reports retain their original revisions and boundaries.
 
-The [declared protocol](batching-performance-protocol.md) and [completed comparison](batching-results.md) retain the source revision, complete rows and outputs, setup/retirement, memory scope and small-study limits.
+The [declared protocol](batching-performance-protocol.md) and [completed comparison](batching-results.md) retain the source revision, complete rows and outputs, setup/retirement, memory scope and small-study limits. The earlier [serial inference protocol](inference-protocol.md) remains a pinned input to the historical evidence page and retains its original bytes and measurement scope.
