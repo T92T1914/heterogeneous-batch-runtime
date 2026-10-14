@@ -34,16 +34,33 @@ jobs:
       - run: python tools/validate_evidence.py
       - run: python tools/report_reuse.py --check
       - run: python -m pytest tests/python -q
+      - name: Actual Python array boundary with host CUDA stand-in
+        shell: bash
+        run: |
+          python -m pip install pybind11==3.1.0
+          cmake -S . -B build/python-boundary -DCMAKE_BUILD_TYPE=Release -DHBR_PYTHON=ON -Dpybind11_DIR="$(python -m pybind11 --cmakedir)"
+          cmake --build build/python-boundary --config Release --parallel 1 --target _array_boundary_test _host_cuda_binding_test
+          ctest --test-dir build/python-boundary -C Release -R python_array_boundary --output-on-failure
   sanitizer:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@fbc6f3992d24b796d5a048ff273f7fcc4a7b6c09
+      - uses: actions/setup-python@ece7cb06caefa5fff74198d8649806c4678c61a1
+        with:
+          python-version: '3.11'
       - run: cmake -S . -B build/sanitize -DCMAKE_BUILD_TYPE=Debug -DHBR_SANITIZERS=ON
       - run: cmake --build build/sanitize --parallel 2
       - run: ctest --test-dir build/sanitize --output-on-failure
         env:
           ASAN_OPTIONS: detect_leaks=1
           UBSAN_OPTIONS: halt_on_error=1
+      - name: Instrument actual Python array marshalling
+        shell: bash
+        run: |
+          python -m pip install numpy pybind11==3.1.0
+          cmake -S . -B build/python-sanitize -DCMAKE_BUILD_TYPE=Debug -DHBR_SANITIZERS=ON -DHBR_PYTHON=ON -Dpybind11_DIR="$(python -m pybind11 --cmakedir)"
+          cmake --build build/python-sanitize --parallel 1 --target _array_boundary_test _host_cuda_binding_test
+          LD_PRELOAD="$(gcc -print-file-name=libasan.so)" ASAN_OPTIONS=detect_leaks=0 UBSAN_OPTIONS=halt_on_error=1 ctest --test-dir build/python-sanitize -R python_array_boundary --output-on-failure
       - name: Explicit Clang host build
         run: cmake -S . -B build/clang -DCMAKE_BUILD_TYPE=Release -DCMAKE_CXX_COMPILER=clang++
       - run: cmake --build build/clang --parallel 2

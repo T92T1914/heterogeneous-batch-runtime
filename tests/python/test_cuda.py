@@ -243,3 +243,32 @@ def test_real_cuda_bounds():
     for dimensions in ((2, 2, 0, 1), (-1, 2, 1, 1), (True, 2, 1, 1), (100000, 100000, 1, 1)):
         with pytest.raises(ValueError):
             CudaHistogramContext(*dimensions)
+
+
+def test_private_cuda_configuration_rejected_before_execution():
+    """Hardening of unsupported direct entry, separate from the public wrapper."""
+    if not _native.cuda_built:
+        if os.environ.get("HBR_REQUIRE_CUDA") == "1":
+            pytest.fail("required CUDA build is unavailable")
+        pytest.skip("CPU build, no private CUDA execution claimed")
+    _native._cuda_select_device(0)
+    image = np.arange(8, dtype=np.uint8).reshape(2, 4)
+    context = _native._CudaHistogramContext(2, 4, 1, 2)
+    try:
+        first = context.run(image, 2, 4, 1, 2)
+        for rows, cols, tr, tc in [(2,4,2,4), (2,4,1,1), (2,4,2,1), (1,8,1,2)]:
+            with pytest.raises(ValueError, match="fixed image and tile"):
+                context.run(image.reshape(rows, cols), rows, cols, tr, tc)
+        second = context.run(image, 2, 4, 1, 2)
+        assert second["request_id"] == first["request_id"] + 1
+        np.testing.assert_array_equal(first["value"], expected(image, 1, 2))
+        assert not np.shares_memory(first["value"], second["value"])
+    finally:
+        context.close()
+    # The packet's unequal-capacity example is refused before any native run.
+    context = _native._CudaHistogramContext(2, 2, 1, 1)
+    try:
+        with pytest.raises(ValueError, match="fixed image and tile"):
+            context.run(np.zeros((2,2), np.uint8), 2, 2, 2, 2)
+    finally:
+        context.close()

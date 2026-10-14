@@ -4,6 +4,7 @@
 #include <pybind11/pybind11.h>
 #include <array>
 #include <cmath>
+#include <cstring>
 #include <filesystem>
 #include <memory>
 #include <mutex>
@@ -119,7 +120,12 @@ class Session {
       throw std::invalid_argument("batch must have shape (N,1,28,28), N <= 8");
     // Explicit copy before releasing the GIL. External native writers must be
     // excluded during this copy. Successful return never aliases caller input.
-    std::vector<float> owned(batch.data(), batch.data() + batch.size());
+    // C contiguous input can still be unaligned, so access its bytes directly.
+    std::vector<float> owned(static_cast<std::size_t>(batch.size()));
+    if (!owned.empty()) {
+      const py::array& input = batch;
+      std::memcpy(owned.data(), input.data(), owned.size() * sizeof(float));
+    }
     for (float x : owned) if (!std::isfinite(x) || x < 0 || x > 1)
       throw std::invalid_argument("finite normalized pixels in [0,1] required");
     py::array_t<float> result({batch.shape(0), py::ssize_t{10}});
