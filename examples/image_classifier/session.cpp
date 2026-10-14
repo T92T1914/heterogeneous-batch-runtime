@@ -3,6 +3,8 @@
 #include <pybind11/numpy.h>
 #include <pybind11/pybind11.h>
 #include <array>
+#include <algorithm>
+#include <cstdint>
 #include <cmath>
 #include <cstring>
 #include <filesystem>
@@ -61,7 +63,7 @@ struct State {
   Ort::Session session{nullptr};
   std::string input, output;
   std::vector<char> model;
-  State(std::string bytes, const std::string& provider, const std::string& profile) : model(bytes.begin(), bytes.end()) {
+  State(std::string bytes, const std::string& provider, const std::string& profile, bool batched) : model(bytes.begin(), bytes.end()) {
     options.SetIntraOpNumThreads(1);
     options.SetInterOpNumThreads(1);
     options.SetExecutionMode(ExecutionMode::ORT_SEQUENTIAL);
@@ -88,9 +90,11 @@ struct State {
     auto output_type = session.GetOutputTypeInfo(0);
     auto in = input_type.GetTensorTypeAndShapeInfo();
     auto out = output_type.GetTensorTypeAndShapeInfo();
-    if (in.GetElementType() != ONNX_TENSOR_ELEMENT_DATA_TYPE_FLOAT || in.GetShape() != std::vector<int64_t>{1,1,28,28}
-        || out.GetElementType() != ONNX_TENSOR_ELEMENT_DATA_TYPE_FLOAT || out.GetShape() != std::vector<int64_t>{1,10})
-      throw std::invalid_argument("fixed float32 MNIST input and logits contract required");
+    const std::vector<int64_t> expected_input{batched ? -1 : 1,1,28,28};
+    const std::vector<int64_t> expected_output{batched ? -1 : 1,10};
+    if (in.GetElementType() != ONNX_TENSOR_ELEMENT_DATA_TYPE_FLOAT || in.GetShape() != expected_input
+        || out.GetElementType() != ONNX_TENSOR_ELEMENT_DATA_TYPE_FLOAT || out.GetShape() != expected_output)
+      throw std::invalid_argument("selected float32 MNIST graph input and logits contract required");
     Ort::AllocatorWithDefaultOptions allocator;
     input = session.GetInputNameAllocated(0, allocator).get();
     output = session.GetOutputNameAllocated(0, allocator).get();
@@ -101,18 +105,20 @@ class Session {
   std::thread::id owner_ = std::this_thread::get_id();
   std::unique_ptr<State> state_;
   bool profiling_;
+  const bool batched_;
+  std::uint64_t model_invocations_ = 0;
   void check() const {
     if (owner_ != std::this_thread::get_id()) throw std::runtime_error("session operations require their owning thread");
     if (!state_) throw std::runtime_error("session is closed");
   }
  public:
-  Session(const std::string& library, py::bytes bytes, const std::string& provider, const std::string& profile)
-      : profiling_(!profile.empty()) {
+  Session(const std::string& library, py::bytes bytes, const std::string& provider, const std::string& profile, bool batched)
+      : profiling_(!profile.empty()), batched_(batched) {
     const std::string model = bytes;
     if (model.empty() || model.size() > 1048576) throw std::invalid_argument("model byte limit exceeded");
     py::gil_scoped_release release;
     initialize(library);
-    state_ = std::make_unique<State>(model, provider, profile);
+    state_ = std::make_unique<State>(model, provider, profile, batched_);
   }
   py::array_t<float> run(const py::array_t<float, py::array::c_style>& batch) {
     check();
@@ -133,16 +139,25 @@ class Session {
     const auto count = batch.shape(0);
     {
       py::gil_scoped_release release;
-      const std::array<int64_t, 4> shape{1,1,28,28};
       auto memory = Ort::MemoryInfo::CreateCpu(OrtArenaAllocator, OrtMemTypeDefault);
       const char* inputs[]{state_->input.c_str()};
       const char* outputs[]{state_->output.c_str()};
-      for (py::ssize_t i = 0; i < count; ++i) {
-        auto tensor = Ort::Value::CreateTensor<float>(memory, owned.data() + i*784, 784, shape.data(), shape.size());
+      const auto calls = batched_ && count ? py::ssize_t{1} : count;
+      for (py::ssize_t i = 0; i < calls; ++i) {
+        const auto tensor_batch = batched_ ? count : py::ssize_t{1};
+        const std::array<int64_t, 4> shape{tensor_batch,1,28,28};
+        const auto input_offset = batched_ ? py::ssize_t{0} : i*784;
+        auto tensor = Ort::Value::CreateTensor<float>(memory, owned.data() + input_offset,
+            static_cast<std::size_t>(tensor_batch*784), shape.data(), shape.size());
+        ++model_invocations_;
         auto values = state_->session.Run(Ort::RunOptions{nullptr}, inputs, &tensor, 1, outputs, 1);
+        if (values.size() != 1 || !values[0].IsTensor()) throw std::runtime_error("unexpected output tensor");
         auto info = values[0].GetTensorTypeAndShapeInfo();
-        if (info.GetShape() != std::vector<int64_t>{1,10}) throw std::runtime_error("unexpected output shape");
-        std::copy_n(values[0].GetTensorData<float>(), 10, destination + i*10);
+        const auto elements = static_cast<std::size_t>(tensor_batch*10);
+        if (info.GetElementType() != ONNX_TENSOR_ELEMENT_DATA_TYPE_FLOAT ||
+            info.GetShape() != std::vector<int64_t>{tensor_batch,10} || info.GetElementCount() != elements)
+          throw std::runtime_error("unexpected output shape or dtype");
+        std::copy_n(values[0].GetTensorData<float>(), elements, destination + i*10);
       }
       // Ordinary Run returns completed outputs. No I/O binding, caller stream
       // or disable_synchronize_execution_providers option is used here.
@@ -151,6 +166,8 @@ class Session {
     }
     return result;
   }
+  // Counts attempted actual Run calls, after input admission. Empty input adds none.
+  std::uint64_t model_invocations() const { check(); return model_invocations_; }
   std::string close() {
     if (owner_ != std::this_thread::get_id()) throw std::runtime_error("close requires the owning thread");
     if (!state_) return {};
@@ -169,7 +186,9 @@ class Session {
 }
 PYBIND11_MODULE(_session, module) {
   py::class_<Session>(module, "Session")
-      .def(py::init<const std::string&,py::bytes,const std::string&,const std::string&>())
+      .def(py::init<const std::string&,py::bytes,const std::string&,const std::string&,bool>(),
+           py::arg("library"), py::arg("model"), py::arg("provider"), py::arg("profile"), py::arg("batched") = false)
       .def("run", &Session::run, py::arg("batch").noconvert())
+      .def_property_readonly("model_invocations", &Session::model_invocations)
       .def("close", &Session::close);
 }

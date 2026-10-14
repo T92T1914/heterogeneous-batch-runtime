@@ -5,12 +5,25 @@ from .model import MAX_BATCH
 from .session import Session
 
 class InferenceExecutor(OwnerExecutor):
-    def __init__(self, model, *, provider="cpu", capacity=4, library=None, profile_prefix=""):
+    def __init__(self, model, *, provider="cpu", capacity=4, library=None, profile_prefix="", execution_mode="serial"):
         if isinstance(capacity, bool) or not isinstance(capacity, int) or not 1 <= capacity <= 4:
             raise ValueError("capacity must be an integer in [1,4]")
+        if not isinstance(execution_mode, str) or execution_mode not in ("serial", "batched"):
+            raise ValueError("execution_mode must be serial or batched")
         self.profile_path = ""
         self._accepted = 0
-        super().__init__(lambda: Session(model, provider=provider, library=library, profile_prefix=profile_prefix), capacity=capacity)
+        self.execution_mode = execution_mode
+        super().__init__(lambda: Session(model, provider=provider, library=library,
+            profile_prefix=profile_prefix, execution_mode=execution_mode), capacity=capacity)
+
+    @property
+    def execution_provenance(self):
+        self._assert_owner()
+        if self._resource is None:
+            raise RuntimeError("inference session is closed")
+        return {name: getattr(self._resource, name) for name in (
+            "model_sha256", "source_model_sha256", "execution_model_sha256",
+            "execution_mode", "execution_recipe")}
 
     def submit_batch(self, dispatch, generation, batch, *, gate=None):
         self._assert_owner()
