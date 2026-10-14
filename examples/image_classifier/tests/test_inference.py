@@ -40,6 +40,31 @@ def test_entire_logits_against_independent_onnx_engine(model, count):
     finally:
         session.close()
 
+@pytest.mark.parametrize("count", [0,1,2,8])
+def test_unaligned_contiguous_input_matches_aligned_logits(model, count):
+    batch = prepare_arrays(example_images()[:count])
+    storage = np.empty(batch.nbytes + 1, dtype=np.uint8)
+    unaligned = np.ndarray(batch.shape, dtype=np.float32, buffer=storage, offset=1)
+    unaligned[:] = batch
+    assert unaligned.flags.c_contiguous
+    if count:
+        assert not unaligned.flags.aligned
+    session = Session(model)
+    try:
+        expected = session.run(batch)
+        actual = session.run(unaligned)
+        assert actual.shape == (count,10) and actual.dtype == np.float32
+        assert actual.flags.owndata
+        np.testing.assert_array_equal(actual, expected)
+        assert not np.shares_memory(actual, unaligned)
+        assert not np.shares_memory(actual, expected)
+        unaligned.fill(0)
+        later = session.run(unaligned)
+        np.testing.assert_array_equal(actual, expected)
+        assert not np.shares_memory(actual, later)
+    finally:
+        session.close()
+
 def test_preprocessing_original_png_and_alpha(tmp_path):
     pixels = example_images()[3]
     path = tmp_path / "digit.png"

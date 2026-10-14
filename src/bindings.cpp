@@ -1,4 +1,5 @@
 #include "hbr/kernels.hpp"
+#include "python_arrays.hpp"
 #include <pybind11/numpy.h>
 #include <pybind11/pybind11.h>
 #include <cstring>
@@ -23,13 +24,21 @@ template<class T> std::vector<T> snapshot(const py::array& input, int ndim) {
     if (!data.empty()) std::memcpy(data.data(), input.data(), data.size() * sizeof(T));
     return data;
 }
-template<class T> py::array_t<T> array(const std::vector<T>& data, const std::vector<py::ssize_t>& shape) {
-    py::array_t<T> result(shape);
-    if (!data.empty()) std::memcpy(result.mutable_data(), data.data(), data.size() * sizeof(T));
-    return result;
+using hbr::python::array;
+#ifdef HBR_PYTHON_CUDA
+// The binding owns the same immutable geometry used to construct the native context.
+struct CudaHistogramBinding {
+    const std::size_t rows, cols, tile_rows, tile_cols;
+    hbr::CudaHistogramContext context;
+    CudaHistogramBinding(std::size_t r, std::size_t c, std::size_t tr, std::size_t tc, bool shared)
+        : rows(r), cols(c), tile_rows(tr), tile_cols(tc), context(r, c, tr, tc, shared) {}
+};
+#endif
 }
-}
-PYBIND11_MODULE(_native, m) {
+#ifndef HBR_BINDINGS_MODULE
+#define HBR_BINDINGS_MODULE _native
+#endif
+PYBIND11_MODULE(HBR_BINDINGS_MODULE, m) {
     m.doc() = "Synchronous operations. Inputs are copied while holding the GIL.";
     m.def("avx2_available", &hbr::avx2_available);
 #ifdef HBR_PYTHON_CUDA
@@ -39,22 +48,23 @@ PYBIND11_MODULE(_native, m) {
         if (status != cudaSuccess) throw std::runtime_error(std::string("CUDA unavailable: ") + cudaGetErrorString(status));
         return hbr::cuda_device().name;
     });
-    py::class_<hbr::CudaHistogramContext>(m, "_CudaHistogramContext")
+    py::class_<CudaHistogramBinding>(m, "_CudaHistogramContext")
         .def(py::init<std::size_t, std::size_t, std::size_t, std::size_t, bool>(),
              py::arg("rows"), py::arg("cols"), py::arg("tile_rows"), py::arg("tile_cols"), py::arg("shared_bins") = true)
-        .def_property_readonly("device_bytes", &hbr::CudaHistogramContext::device_bytes)
-        .def("close", &hbr::CudaHistogramContext::close, py::call_guard<py::gil_scoped_release>())
-        .def("run", [](hbr::CudaHistogramContext& context, const py::array& x,
+        .def_property_readonly("device_bytes", [](const CudaHistogramBinding& owner) { return owner.context.device_bytes(); })
+        .def("close", [](CudaHistogramBinding& owner) { owner.context.close(); }, py::call_guard<py::gil_scoped_release>())
+        .def("run", [](CudaHistogramBinding& owner, const py::array& x,
                        std::size_t rows, std::size_t cols, std::size_t tr, std::size_t tc) {
-            if (!tr || !tc || x.ndim() != 2 || static_cast<std::size_t>(x.shape(0)) != rows || static_cast<std::size_t>(x.shape(1)) != cols)
-                throw py::value_error("fixed image shape required");
+            if (rows != owner.rows || cols != owner.cols || tr != owner.tile_rows || tc != owner.tile_cols ||
+                x.ndim() != 2 || static_cast<std::size_t>(x.shape(0)) != owner.rows || static_cast<std::size_t>(x.shape(1)) != owner.cols)
+                throw py::value_error("fixed image and tile configuration required");
             auto values = snapshot<std::uint8_t>(x, 2);
             hbr::CudaHistogramResult result;
-            { py::gil_scoped_release release; result = context.run(values); }
+            { py::gil_scoped_release release; result = owner.context.run(values); }
             py::dict output;
             output["request_id"] = result.request_id;
-            output["value"] = array(result.value, {static_cast<py::ssize_t>(rows/tr + (rows%tr != 0)),
-                static_cast<py::ssize_t>(cols/tc + (cols%tc != 0)), 256});
+            output["value"] = array(result.value, {static_cast<py::ssize_t>(owner.rows/owner.tile_rows + (owner.rows%owner.tile_rows != 0)),
+                static_cast<py::ssize_t>(owner.cols/owner.tile_cols + (owner.cols%owner.tile_cols != 0)), 256});
             py::dict timing;
             timing["upload_ms"] = result.timing.upload_ms;
             timing["kernel_ms"] = result.timing.kernel_ms;
