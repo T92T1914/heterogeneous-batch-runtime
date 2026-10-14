@@ -27,6 +27,7 @@ def main():
     parser = argparse.ArgumentParser(description="Bounded digit classification using a reviewed ONNX model")
     parser.add_argument("--model", required=True)
     parser.add_argument("--provider", choices=("cpu", "cuda-required"), default="cpu")
+    parser.add_argument("--execution-mode", choices=("serial", "batched"), default="serial")
     parser.add_argument("--output", required=True)
     parser.add_argument("--profile-prefix", required=True)
     parser.add_argument("images", nargs="*")
@@ -34,8 +35,10 @@ def main():
     model = load_model(args.model)
     inputs = read_images(args.images) if args.images else prepare_arrays(example_images()[:8])
     input_digest = sha256(inputs.tobytes()).hexdigest()
-    execution = InferenceExecutor(model, provider=args.provider, profile_prefix=args.profile_prefix)
+    execution = InferenceExecutor(model, provider=args.provider, profile_prefix=args.profile_prefix,
+        execution_mode=args.execution_mode)
     try:
+        provenance = execution.execution_provenance
         execution.submit_batch(Dispatch("image-batch-1", "inference", 0, 1, "dispatched"), 1, inputs)
         result, = execution.wait(1, timeout=30)
         if not result.usable:
@@ -44,10 +47,12 @@ def main():
     finally:
         execution.close()
     logits = result.value
-    report = {"schema_version": 1, "model_sha256": model.sha256, "input_sha256": input_digest,
+    report = {"schema_version": 1, **provenance, "input_sha256": input_digest,
               "provider_requested": args.provider, "batch_shape": list(inputs.shape),
               "input_kind": "user supplied bounded PNGs" if args.images else "original geometric example digits, not an accuracy dataset",
-              "contract": "serial one-image calls, completed host outputs, no asynchronous GPU interface",
+              "contract": ("serial one-image calls, completed host outputs, no asynchronous GPU interface"
+                  if args.execution_mode == "serial" else
+                  "one model invocation per nonempty batch, completed host outputs, no asynchronous GPU interface"),
               "logits": logits.tolist(), "probabilities": probabilities(logits).tolist(),
               "predictions": np.argmax(logits, axis=1).tolist(), "status": result.status,
               "usable": result.usable, "observations": transitions,
