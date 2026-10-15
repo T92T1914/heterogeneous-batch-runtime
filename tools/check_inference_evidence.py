@@ -375,6 +375,8 @@ def verify_request_cost(root):
             stamps=[row[name] for name in ('started_ns','prepared_ns','admission_started_ns','admitted_ns','finished_ns')]
             require(all(type(value) is int and value>=0 for value in stamps) and stamps==sorted(stamps),'invalid caller QPC timestamps')
             start,prepared,admission_start,admitted,end=stamps
+            if request:
+                require(start>=requests[request-1]['finished_ns'],'successive caller requests overlap or run out of order')
             differences={'primary_seconds':end-start,'preparation_seconds':prepared-start,
                 'admission_seconds':admitted-admission_start,'wait_reconciliation_seconds':end-admitted,
                 'caller_gap_seconds':admission_start-prepared}
