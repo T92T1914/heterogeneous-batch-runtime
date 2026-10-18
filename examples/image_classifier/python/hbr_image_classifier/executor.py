@@ -29,13 +29,16 @@ class InferenceExecutor(OwnerExecutor):
         self._assert_owner()
         if self._accepted >= 256:
             raise RuntimeError("session request limit reached; close and start a new session")
-        if not isinstance(batch, np.ndarray) or batch.dtype != np.dtype("float32"):
+        if not isinstance(batch, np.ndarray):
             raise TypeError("exact float32 input required")
-        if batch.ndim != 4 or batch.shape[1:] != (1,28,28) or len(batch) > MAX_BATCH:
+        actual = np.asarray(batch)
+        if actual.dtype != np.dtype("float32"):
+            raise TypeError("exact float32 input required")
+        if actual.ndim != 4 or actual.shape[1:] != (1,28,28) or actual.shape[0] > MAX_BATCH:
             raise ValueError("batch must have shape (N,1,28,28), N <= 8")
-        if not np.isfinite(batch).all() or (batch < 0).any() or (batch > 1).any():
+        if not np.isfinite(actual).all() or (actual < 0).any() or (actual > 1).any():
             raise ValueError("finite normalized pixels required")
-        owned = np.array(batch, copy=True, order="C")
+        owned = np.array(actual, copy=True, order="C")
         owned.flags.writeable = False
         def execute(session, cancel):
             if gate is not None:

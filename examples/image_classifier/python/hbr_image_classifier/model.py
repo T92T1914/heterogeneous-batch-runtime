@@ -38,11 +38,14 @@ def load_model(path):
 
 def prepare_arrays(images):
     """Caller excludes external native writers during the owned snapshot copy."""
-    if not isinstance(images, np.ndarray) or images.dtype != np.dtype("uint8"):
+    if not isinstance(images, np.ndarray):
         raise TypeError("exact uint8 NumPy input required")
-    if images.ndim != 3 or images.shape[1:] != (28, 28) or len(images) > MAX_BATCH:
+    actual = np.asarray(images)
+    if actual.dtype != np.dtype("uint8"):
+        raise TypeError("exact uint8 NumPy input required")
+    if actual.ndim != 3 or actual.shape[1:] != (28, 28) or actual.shape[0] > MAX_BATCH:
         raise ValueError("images must have shape (N,28,28), N <= 8")
-    owned = np.array(images, copy=True, order="C")
+    owned = np.array(actual, copy=True, order="C")
     return np.ascontiguousarray(owned[:, None], dtype=np.float32) / np.float32(255)
 
 def read_images(paths):
