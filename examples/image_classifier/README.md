@@ -2,7 +2,9 @@
 
 I added this consumer to give the runtime work an actual inference application. It classifies a bounded set of digit images through a C++20 ONNX Runtime session and uses Adaptive Timing's existing admission, completion and generation reconciliation. The numerical runtime remains independently installable. It does not need ONNX Runtime, Pillow, a model download or these application dependencies.
 
-The [contract and protocol](../../docs/inference-protocol.md) explain ownership, image preparation, memory limits and the prepared-input comparison. The [CPU results](../../docs/inference-results.md) retain actual session-reuse timings and a separate process-memory observation. The [required CUDA follow-up](../../docs/inference-cuda-results.md) retains actual full outputs, provider placement, lifecycle cases, complete-call comparisons and shared-device memory observations. The model accepts one image at a time. A batch here is a serial sequence of up to eight images through one session. It is not fused GPU batching or an asynchronous GPU API.
+`serial` remains the default and runs the original one-image graph once per image. Explicit `--execution-mode batched` uses a reviewed local graph derivation that preserves the batch dimension through flattening. A nonempty request of up to eight images makes one model invocation and returns every row as a completed, independently owned float32 `(N,10)` host array. Empty input returns `(0,10)` and makes no model invocation. The [current batching contract](../../docs/model-batching.md) records separate source and execution graph hashes, the unchanged trained weights and preprocessing, and the supported Python interfaces. This is one tensor for one logical request. It does not implement dynamic batching of independent requests or an asynchronous GPU API. Required CUDA continues to refuse CPU fallback.
+
+The [accepted complete-request comparison](../../docs/batching-results.md) found lower two-image and eight-image request cost from batching within both providers. CPU still had the lower observed median at every tested batch size. The eight-image batched medians were 0.3635 ms on CPU and 0.6371 ms on required CUDA, while the one-image CPU comparison was inconclusive. The study includes in-memory image preparation through usable host-result reconciliation and excludes file decoding. The historical [serial contract and protocol](../../docs/inference-protocol.md), [CPU results](../../docs/inference-results.md) and [required CUDA follow-up](../../docs/inference-cuda-results.md) retain their original evidence and boundaries. The model card's Apache-2.0 metadata and MIT body/SPDX disagreement remains unresolved. Neither the original nor derived model bytes are included in the repository or wheel, and this local capability does not authorize model redistribution.
 
 ## Source and model
 
@@ -35,6 +37,14 @@ hbr-classify --model examples/image_classifier/.artifacts/mnist-8.onnx --provide
 
 Pass up to eight PNG paths after the options to classify supplied images. PNG files must contain one frame, be at most one MiB and have dimensions at most 256 by 256. Images are composited over black, converted to grayscale, resized to 28 by 28 with bilinear sampling and divided by 255. Use black-background, white-foreground digits. The model is not an arbitrary photograph classifier.
 
+Use explicit batched execution to send the admitted images through one model invocation:
+
+```sh
+hbr-classify --model examples/image_classifier/.artifacts/mnist-8.onnx --provider cpu --execution-mode batched --profile-prefix ort-profile-batched --output predictions-batched.json
+```
+
+The later [completed-request cost investigation](../../docs/request-cost-analysis.md) preserves its qualified no-optimization decision. Its host `Session.run` interval includes several costs, and ordinary operation traces did not resolve device activity. Neither that investigation nor a lower isolated interval establishes a new completed-request speedup.
+
 ## Provider and lifecycle limits
 
 The CPU installation uses ONNX Runtime's CPU package and API version 30. Use a separate environment for ONNX Runtime GPU 1.30.0 and its compatible CUDA and cuDNN dependencies. The official package supports `onnxruntime-gpu[cuda,cudnn]==1.30.0`. Its vendor libraries remain outside the default installation.
@@ -45,6 +55,6 @@ Each request owns its snapshot and results. An immutable generation does not can
 
 The consumer does not install GPU dependencies, change counter permissions, reset a device or select an unverified vendor backend. Keep provider acquisition and native GPU acceptance separate from the default CPU installation.
 
-The repository's `tools/check_inference_evidence.py` and `tools/check_inference_cuda_evidence.py` check retained execution identities. Later source changes are compared with the recorded historical Git snapshot, so those checks require Git and the recorded commit objects. Use a full repository clone, or fetch the recorded source revision into a shallow clone. A downloaded source archive can run the current application and its contracts, but lacks the history needed to verify changed historical source. Hosted consumer checks fetch that history explicitly. On a compatible, separately configured GPU environment, set `HBR_INFERENCE_GPU_ACCEPTANCE=1` to explicitly run the nine required-CUDA cases in `test_gpu_inference.py`. Ordinary CPU checks skip them.
+The repository's `tools/check_inference_evidence.py` and `tools/check_inference_cuda_evidence.py` check retained execution identities. Later source changes are compared with the recorded historical Git snapshot, so those checks require Git and the recorded commit objects. Use a full repository clone, or fetch the recorded source revision into a shallow clone. A downloaded source archive can run the current application and its contracts, but lacks the history needed to verify changed historical source. Hosted consumer checks fetch that history explicitly. On a compatible, separately configured GPU environment, set `HBR_INFERENCE_GPU_ACCEPTANCE=1` to explicitly run the serial and batched required-CUDA cases in `test_gpu_inference.py`. Ordinary CPU checks skip them.
 
 When a performance slot is free, `compare.py --model <reviewed-model> --output <new-results.json>` executes the separately committed prepared-input protocol. It retains twenty complete-call samples per condition and generates its table from those rows. It is not run during an occupied shared-workstation slot. Its host intervals do not establish device time or total process/device memory. No comparison table is presented until real collection completes.
