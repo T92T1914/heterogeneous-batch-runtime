@@ -240,9 +240,9 @@ def static_tables(data):
         content = table(["Condition", "Path", "Warm samples", "Median ms", "25% ms", "75% ms", "Minimum ms", "Maximum ms", "First ms", "Upload ms", "Kernel ms", "Download ms"], rows, study["title"] + ": all retained conditions")
         if study["lifecycle"]:
             content += table(["Condition", "Path", "Phase", "ms", "Explicit device bytes"], [[r["condition_label"], r["method_label"], r["phase"], number(r["milliseconds"]), r["device_bytes"] if r["device_bytes"] is not None else "Not a process/device total"] for r in study["lifecycle"]], study["title"] + ": separate setup and retirement observations")
-        content += f'<p class="fine">Executed source <a href="{study["source_url"]}"><code>{study["source_revision"]}</code></a>. <a href="{study["raw_url"]}">Raw record</a>, <a href="{study["protocol_url"]}">protocol</a>, <a href="{study["report_url"]}">report</a>.</p>'
+        content += f'<p class="fine">Executed source <a href="{study["source_url"]}"><code translate="no">{study["source_revision"]}</code></a>. <a href="{study["raw_url"]}">Raw record</a>, <a href="{study["protocol_url"]}">protocol</a>, <a href="{study["report_url"]}">report</a>.</p>'
         if "comparative_source_revision" in study:
-            content += f'<p class="fine">Original source <a href="{study["comparative_source_url"]}"><code>{study["comparative_source_revision"]}</code></a> and <a href="{study["secondary_raw_url"]}">original CPU rows</a> remain separate from the follow-up.</p>'
+            content += f'<p class="fine">Original source <a href="{study["comparative_source_url"]}"><code translate="no">{study["comparative_source_revision"]}</code></a> and <a href="{study["secondary_raw_url"]}">original CPU rows</a> remain separate from the follow-up.</p>'
         blocks.append(f'<details id="table-{study["id"]}"><summary>{escape(study["title"])}</summary><p>{escape(study["finding"])}</p><p><strong>Boundary:</strong> {escape(study["boundary"])}</p><p><strong>Outside:</strong> {escape(study["excluded"])}</p><p class="muted">{escape(study["limitations"])}</p>{content}</details>')
     return "\n".join(blocks)
 
