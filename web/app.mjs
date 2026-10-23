@@ -34,7 +34,7 @@ function element(name, text, attributes = {}) {
   return node;
 }
 
-function link(text, url) { return element('a', text, {href:url}); }
+function link(text, url, attributes = {}) { return element('a', text, {href:url, ...attributes}); }
 function formatted(value) { return value === null ? 'Not measured' : `${value.toFixed(5)} ms`; }
 
 function renderTable(rows, metric, label) {
@@ -101,8 +101,8 @@ function boot() {
       document.getElementById('finding').textContent = study.finding;
       for (const key of ['boundary', 'excluded', 'limitations']) document.getElementById(key).textContent = study[key];
       const sources = document.getElementById('source-links');
-      sources.replaceChildren(document.createTextNode('Executed source '), link(study.source_revision, study.source_url), document.createTextNode('. '), link('Raw record', study.raw_url), document.createTextNode(', '), link('protocol at executed source', study.protocol_url), document.createTextNode(', '), link('report', study.report_url), document.createTextNode('.'));
-      if (study.comparative_source_revision) sources.append(document.createTextNode(' Original source '), link(study.comparative_source_revision, study.comparative_source_url), document.createTextNode(' and '), link('original CPU rows', study.secondary_raw_url), document.createTextNode(' remain separate.'));
+      sources.replaceChildren(document.createTextNode('Executed source '), link(study.source_revision, study.source_url, {translate:'no'}), document.createTextNode('. '), link('Raw record', study.raw_url), document.createTextNode(', '), link('protocol at executed source', study.protocol_url), document.createTextNode(', '), link('report', study.report_url), document.createTextNode('.'));
+      if (study.comparative_source_revision) sources.append(document.createTextNode(' Original source '), link(study.comparative_source_revision, study.comparative_source_url, {translate:'no'}), document.createTextNode(' and '), link('original CPU rows', study.secondary_raw_url), document.createTextNode(' remain separate.'));
       document.getElementById('table-link').href = `#table-${study.id}`;
       if (updateURL) {
         const params = new URLSearchParams({experiment:study.id, condition, metric});
