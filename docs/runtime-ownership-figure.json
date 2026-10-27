@@ -1,0 +1,217 @@
+{
+  "schema_version": 1,
+  "evidence": {
+    "schema_version": 1,
+    "kind": "conceptual mechanism and worked arithmetic, not measured execution",
+    "source_revision": "e84f4acdca294309f3e36c586a3872e85558f8de",
+    "sources": [
+      "README.md",
+      "docs/contracts.md",
+      "src/runtime.cpp",
+      "src/bindings.cpp"
+    ],
+    "example": {
+      "values": [
+        2,
+        -3,
+        5
+      ],
+      "mask": [
+        1,
+        0,
+        1
+      ],
+      "selected": [
+        2,
+        5
+      ],
+      "sum": 7
+    },
+    "lifecycle": "Running work retains its owned storage until physical return. Cancellation intent alone does not prove completion.",
+    "limits": "The arithmetic is the ordinary uncancelled example. The separate cancellation rule is not a promise that a cancelled request publishes a result. No timing or CPU/GPU comparison is shown."
+  },
+  "new_measurement": false,
+  "theme_revision": "7a57fe750ff50205a17e1d342106a0d3f2777159",
+  "renderer": "tools/render_ownership_figure.py",
+  "layouts": {
+    "runtime-ownership-obscur": {
+      "width": 1800,
+      "height": 800,
+      "panel_geometry": [
+        {
+          "padded_panel": [
+            88,
+            304,
+            552,
+            560
+          ],
+          "measured_labels": {
+            "heading": [
+              88.0,
+              304.0,
+              432.984,
+              379.139
+            ],
+            "body": [
+              88.0,
+              395.139,
+              434.125,
+              545.416
+            ]
+          }
+        },
+        {
+          "padded_panel": [
+            668,
+            304,
+            1132,
+            560
+          ],
+          "measured_labels": {
+            "heading": [
+              668.0,
+              304.0,
+              1029.109,
+              379.139
+            ],
+            "body": [
+              668.0,
+              395.139,
+              1013.547,
+              545.416
+            ]
+          }
+        },
+        {
+          "padded_panel": [
+            1248,
+            304,
+            1712,
+            560
+          ],
+          "measured_labels": {
+            "heading": [
+              1248.0,
+              304.0,
+              1585.531,
+              379.139
+            ],
+            "body": [
+              1248.0,
+              395.139,
+              1509.922,
+              545.416
+            ]
+          }
+        }
+      ]
+    },
+    "runtime-ownership-obscur-narrow": {
+      "width": 960,
+      "height": 1280,
+      "panel_geometry": [
+        {
+          "padded_panel": [
+            88,
+            309,
+            872,
+            465
+          ],
+          "measured_labels": {
+            "heading": [
+              88.0,
+              309.0,
+              388.125,
+              374.338
+            ],
+            "body": [
+              88.0,
+              390.338,
+              645.609,
+              455.676
+            ]
+          }
+        },
+        {
+          "padded_panel": [
+            88,
+            549,
+            872,
+            705
+          ],
+          "measured_labels": {
+            "heading": [
+              88.0,
+              549.0,
+              402.094,
+              614.338
+            ],
+            "body": [
+              88.0,
+              630.338,
+              513.0,
+              695.676
+            ]
+          }
+        },
+        {
+          "padded_panel": [
+            88,
+            789,
+            872,
+            945
+          ],
+          "measured_labels": {
+            "heading": [
+              88.0,
+              789.0,
+              382.609,
+              854.338
+            ],
+            "body": [
+              88.0,
+              870.338,
+              704.406,
+              935.676
+            ]
+          }
+        }
+      ]
+    }
+  },
+  "typography": {
+    "files": {
+      "Regular": {
+        "postscript": "Inter-Regular",
+        "weight": 400,
+        "sha256": "40d692fce188e4471e2b3cba937be967878f631ad3ebbbdcd587687c7ebe0c82",
+        "italic": false
+      },
+      "SemiBold": {
+        "postscript": "Inter-SemiBold",
+        "weight": 600,
+        "sha256": "78a843fade9d4612a5567302fb595b56976eb5fcebf4fea5a5912d638bafcde3",
+        "italic": false
+      },
+      "Bold": {
+        "postscript": "Inter-Bold",
+        "weight": 700,
+        "sha256": "288316099b1e0a47a4716d159098005eef7c0066921f34e3200393dbdb01947f",
+        "italic": false
+      }
+    },
+    "svg": "Outlined labels",
+    "font_binaries_distributed": false
+  },
+  "inputs_sha256_lf": {
+    "docs/runtime-ownership-input.json": "4e43eb6d791499949891ee3cd69bfbf1066327dfe9aacc518776291d33825d3e",
+    "web/theme-tokens.json": "889df65e0f4f4eea99a81c535d542e7332b537c000c332402a3ffa6a6cbb15b7",
+    "tools/render_ownership_figure.py": "415059479cf3901eb0d596658b7d2c4a4ccb9c604f390b1468f6d70e79c7d169"
+  },
+  "outputs_sha256": {
+    "docs/runtime-ownership-obscur.png": "7e3f074a9c297856ca47863b379cbc08568262eaa4243539f79e49727cd6ac16",
+    "docs/runtime-ownership-obscur.svg": "e656fd3a1d4a5bb0793e398917319201b19a6ce4e75657856e3aaa0c382be7a6",
+    "docs/runtime-ownership-obscur-narrow.png": "3b4d3b51b86e0d482118cff794f4e6210e6c0f00eed79ddae8c7cf03a5d9d047",
+    "docs/runtime-ownership-obscur-narrow.svg": "49c92ac9153897a1aaa645b5a3bd67caaeef848f73590ca2853fd58aab8dbaca"
+  }
+}

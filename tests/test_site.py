@@ -169,6 +169,8 @@ class SiteTests(unittest.TestCase):
         tokens = json.loads((ROOT / "web/theme-tokens.json").read_text())
         self.assertEqual(hashlib.sha256((ROOT / "web/theme-tokens.json").read_bytes()).hexdigest(), "889df65e0f4f4eea99a81c535d542e7332b537c000c332402a3ffa6a6cbb15b7")
         css = self.generated["web/appearance.css"]
+        self.assertIn(':root{color-scheme:dark;', css)
+        self.assertIn(':root[data-appearance=auto]', css)
         for theme in tokens["themes"].values():
             for role, value in theme.items():
                 self.assertIn(f"--{role}:{value}", css)
