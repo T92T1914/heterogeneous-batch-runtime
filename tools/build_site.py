@@ -283,9 +283,10 @@ def outputs(root=ROOT):
     def rules(theme):
         return ";".join(f"--{name}:{value}" for name, value in tokens["themes"][theme].items())
     css = "/* Adapter for pinned Clair/Obscur tokens at " + data["theme_revision"] + ". */\n"
-    css += ':root{color-scheme:light;' + rules("Clair") + '}\n'
+    css += ':root{color-scheme:dark;' + rules("Obscur") + '}\n'
+    css += ':root[data-appearance=auto],:root[data-appearance=clair]{color-scheme:light;' + rules("Clair") + '}\n'
     css += ':root[data-appearance=obscur]{color-scheme:dark;' + rules("Obscur") + '}\n'
-    css += '@media(prefers-color-scheme:dark){:root:not([data-appearance=clair]):not([data-appearance=obscur]){color-scheme:dark;' + rules("Obscur") + '}}\n'
+    css += '@media(prefers-color-scheme:dark){:root[data-appearance=auto]{color-scheme:dark;' + rules("Obscur") + '}}\n'
     css += '@media(forced-colors:active){:root,:root[data-appearance]{--canvas:Canvas;--panel:Canvas;--text:CanvasText;--muted:CanvasText;--divider:CanvasText;--control:ButtonFace;--hover:ButtonFace;--selected:Highlight;--border:ButtonText;--accent:LinkText;--on_accent:Canvas;--focus:Highlight;--code:Canvas;--success:CanvasText;--error:CanvasText}}\n'
     return {"web/index.html": html, "web/evidence.json": json.dumps(data, indent=2, ensure_ascii=False, allow_nan=False) + "\n", "web/appearance.css": css}
 
@@ -300,7 +301,19 @@ def main():
             (ROOT / path).write_text(text, encoding="utf-8", newline="\n")
         elif not (ROOT / path).exists() or (ROOT / path).read_bytes() != text.encode("utf-8"):
             raise ValueError("stale site output: " + path)
-    print("Pinned retained records and all three generated site outputs match; no workload executed")
+    try:
+        from .render_ownership_figure import check_outputs, FILES, INPUT, RECORD
+    except ImportError:
+        from render_ownership_figure import check_outputs, FILES, INPUT, RECORD
+    check_outputs()
+    for name in (*FILES, INPUT, RECORD):
+        target = ROOT / "web" / Path(name).name
+        expected = (ROOT / name).read_bytes()
+        if args.write:
+            target.write_bytes(expected)
+        elif not target.is_file() or target.read_bytes() != expected:
+            raise ValueError("stale ownership site asset: " + str(target.relative_to(ROOT)))
+    print("Pinned records, generated page and ownership exports match; no workload executed")
 
 
 if __name__ == "__main__":

@@ -1,0 +1,9 @@
+{
+  "schema_version": 1,
+  "kind": "conceptual mechanism and worked arithmetic, not measured execution",
+  "source_revision": "e84f4acdca294309f3e36c586a3872e85558f8de",
+  "sources": ["README.md", "docs/contracts.md", "src/runtime.cpp", "src/bindings.cpp"],
+  "example": {"values": [2, -3, 5], "mask": [1, 0, 1], "selected": [2, 5], "sum": 7},
+  "lifecycle": "Running work retains its owned storage until physical return. Cancellation intent alone does not prove completion.",
+  "limits": "The arithmetic is the ordinary uncancelled example. The separate cancellation rule is not a promise that a cancelled request publishes a result. No timing or CPU/GPU comparison is shown."
+}

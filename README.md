@@ -8,7 +8,18 @@ The runtime keeps submitted work alive until it actually finishes. Cancelling a 
 
 Reading in another language? [Translation help](https://github.com/T92T1914/T92T1914/blob/main/TRANSLATION.md).
 
-[![The Runtime project page asks how faster kernels compare with the complete call, then links to retained CPU and CUDA evidence.](docs/runtime-project-page.jpg)](https://t92t1914.github.io/heterogeneous-batch-runtime/)
+<a href="https://t92t1914.github.io/heterogeneous-batch-runtime/#ownership">
+  <picture>
+    <source media="(max-width: 680px)" srcset="docs/runtime-ownership-obscur-narrow.png" width="960" height="1280">
+    <img src="docs/runtime-ownership-obscur.png" alt="Conceptual owned-work example: values 2, minus 3 and 5 with mask 1, 0, 1 select 2 plus 5 and return 7. Cancellation intent does not mean running work has returned or its storage can be reused." width="900">
+  </picture>
+</a>
+
+The ordinary masked sum selects `2 + 5` and returns `7.0`. The separate lifecycle
+rule is that running work retains its storage until physical return. Requesting
+cancellation alone does not prove that return. This [conceptual explanation](docs/ownership-explainer.md)
+is not a new execution or timing result. The [original page preview](docs/runtime-project-page.jpg)
+remains available with its original bytes.
 
 ## Build and inspect
 

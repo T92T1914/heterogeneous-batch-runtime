@@ -10,7 +10,7 @@ const root = fileURLToPath(new URL('../../web/', import.meta.url));
 const data = JSON.parse(await readFile(path.join(root, 'evidence.json')));
 const key = 'heterogeneous-batch-runtime.appearance.v1';
 const engines = {chromium, webkit, firefox};
-const mime = {'.html':'text/html', '.css':'text/css', '.js':'text/javascript', '.mjs':'text/javascript', '.json':'application/json'};
+const mime = {'.html':'text/html', '.css':'text/css', '.js':'text/javascript', '.mjs':'text/javascript', '.json':'application/json', '.png':'image/png', '.svg':'image/svg+xml'};
 let browser, server, base;
 
 before(async () => {
@@ -120,7 +120,11 @@ test('Auto and overrides preserve data through system changes and reload', async
   await page.locator('#appearance').selectOption('auto');
   await page.emulateMedia({colorScheme:'light'});
   assert.equal(await background(), 'rgb(248, 247, 243)');
-  assert.equal(await page.evaluate(k => localStorage.getItem(k), key), null);
+  assert.equal(await page.evaluate(k => localStorage.getItem(k), key), 'auto');
+  await page.reload();
+  await page.locator('#interactive:visible').waitFor();
+  assert.equal(await page.locator('#appearance').inputValue(), 'auto');
+  assert.equal(await background(), 'rgb(248, 247, 243)');
   assert.equal(await page.locator('#selection-table').textContent(), before);
 });
 
@@ -133,14 +137,15 @@ test('blocked storage keeps appearance and comparison usable', async t => {
   assert.equal(await page.locator('html').getAttribute('data-appearance'), 'obscur');
   await page.reload();
   await page.locator('#interactive:visible').waitFor();
-  assert.equal(await page.locator('#appearance').inputValue(), 'auto');
+  assert.equal(await page.locator('#appearance').inputValue(), 'obscur');
   assert.equal(await page.locator('#condition').inputValue(), '32:single_bin');
   await fits(page);
 });
 
 test('no JavaScript retains complete tables, memory and incorrect predictions', async t => {
-  const page = await fixture(t, {javaScriptEnabled:false, viewport:{width:390,height:844}, colorScheme:'dark'});
+  const page = await fixture(t, {javaScriptEnabled:false, viewport:{width:390,height:844}, colorScheme:'light'});
   await page.goto(base + '/');
+  assert.equal(await page.locator('body').evaluate(node => getComputedStyle(node).backgroundColor), 'rgb(9, 9, 9)');
   assert.equal(await page.locator('#interactive').isVisible(), false);
   assert.equal(await page.locator('#appearance').isDisabled(), true);
   assert.equal(await page.locator('#tables details').count(), 6);
@@ -153,6 +158,21 @@ test('no JavaScript retains complete tables, memory and incorrect predictions', 
   assert.equal(await page.locator('#memory tbody tr').count(), 16);
   await fits(page);
   await capture(page, 'runtime-no-js-390-obscur');
+});
+
+test('first visit is Obscur in a light system and the ownership example reflows', async t => {
+  const page = await fixture(t, {colorScheme:'light'});
+  await ready(page);
+  assert.equal(await page.locator('#appearance').inputValue(), 'obscur');
+  assert.equal(await page.locator('body').evaluate(e => getComputedStyle(e).backgroundColor), 'rgb(9, 9, 9)');
+  const image = page.locator('#ownership img');
+  for (const width of [1280, 390, 320]) {
+    await page.setViewportSize({width, height:900});
+    await image.scrollIntoViewIfNeeded();await image.evaluate(e => e.decode());
+    assert.equal(await image.evaluate(e => e.currentSrc.endsWith('-narrow.png')), width <= 680);
+    assert.ok(await image.evaluate(e => e.complete && e.naturalWidth > 0));
+    await fits(page);
+  }
 });
 
 for (const [width, appearance] of [[1280,'clair'], [390,'obscur']]) test(`comparison is readable at ${width} in ${appearance}`, async t => {

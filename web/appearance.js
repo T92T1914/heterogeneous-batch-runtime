@@ -1,12 +1,12 @@
-/* Apply a project-scoped preference before paint. Auto also works without JS. */
+/* Resolve the explicit preference before paint; Obscur is the default. */
 (() => {
   'use strict';
   const key = 'heterogeneous-batch-runtime.appearance.v1';
   const root = document.documentElement;
-  let choice = 'auto';
+  let choice = 'obscur';
   try {
     const saved = localStorage.getItem(key);
-    if (saved === 'clair' || saved === 'obscur') choice = saved;
+    if (['auto', 'clair', 'obscur'].includes(saved)) choice = saved;
   } catch { /* Optional storage must not prevent reading. */ }
   root.dataset.appearance = choice;
   document.addEventListener('DOMContentLoaded', () => {
@@ -18,8 +18,7 @@
       choice = ['clair', 'obscur'].includes(select.value) ? select.value : 'auto';
       root.dataset.appearance = choice;
       try {
-        if (choice === 'auto') localStorage.removeItem(key);
-        else localStorage.setItem(key, choice);
+        localStorage.setItem(key, choice);
       } catch { /* An in-memory choice remains usable. */ }
     });
   });
