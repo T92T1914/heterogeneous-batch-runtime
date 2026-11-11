@@ -13,6 +13,35 @@ CHECKER = importlib.util.module_from_spec(SPEC)
 SPEC.loader.exec_module(CHECKER)
 
 
+@pytest.fixture
+def source_lookups(monkeypatch):
+    """Keep these cases independent of Git history.
+
+    The tool itself reads each recorded source revision with `git show` when it
+    runs, so a source archive cannot run it. These cases only change fields of
+    the retained record, so they record each requested lookup instead and also
+    run from an archive.
+    """
+    lookups = []
+    monkeypatch.setattr(CHECKER, 'source', lambda root, revision, records: lookups.append(
+        (revision, [record['path'] for record in records])))
+    return lookups
+
+
+def test_unchanged_cuda_record_passes_without_history(source_lookups):
+    CHECKER.verify(ROOT)
+    data = json.loads((ROOT / 'docs/inference-cuda-evidence.json').read_text(encoding='utf8'))
+    expected = [(data[revision], [record['path'] for record in data[records]])
+                for revision, records in (
+                    ('application_source_revision', 'application_source_files'),
+                    ('comparison_source_revision', 'comparison_source_files'),
+                    ('corrected_memory_source_revision', 'memory_source_files'),
+                    ('gpu_contract_source_revision', 'contract_test_files'))]
+    expected.append((data['protocol_commit'], ['docs/inference-cuda-protocol.md']))
+    assert source_lookups == expected
+
+
+@pytest.mark.usefixtures('source_lookups')
 @pytest.mark.parametrize('change', ['model', 'memory_provider', 'session_boundaries',
                                   'input', 'tolerance', 'memory_outputs'])
 def test_relabelled_cuda_record_is_rejected(monkeypatch, change):
