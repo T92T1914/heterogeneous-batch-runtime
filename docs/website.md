@@ -13,9 +13,11 @@ without JavaScript. Wide tables scroll within labelled keyboard-focusable region
 
 ## Data and regeneration
 
-`web/source-pins.json` identifies the 22 retained input files from source
-`34e2b1151681ba231eb38713bde1a2f21cf8444f`, including the separate pinned theme
-adapter. The generator rejects changed input bytes before calculating a table.
+`web/source-pins.json` identifies 22 retained input files. Twenty-one come from
+source `34e2b1151681ba231eb38713bde1a2f21cf8444f`. The copied theme token file,
+`web/theme-tokens.json`, comes from the theme revision named under Appearance
+and accessibility. The
+generator rejects changed input bytes before calculating a table.
 It derives medians, inclusive quartiles, minima, maxima and first invocations from
 the raw CSV/JSON samples. It never imports a native extension, starts inference,
 acquires an artifact or calls a benchmark. Historical measurements retain their
@@ -32,8 +34,16 @@ npx playwright install chromium webkit firefox
 npm test
 ```
 
-`--write` updates only `web/index.html`, `web/evidence.json` and
+`--write` regenerates `web/index.html`, `web/evidence.json` and
 `web/appearance.css`. The command without `--write` checks their exact bytes.
+Both forms then run the provenance check from `tools/render_ownership_figure.py`,
+which compares the figure record with its claim input, palette, generator,
+pinned font hashes and rendered outputs. After that check, `--write` copies the
+four ownership figure renditions, the claim input and the rendering record from
+`docs/` into `web/`, and the plain check compares those six copies byte for
+byte. Neither form renders the figure. The
+[ownership explainer](ownership-explainer.md) gives the separate rendering
+commands.
 Authored prose is in `web/index.template.html`. Both the embedded data and
 downloadable JSON contain the same facts. New evidence needs a deliberate input
 pin and semantic review, rather than accepting a changed record automatically.
@@ -50,9 +60,10 @@ events are not added to host intervals. ONNX operator placement is not kernel ti
 The thin CSS adapter uses `clair-obscur-themes/tokens.json` at
 `7a57fe750ff50205a17e1d342106a0d3f2777159`. The exact copied token bytes have SHA-256
 `889df65e0f4f4eea99a81c535d542e7332b537c000c332402a3ffa6a6cbb15b7`.
-Auto follows system appearance. An explicit Clair or Obscur selection is applied
-before paint and retained under `heterogeneous-batch-runtime.appearance.v1` when
-storage is available. Blocked storage leaves a working in-memory choice. Appearance
+Obscur is the default on a first visit and without JavaScript. Auto follows
+system appearance. Any selection, Auto included, is applied before paint and
+retained under `heterogeneous-batch-runtime.appearance.v1` when storage is
+available. Blocked storage leaves a working in-memory choice. Appearance
 changes preserve the selected data, timing boundary and linear chart scale.
 
 Inter resolves from local installed faces. Visitors without Inter receive their
@@ -79,8 +90,12 @@ Native foreground and physical-display checks are outside that headless evidence
 
 The browser-only manifest and lock live in `tests/browser/` and pin Playwright
 1.63.0. `RUNTIME_BROWSER_ENGINE` selects `chromium`, `webkit` or `firefox`.
-The default is Chromium. `RUNTIME_BROWSER_CHANNEL=chrome` is an explicit local
-Chromium-only adapter when the verification owner has reviewed that installation.
+The default is Chromium. `RUNTIME_BROWSER_CHANNEL` may be `chrome` or
+`chromium`, with the Chromium engine only. Setting it to another value, or with
+another engine, stops the test before a browser starts. The hosted workflow sets `chrome` for its Chromium
+job, so that job runs the Google Chrome already installed on the GitHub hosted
+runner rather than Playwright's bundled Chromium. Locally, set `chrome` only
+when the verification owner has reviewed that installation.
 `RUNTIME_SCREENSHOT_DIR` optionally records private actual page captures. No
 existing profile is attached and there is no headed fallback. The dependency
 installation commands above are setup, not evidence that this machine installed
