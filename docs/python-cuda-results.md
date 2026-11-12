@@ -3,8 +3,8 @@
 The optional interface source is `fa7afb4b798a1481ffa34a85248ba63d2ea029a2`.
 The connected Adaptive application source is
 `3ce1b6571899faed99fc7a2eabdf5862cf5639ad`.
-The native CUDA numerical implementation and existing reuse failure-retirement
-contract are unchanged from the delivered PR2 baseline.
+The native CUDA numerical implementation and the existing reuse contract for
+retirement after failure are unchanged from the delivered PR2 baseline.
 
 ## Executed coverage
 
@@ -15,22 +15,22 @@ creation. It requires neither toolkit discovery nor GPU initialization.
 The CUDA wheel imported with CUDA enabled and executed on an RTX 4090.
 
 The final Python contract suite has 22 cases. Actual CUDA execution passes all
-22. The CPU build executes the host cases and skips four CUDA-only cases.
+22. The CPU build executes the host cases and skips four cases that need CUDA.
 Tests cover exact dtype, shape, contiguity, independent repeated outputs,
-unavailable CUDA, bounds, creating-thread rejection, explicit close, ordinary
+unavailable CUDA, bounds, rejection on a thread other than the creating one, explicit close, ordinary
 abandonment from a different Python thread, exception teardown and pending
 snapshot ownership. Synthetic resource tests are host tests and do not imply
-GPU execution. An initial exception-lifetime test exposed retained worker
+GPU execution. An initial test of exception lifetime exposed retained worker
 tracebacks. Clearing those tracebacks before forwarding exceptions corrected
 the ownership issue, and the regression now passes.
 
 All four existing Windows native groups passed: CPU numerical/runtime contracts,
 simple CUDA contracts, reusable CUDA contracts and reuse fault contracts.
-The fault group executed seven acquisition and eight execution host-exception
-checkpoints. These are synthetic host exceptions around actual CUDA work,
-not device-loss, OOM or GPU sanitizer coverage.
+The fault group executed seven acquisition and eight execution checkpoints
+with host exceptions. These are synthetic host exceptions around actual CUDA work.
+They do not cover device loss or OOM and are not GPU sanitizer coverage.
 
-The [exact-source CI run](https://github.com/T92T1914/heterogeneous-batch-runtime/actions/runs/36672953632)
+The [CI run on the exact source](https://github.com/T92T1914/heterogeneous-batch-runtime/actions/runs/36672953632)
 passed Windows and Ubuntu CPU builds/packages, ASan/UBSan, Clang 18.1.3 Release
 tests and separate Clang host ThreadSanitizer execution. Its host TSan result
 was `passed`. The tests exercise native concurrency, cancellation and owned
@@ -46,7 +46,7 @@ change was applied. This differs from the successful hosted Clang TSan run.
 
 The [retained Adaptive trace](https://github.com/T92T1914/adaptive-timing-engine/blob/main/docs/cuda-application-trace.json)
 contains four actual completed CUDA calls and seven reconciled outcomes.
-Full output arrays match independent NumPy bincount and separate scalar-loop
+Full output arrays match independent NumPy bincount and separate scalar loop
 oracles. Queued cancellation avoids CUDA execution. Running cancellation
 requests retain live storage through completed return. Obsolete completion
 remains inspectable and is not current state. Explicit shutdown drains its
@@ -56,7 +56,7 @@ reconciliation. A synthetic host exception is retained separately.
 The caller image changes after verified submission return while a deterministic
 host gate prevents native execution. The original snapshot still produces the
 original full histogram. This verifies input ownership, not a GPU concurrency
-or transfer-overlap claim. The [runnable example and ownership rules](https://github.com/T92T1914/adaptive-timing-engine/blob/main/docs/cuda-application.md)
+or transfer overlap claim. The [runnable example and ownership rules](https://github.com/T92T1914/adaptive-timing-engine/blob/main/docs/cuda-application.md)
 explain how to reproduce and inspect the trace.
 
 The original 504 timing rows, reuse measurements, protocols, historical reports
@@ -67,6 +67,6 @@ experiment. Host monotonic observations and device event times remain separate.
 
 GPU counters remain unpassed after `ERR_NVGPUCTRPERM`. Windows GPU sanitizer
 initialization remains separately unpassed under WDDM. These gates were not
-retried or changed. No second-vendor execution is established. Explicit normal
+retried or changed. No execution on a second vendor is established. Explicit normal
 shutdown is supported. Arbitrary interpreter termination and physical device
 loss are outside the recovery contract.
