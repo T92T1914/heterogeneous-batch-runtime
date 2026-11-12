@@ -39,4 +39,4 @@ Clair and Auto choices remain available. Auto follows the system appearance and
 is now saved explicitly. Older versions stored Auto by removing the preference,
 so an old Auto selection and a first visit cannot be distinguished. Both receive
 the new default until the visitor selects a preference. Saved Clair and Obscur
-choices remain effective; blocked storage still permits in-page switching.
+choices remain effective. Blocked storage still permits switching within the page.

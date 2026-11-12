@@ -26,7 +26,7 @@ python examples/image_classifier/acquire.py examples/image_classifier/.artifacts
 python -m pip install "./examples/image_classifier[cpu,test]" -Ccmake.define.HBR_ORT_INCLUDE="$PWD/examples/image_classifier/.artifacts/sdk/include"
 ```
 
-The optional package declares its Adaptive Timing dependency at the exact public revision shown in the verification report. Installation therefore also needs ordinary public Git access. PowerShell uses the same final setting with `$PWD` converted to its full path in the quoted argument. Keep build parallelism at one on a shared machine. The exact tested versions and actual executions appear in the [verification report](../../docs/inference-results.md).
+The optional package declares its Adaptive Timing dependency at exact public revision `bb4f244a998c680ada7d3e316085daa6dfb540df`. Installation therefore also needs ordinary public Git access. PowerShell uses the same final setting with `$PWD` converted to its full path in the quoted argument. Keep build parallelism at one on a shared machine. The exact tested versions and actual executions appear in the [verification report](../../docs/inference-results.md). That report ran at the earlier `f6e0564` pin. The [serial protocol](../../docs/inference-protocol.md#interrupted-session-initialization) records the two Adaptive Timing cleanup fixes that moved the pin to `b7cd3b7` and then to `bb4f244`.
 
 For a separate installed application, set `HBR_MNIST_MODEL` to the acquired model file and run the test directory. This variable is a test input, not a hidden model download.
 

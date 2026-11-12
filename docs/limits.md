@@ -1,0 +1,51 @@
+# Open gates and limits
+
+The retained CUDA results come from one Windows workstation with an RTX 4090. Linux coverage comes from WSL2 and hosted CPU runners. The execution reports leave five gates open. Each one needs hardware, a permission, an implementation or a deliberate fault that the measured work did not include, and none of them was forced by changing a driver, debugger, security, clock, power or display setting.
+
+This page gathers those gates and the narrower open limits in one place so a reader does not have to collect them from several reports and contracts. The linked reports remain the record. A later run that closes a gate belongs in its own report with its executed source, not as an edit to an older one.
+
+## Open gates
+
+### Linux GPU execution
+
+Linux verification ran Ubuntu 24.04.5 under WSL2 with GCC 13.3, and the hosted Ubuntu jobs run the Release, sanitizer, Clang and ThreadSanitizer builds on CPU runners. None of that executes CUDA. The project counts WSL as a Linux execution environment, not as a separate Linux host or as Linux GPU evidence. Closing this gate would need a Linux machine with a compatible NVIDIA GPU and its own executed CUDA evidence.
+
+Recorded in the [September execution report](results-2026-09-29.md#correctness-and-packaging), the [reuse results](reuse-results.md#correctness-ownership-and-limits), the [Python CUDA verification](python-cuda-results.md#executed-coverage), the [CPU inference record](inference-results.md#pending-evidence) and the [required CUDA inference record](inference-cuda-results.md#source-identities-and-remaining-gates).
+
+### A second GPU vendor
+
+There is no HIP/ROCm or SYCL/oneAPI implementation. A required `hip` or `sycl` component fails CMake discovery as unsupported, and no AMD or Intel GPU execution, equivalence across vendors or speedup across vendors is claimed. The workstation's AMD processor is not AMD GPU evidence. Another backend would need a supported compiler and runtime, a suitable device and its own executed correctness and lifecycle evidence. It is outside the current scope, and the [backend discovery contract](backend-discovery.md#portable-backend-boundary) lists what one would have to preserve.
+
+Recorded in the [backend discovery contract](backend-discovery.md#portable-backend-boundary), the [September execution report](results-2026-09-29.md#reproduce-and-interpret), the [CPU inference record](inference-results.md#separate-cpu-process-memory-observation), the [Python CUDA verification](python-cuda-results.md#connected-application) and the [required CUDA inference record](inference-cuda-results.md#source-identities-and-remaining-gates).
+
+### Hardware counter profiling
+
+Nsight Systems traced the kernels, API calls and transfers of a small profile run. Nsight Compute 2026.3.0 returned `ERR_NVGPUCTRPERM`, so GPU performance counters were not available to the measuring account. No occupancy, memory traffic or other counter based explanation is claimed for any kernel. Counter access is a driver and account permission, and no setting was changed to obtain it.
+
+Recorded in the [September execution report](results-2026-09-29.md#profiling-and-remaining-diagnostics), the [reuse results](reuse-results.md#correctness-ownership-and-limits), the [Python CUDA verification](python-cuda-results.md#connected-application) and the [required CUDA inference record](inference-cuda-results.md#source-identities-and-remaining-gates).
+
+### GPU sanitizer acceptance
+
+Compute Sanitizer exited 99 with two initialization errors because the WDDM debugger interface was unavailable. The numerical test still completed, but that is not a sanitizer pass. The host AddressSanitizer, UndefinedBehaviorSanitizer and ThreadSanitizer runs and the host fault fixtures cover host code only, so they do not close this gate. No driver, debugger or security setting was changed to remove the restriction.
+
+Recorded in the [September execution report](results-2026-09-29.md#profiling-and-remaining-diagnostics), the [reuse results](reuse-results.md#correctness-ownership-and-limits), the [required CUDA inference record](inference-cuda-results.md#source-identities-and-remaining-gates) and the [host diagnostics notes](python-cuda.md#host-diagnostics).
+
+### Device loss
+
+No deliberate GPU reset or device loss test was performed. The reuse contract states that actual device loss is not deliberately induced on a shared desktop. The fault executable raises host exceptions at seven acquisition and eight execution checkpoints around real CUDA work. Cleanup synchronized and released the acquired resources at each one, and a failed context then rejected reuse. Those are host exceptions, not a lost device. For the optional Python interface, physical device loss, process killing and arbitrary interpreter termination are outside the supported recovery contract.
+
+Recorded in the [September execution report](results-2026-09-29.md#profiling-and-remaining-diagnostics), the [reuse results](reuse-results.md#correctness-ownership-and-limits), the [reuse contract](reuse-contract.md), the [Python CUDA interface](python-cuda.md) and the [required CUDA inference record](inference-cuda-results.md#source-identities-and-remaining-gates).
+
+## Related limits
+
+These are narrower than the five gates, but the reports leave them open as well.
+
+1. Real CUDA allocation failure was never injected. The host exception fixtures exercise cleanup around acquisition instead, and they do not establish allocation failure recovery. See the [September execution report](results-2026-09-29.md#profiling-and-remaining-diagnostics) and the [reuse results](reuse-results.md#correctness-ownership-and-limits).
+2. No active CUDA kernel failure or inference provider failure was injected, and no running kernel was interrupted. Running cancellation records a request and waits for physical completion, as the contracts require. See the [CPU inference checks](inference-results.md#executed-checks), the [required CUDA contract cases](inference-cuda-results.md#dependency-loading-and-executed-contracts) and the [request cost analysis](request-cost-analysis.md#correctness-ownership-and-retirement).
+3. Device activity inside an inference request is unobserved. The six ONNX Runtime traces in the cost analysis contain host `Node` events and no `Kernel` events, CUDA profiling support in the installed provider bytes is unconfirmed, and device execution, transfers, launches, synchronization, stream overlap and process specific peak device allocation remain unmeasured. See the [request cost analysis](request-cost-analysis.md#instrumentation-support-and-unobserved-device-costs).
+4. GPU memory in the inference probe is a shared device `cudaMemGetInfo` observation. Process specific live GPU allocation was unavailable, so no allocation cap or absence of leaks is established. See the [memory observation](inference-cuda-results.md#separate-memory-observation).
+5. The local WSL GCC ThreadSanitizer build exited 66 during initialization with `FATAL: ThreadSanitizer: unexpected memory mapping`. Its recorded state is `unsupported-initialization`, not a pass. The passing host ThreadSanitizer evidence is the hosted Clang job. See the [Python CUDA verification](python-cuda-results.md#executed-coverage).
+6. The required CUDA inference protocol says its evidence cannot close the separate hardware counter, WDDM sanitizer, second vendor or "native application" gates. The first three are listed above. No document defines the native application gate further, and no report closes it. See the [required CUDA protocol](inference-cuda-protocol.md).
+7. The digit model's card gives Apache-2.0 in its metadata and MIT in its SPDX field and body. That disagreement is unresolved. Model bytes are not committed or included in a wheel, and nothing here authorizes redistribution. See [model batching](model-batching.md).
+8. Batch order did not vary in the CPU inference collection. The serial [inference protocol](inference-protocol.md#comparison-decided-before-collection) asked for a rotated batch order, but the CPU collection record gives its sample order as batch 8, 1 and 2, and its runner at `8868e9f` ran those sizes once each in that order, alternating the order of the three paths within each size. For the required CUDA collection, the [protocol](inference-cuda-protocol.md) records only that the same runner used batch sizes 8, 1 and 2. Order effects between batch sizes are therefore not separated, and the first reused setup at batch eight also carries initial provider loading, as both reports note. See the `sample_order` field in [`inference-cpu-reuse.json`](inference-cpu-reuse.json).
+9. Every timing comes from small sample groups on a shared workstation with ordinary applications running. The original CPU and CUDA comparison also kept a fixed condition order with five warm samples. The samples do not establish extreme tails, a universal hardware ranking or a general CPU/GPU crossover. See the [September execution report](results-2026-09-29.md#completed-gpu-work-versus-cpu) and the [required CUDA comparison](inference-cuda-results.md#completed-call-comparison).
