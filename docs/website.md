@@ -2,19 +2,19 @@
 
 The static page explains the retained CPU and CUDA collections without running a
 numerical workload or downloading a model. It keeps the original CUDA losses,
-small-input CPU wins, session setup costs and faster direct CPU inference visible.
-Visitors can compare a condition, choose a complete-call or CUDA-event interval,
+CPU wins on small inputs, session setup costs and faster direct CPU inference visible.
+Visitors can compare a condition, choose the interval of a complete call or of CUDA events,
 and follow the result into its exact raw record, protocol and executed source.
 
 Serve `web/` as the website directory. It has no production JavaScript dependencies,
 external fonts, analytics, runtime APIs, model weights or provider binaries. The
 full comparison tables, inference outputs and memory observations remain available
-without JavaScript. Wide tables scroll within labelled keyboard-focusable regions.
+without JavaScript. Wide tables scroll within labelled regions that take keyboard focus.
 
 ## Data and regeneration
 
-`web/source-pins.json` identifies 22 retained input files. Twenty-one come from
-source `c4e0cbca8d71ef06fc939ca5359a13d8e661c917`. The copied theme token file,
+`web/source-pins.json` identifies 22 retained input files. Twenty one come from
+source `15e6e606da29a16e748a0c93197ec90e2c417625`. The copied theme token file,
 `web/theme-tokens.json`, comes from the theme revision named under Appearance
 and accessibility. The
 generator rejects changed input bytes before calculating a table.
@@ -49,7 +49,7 @@ downloadable JSON contain the same facts. New evidence needs a deliberate input
 pin and semantic review, rather than accepting a changed record automatically.
 
 Six collections remain separate: initial CPU paths, original CPU/CUDA comparison,
-CPU stencil dispatch follow-up, histogram reuse, CPU inference and required CUDA
+the later CPU stencil dispatch run, histogram reuse, CPU inference and required CUDA
 inference. The original native boundary includes result disposal. The histogram
 reuse boundary ends with an owned host result and excludes its later destruction.
 Inference timings start with prepared tensors and exclude PNG preparation. Device
@@ -63,7 +63,7 @@ The thin CSS adapter uses `clair-obscur-themes/tokens.json` at
 Obscur is the default on a first visit and without JavaScript. Auto follows
 system appearance. Any selection, Auto included, is applied before paint and
 retained under `heterogeneous-batch-runtime.appearance.v1` when storage is
-available. Blocked storage leaves a working in-memory choice. Appearance
+available. Blocked storage leaves a working choice held in memory. Appearance
 changes preserve the selected data, timing boundary and linear chart scale.
 
 Inter resolves from local installed faces. Visitors without Inter receive their
@@ -71,24 +71,24 @@ system font, with Arial as the final named fallback. The page makes no external
 font request and does not distribute font files. A CSS family name alone does not
 establish the actual glyph supplier. Browser checks can record resolved fonts
 where the engine exposes that evidence. Forced colors, reduced motion, user text
-scaling, labels, keyboard focus and the no-JavaScript tables remain part of review.
+scaling, labels, keyboard focus and the tables that work without JavaScript remain part of review.
 
 The chart gives every path its text label and value shown to five decimal places,
-with full stored precision in the JSON and the same zero-based linear scale within
-a selection. Missing CPU device-event intervals read
+with full stored precision in the JSON and the same linear scale from zero within
+a selection. Missing CPU device event intervals read
 `Not measured`, not zero. Method identities stay stable when conditions change.
 The table carries sample spread rather than presenting the median as a latency
-guarantee. Memory tables retain process totals and shared-device free bytes as
+guarantee. Memory tables retain process totals and free bytes on the shared device as
 different quantities.
 
 `tests/browser/runtime-page.test.mjs` uses the existing Playwright route with an
-owned loopback server, fresh contexts and headless-only launch. It performs no
+owned loopback server, fresh contexts and headless launch only. It performs no
 native numerical work and blocks external page requests. Use the existing bounded
-project verification controller for shared-PC execution. Source/static checks,
+project verification controller for execution on a shared PC. Source/static checks,
 executed browser checks and a deployed URL journey are separate acceptance steps.
-Native foreground and physical-display checks are outside that headless evidence.
+Native foreground checks and checks on a physical display are outside that headless evidence.
 
-The browser-only manifest and lock live in `tests/browser/` and pin Playwright
+The separate manifest and lock for browser checks live in `tests/browser/` and pin Playwright
 1.63.0. `RUNTIME_BROWSER_ENGINE` selects `chromium`, `webkit` or `firefox`.
 The default is Chromium. `RUNTIME_BROWSER_CHANNEL` may be `chrome` or
 `chromium`, with the Chromium engine only. Setting it to another value, or with
