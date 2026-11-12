@@ -1,4 +1,4 @@
-"""Fit a transfer and fixed cost model to the retained CUDA complete calls and test it on held-out sizes.
+"""Fit a transfer and fixed cost model to the retained CUDA complete calls and test it on sizes held out of each fit.
 
 The model reads only `docs/evidence/baseline-cuda.csv`, whose bytes are pinned by
 `docs/evidence/execution.json`. It runs no workload. `--write` regenerates
@@ -35,7 +35,7 @@ LABELS = {
     ("tile_histogram", "single_bin", "cuda_baseline"): "histogram, one bin, global bins",
     ("tile_histogram", "single_bin", "cuda_shared"): "histogram, one bin, shared bins",
 }
-# A held-out prediction this far from the measured median, in either direction, is called a miss.
+# A prediction for a held out size this far from the measured median, in either direction, is called a miss.
 MISS = 0.25
 
 
@@ -134,7 +134,7 @@ def outputs(receipt, points):
         rounded = round(value * 100)
         return f"{rounded:+d}%" if rounded else "0%"
 
-    params = ["| Model | Held-out side | Fixed term, ms | Per MiB, ms | Implied rate, GiB/s |",
+    params = ["| Model | Side held out | Fixed term, ms | Per MiB, ms | Implied rate, GiB/s |",
               "| --- | ---: | ---: | ---: | ---: |"]
     for name in MODELS:
         for held in SIDES:
@@ -146,7 +146,7 @@ def outputs(receipt, points):
     tables = {}
     summary = {}
     for name in MODELS:
-        table = ["| Condition | Held-out side | Measured median, ms | Predicted, ms | Error |",
+        table = ["| Condition | Side held out | Measured median, ms | Predicted, ms | Error |",
                  "| --- | ---: | ---: | ---: | ---: |"]
         errors = []
         for held in SIDES:
@@ -175,8 +175,8 @@ def outputs(receipt, points):
         median, worst, misses, count, by_side = summary[name]
         sides = ", ".join(f"{by_side[s] * 100:.0f}% at {s}" for s in SIDES)
         return (f"median absolute error {median * 100:.0f}%, worst {worst * 100:.0f}%, "
-                f"{misses} of {count} held-out predictions off by more than {MISS * 100:.0f}% "
-                f"(median by held-out side: {sides})")
+                f"{misses} of the {count} predictions missed by more than {MISS * 100:.0f}% "
+                f"(median by side held out: {sides})")
 
     def error(name, held, condition):
         return next(f["relative_error"] for f in folds
@@ -194,18 +194,18 @@ def outputs(receipt, points):
     worst_label, worst_error = LABELS[worst["condition"]], pct(worst["relative_error"])
     negative_note = ""
     if any(f["ms_per_mib"] <= 0 for f in folds):
-        negative_note = (" A per-byte term at or below zero means the fit put as much time on the smaller size "
+        negative_note = (" A term per byte at or below zero means the fit put as much time on the smaller size "
                          "it saw, and it is shown as not physical rather than hidden.")
 
     report = f"""# A transfer and fixed cost model of the CUDA calls
 
-This page asks how much of each retained CUDA complete call is a fixed cost and how much grows with the bytes it moves, and whether a two-term model fitted on two image sizes predicts the third. It runs nothing on the GPU. Every number here is recomputed by `python tools/cost_model.py` from the [original CUDA samples](evidence/baseline-cuda.csv), whose bytes are pinned by the [execution receipt](evidence/execution.json) of the run at `{receipt['measurement']['revision'][:7]}`. The [results page](results-2026-09-29.md) describes that run, its machine and its limits.
+This page asks how much of each retained CUDA complete call is a fixed cost and how much grows with the bytes it moves, and whether a two term model fitted on two image sizes predicts the third. It runs nothing on the GPU. Every number here is recomputed by `python tools/cost_model.py` from the [original CUDA samples](evidence/baseline-cuda.csv), whose bytes are pinned by the [execution receipt](evidence/execution.json) of the run at `{receipt['measurement']['revision'][:7]}`. The [results page](results-2026-09-29.md) describes that run, its machine and its limits.
 
-The short answer is mixed, and the misses are the useful part. A latency plus per-byte line predicts the held-out 1024 uploads within {up1024 * 100:.0f}%, but it misses five of the six 32 by 32 uploads and five of the six 32 by 32 downloads by 40% or more, and the download line fitted on the two smaller sizes overshoots the large stencil download by {stencil_down * 100:.0f}%. The complete call model looks better than it is at the small sizes, because a fixed cost near 0.4 ms is most of every small call. At 1024 it underpredicts masked reduce by {masked_1024 * 100:.0f}%, overpredicts the stencil by {stencil_1024 * 100:.0f}% and overpredicts two of the four histogram conditions by more than 25%. Most of every complete call happens outside the device event intervals, so bytes moved are not enough to explain it.
+The short answer is mixed, and the misses are the useful part. A line of latency plus a cost per byte predicts the 1024 uploads it never saw within {up1024 * 100:.0f}%, but it misses five of the six 32 by 32 uploads and five of the six 32 by 32 downloads by 40% or more, and the download line fitted on the two smaller sizes overshoots the large stencil download by {stencil_down * 100:.0f}%. The complete call model looks better than it is at the small sizes, because a fixed cost near 0.4 ms is most of every small call. At 1024 it underpredicts masked reduce by {masked_1024 * 100:.0f}%, overpredicts the stencil by {stencil_1024 * 100:.0f}% and overpredicts two of the four histogram conditions by more than 25%. Most of every complete call happens outside the device event intervals, so bytes moved are not enough to explain it.
 
 ## What the model is
 
-The inputs are the medians of the five warm samples for each of six CUDA conditions at three sizes, 18 medians in all. The conditions are masked reduce, the stencil and four histogram conditions (uniform or single-bin input, global or shared bins), and the sizes are 32, 256 and 1024 pixels on a side. The first invocation of each condition is left out, as it is in the results page. Byte counts come from the copy calls in `src/cuda.cu`, which are the same at the measured revision and today.
+The inputs are the medians of the five warm samples for each of six CUDA conditions at three sizes, 18 medians in all. The conditions are masked reduce, the stencil and four histogram conditions (uniform or single bin input, global or shared bins), and the sizes are 32, 256 and 1024 pixels on a side. The first invocation of each condition is left out, as it is in the results page. Byte counts come from the copy calls in `src/cuda.cu`, which are the same at the measured revision and today.
 
 | Workload | Upload | Download |
 | --- | --- | --- |
@@ -215,19 +215,19 @@ The inputs are the medians of the five warm samples for each of six CUDA conditi
 
 Three models share one form, `a * x0 + b * x1`:
 
-1. Upload interval = copies × per-copy latency + upload bytes × time per byte.
+1. Upload interval = copies × latency per copy + upload bytes × time per byte.
 2. Download interval = the same, with download copies and bytes.
 3. Complete call (host clock) = a fixed cost + all bytes moved × time per byte.
 
-Each model is fitted by least squares on relative error, so a 0.01 ms interval counts as much as a 1 ms one. Leaving one size out gives three fits per model. Each fit uses the 12 medians at the other two sizes and predicts the 6 medians at the held-out size. Holding out 256 tests interpolation. Holding out 32 or 1024 tests extrapolation. A prediction more than {MISS * 100:.0f}% from the measured median is marked as a miss. The method, the error measure and the miss threshold were written into the script before it first ran. The condition medians had already been read, so this is a held-out check, not a blind one.
+Each model is fitted by least squares on relative error, so a 0.01 ms interval counts as much as a 1 ms one. Leaving one size out gives three fits per model. Each fit uses the 12 medians at the other two sizes and predicts the 6 medians at the size held out. Holding out 256 tests interpolation. Holding out 32 or 1024 tests extrapolation. A prediction more than {MISS * 100:.0f}% from the measured median is marked as a miss. The method, the error measure and the miss threshold were written into the script before it first ran. The condition medians had already been read, so this checks predictions on data the fit did not use, but it is not a blind test.
 
 ## Fitted terms
 
 {chr(10).join(params)}
 
-The implied rate is only a reading of the per-byte term, not a bandwidth measurement. For the complete call it folds host work that grows with the image into the same term as the copies.{negative_note}
+The implied rate is only a reading of the term per byte, not a bandwidth measurement. For the complete call it folds host work that grows with the image into the same term as the copies.{negative_note}
 
-## Held-out predictions
+## Predictions for the size held out
 
 Upload: {line('upload')}.
 
@@ -251,9 +251,9 @@ The device events bracket only the upload, the kernels and the download. This ta
 
 The copy model is a small version of the transfer models in the GPU performance literature. Boyer, Meng and Kumaran's [data transfer modeling](https://doi.org/10.1109/IPDPSW.2013.236) (IPDPSW 2013) found that adding transfer time cut their GPU speedup prediction error from about 255% to 9%. This repository points the same way from the other side. The kernels were short, and even the copies were a minority of each complete call.
 
-The copy lines are most accurate at 1024, which is also where copies are their largest share of a complete call. Large copies sit near one per-byte rate. The smallest copies do not fit one latency term in either direction. Every 32 by 32 upload took longer than the fit predicted, the 32 by 32 stencil and histogram downloads took less, and the large stencil download moved its 8 MiB faster per byte than the 256 by 256 copies suggested. Extrapolating down to 32 is where the copy lines are weakest, and extrapolating up to 1024 is where the complete call model is weakest. Interpolating at 256 is not safe either. It missed four times, three of them on masked reduce.
+The copy lines are most accurate at 1024, which is also where copies are their largest share of a complete call. Large copies sit near one rate per byte. The smallest copies do not fit one latency term in either direction. Every 32 by 32 upload took longer than the fit predicted, the 32 by 32 stencil and histogram downloads took less, and the large stencil download moved its 8 MiB faster per byte than the 256 by 256 copies suggested. Extrapolating down to 32 is where the copy lines are weakest, and extrapolating up to 1024 is where the complete call model is weakest. Interpolating at 256 is not safe either. It missed four times, three of them on masked reduce.
 
-The complete call model is where the form breaks. One fixed cost and one per-byte rate cannot be right for masked reduce and the stencil at the same time. Masked reduce moves fewer bytes than the stencil at every size, yet its complete call took longer at every size. The code suggests why, though this run did not time it separately. Both workloads check every input value for finiteness. Masked reduce also makes a serial pass that bounds the selected absolute sum (`detail::reduction_range` in `include/hbr/detail/validation.hpp`), and it makes four device allocations to the stencil's two. The histogram shows the opposite limit. Its four conditions move the same bytes at each size, yet their 1024 complete calls measured from {hist_low:.3f} to {hist_high:.3f} ms, so a model that sees only bytes cannot follow that spread. Its worst miss, {worst_label} at 1024, is {worst_error}. A model with a host term per element, or one fit per workload, would follow the data more closely. With three sizes per workload it would mostly be drawing lines through points, so the two-term form stays and the misses are reported.
+The complete call model is where the form breaks. One fixed cost and one rate per byte cannot be right for masked reduce and the stencil at the same time. Masked reduce moves fewer bytes than the stencil at every size, yet its complete call took longer at every size. The code suggests why, though this run did not time it separately. Both workloads check every input value for finiteness. Masked reduce also makes a serial pass that bounds the selected absolute sum (`detail::reduction_range` in `include/hbr/detail/validation.hpp`), and it makes four device allocations to the stencil's two. The histogram shows the opposite limit. Its four conditions move the same bytes at each size, yet their 1024 complete calls measured from {hist_low:.3f} to {hist_high:.3f} ms, so a model that sees only bytes cannot follow that spread. Its worst miss, {worst_label} at 1024, is {worst_error}. A model with a host term per element, or one fit per workload, would follow the data more closely. With three sizes per workload it would mostly be drawing lines through points, so I kept the two term form and report where it misses.
 
 These fits describe one shared Windows workstation, one RTX 4090 with pageable host memory, one driver and one short run with five warm samples per condition. They are not a bandwidth measurement, a prediction for other sizes, other cards or pinned memory, or a reason to expect a crossover with the CPU at some larger image. Hardware counters were not available to the measuring account (`ERR_NVGPUCTRPERM`), so the model works from timing alone. The [limits](results-2026-09-29.md) of the original run apply unchanged.
 
@@ -277,7 +277,7 @@ def main():
             path.write_text(expected, encoding="utf-8", newline="\n")
         else:
             require(path.read_text(encoding="utf-8") == expected, f"stale generated output: {path.name}")
-    print("6 CUDA conditions at 3 sizes, 3 models, 3 held-out sizes: retained hash and generated outputs passed")
+    print("6 CUDA conditions at 3 sizes, 3 models, 3 sizes held out: retained hash and generated outputs passed")
 
 
 if __name__ == "__main__":
