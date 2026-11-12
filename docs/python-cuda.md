@@ -32,7 +32,7 @@ with CudaHistogramContext(17, 19, 4, 5, device=0) as context:
 `run` accepts an exact NumPy uint8 array with two dimensions, the configured
 shape and C contiguous storage. It rejects lists, conversion requests, wrong
 rank and noncontiguous layouts. Zero dimensions are supported. Tile dimensions
-must be positive. The existing 64 MiB device-storage bound still applies.
+must be positive. The existing 64 MiB bound on device storage still applies.
 Each output has shape `(tile_row_count, tile_col_count, 256)` and uint64 counts.
 Returned arrays own their storage and do not alias inputs, previous results or
 the context. IDs are scoped to one native context.
@@ -41,7 +41,7 @@ The public Python object belongs to its creating Python thread. Calls from
 other threads are rejected. A dedicated native owner selects the requested
 current CUDA device once and creates, runs, closes and destroys the native
 context on that same thread. The caller's current device does not redirect it.
-The private binding retains the native creating-thread/current-device checks.
+The private binding retains the native checks for the creating thread and current device.
 Do not use the private binding directly or change its owner's current device.
 
 `run` converts an accepted array subclass to a base ndarray and copies that
@@ -62,8 +62,8 @@ that has already shut down.
 Native return follows upload, kernel execution, download and stream
 synchronization. The result array is constructed after the GIL is reacquired.
 Host asynchronous submission does not establish concurrent GPU work or transfer
-overlap. Device-stage event times and the native host total are separate clocks.
-The host total excludes Python copies, admission and result-array construction.
+overlap. Device event times for each stage and the native host total are separate clocks.
+The host total excludes Python copies, admission and construction of the result array.
 Do not add overlapping intervals or describe these observations as application
 latency or a speedup experiment.
 
@@ -74,35 +74,35 @@ permanent retirement and drains before submitted storage is released. Input
 validation failures do not execute work. Existing native fault tests exercise
 the execution retirement path with synthetic host exceptions, not device loss.
 
-Failure during owner initialization or abandonment-cleanup registration signals
+Failure during owner initialization or registration of the cleanup that runs on abandonment signals
 a launched owner to stop before joining it. A created context closes and is
 released on that owner. The original acquisition error propagates, with a
-best-effort diagnostic if cleanup fails. An error's own diagnostic method cannot
+diagnostic made on a best effort basis if cleanup fails. An error's own diagnostic method cannot
 replace that acquisition error. A failed factory does not wait for a
 stop receipt that can never arrive. A start failure before launch does not join
 an unstarted thread. A start call that fully launches its worker before raising
 uses the same retirement path. Cleanup attempts to detach a registered fallback
 if its setup fails. A detach error does not skip explicit retirement. After the
-worker has been joined, a still-registered fallback cannot repeat its shutdown.
+worker has been joined, a fallback that is still registered cannot repeat its shutdown.
 Host tests inject detach failures before and after its effect. Those schedules
 do not establish that CPython's finalizer has either failure mode.
 
 A native factory remains responsible for partial resources it does not return.
-Half-completed OS thread startup, a nonreturning factory and repeated interruption
+A partly completed OS thread startup, a nonreturning factory and repeated interruption
 remain outside guaranteed shutdown. The host fault checks for this handshake do
 not execute CUDA or establish device recovery.
 
 Ordinary object abandonment signals and joins the dedicated owner, including
 when the last reference is released by a different Python thread. This is a
 fallback for ordinary garbage collection, not the primary shutdown protocol.
-An in-progress method holds its object and snapshot until its synchronous
+A method in progress holds its object and snapshot until its synchronous
 result or exception returns. Arbitrary interpreter termination, process killing
 and physical device loss are outside the supported recovery contract.
 
 ## Host diagnostics
 
 Clang Release coverage is separate from GCC/MSVC coverage. ASan/UBSan remains
-available through `HBR_SANITIZERS`. A separate host-only GCC/Clang build can use
+available through `HBR_SANITIZERS`. A separate GCC/Clang build for the host only can use
 `HBR_THREAD_SANITIZER=ON`. It rejects combination with ASan/UBSan, Python, CUDA
 or MSVC. The native tests include gated running cancellation, queued cancellation,
 capacity, exception propagation and capture release. Host diagnostics do not
