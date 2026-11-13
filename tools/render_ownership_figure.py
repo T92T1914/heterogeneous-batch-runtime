@@ -52,8 +52,8 @@ CARDS = {
            ("2  Own the work", "Selected entries: 2 + 5"),
            ("3  Return result", "7.0 after the computation returns")),
 }
-# The rule line stays in text and the note in muted, so weight and tone set the
-# cancellation rule apart without a hue.
+# The rule line is Bold in text and the note SemiBold in muted, so weight sets
+# the cancellation rule apart and tone only repeats it.
 FOOTER = {
     False: ("Cancellation is a request. Storage stays owned until physical return.",
             "Conceptual example. The uncancelled sum is 7.0, not a timing or CPU/GPU claim."),
@@ -205,7 +205,8 @@ def draw(data, roles, faces, metrics, *, narrow, output):
         bottom = first + (len(lines) - 1) * pitch * em + metrics["descent_em"] * em
         return {"lines": artists, "top": top, "bottom": bottom}
 
-    def ink(block):
+    def extent(block):
+        # Matplotlib layout boxes, which include each line's ascent and descent.
         inverse = axes.transData.inverted()
         boxes = []
         for label in block["lines"]:
@@ -241,7 +242,7 @@ def draw(data, roles, faces, metrics, *, narrow, output):
             card["height"] = common
     cards_bottom = max(card["y"] + card["height"] for card in cards)
     rule = place(margin, cards_bottom + space["before_footer"], FOOTER[narrow][0],
-                 sizes["footer"], "SemiBold", "text", room)
+                 sizes["footer"], "Bold", "text", room)
     note = place(margin, rule["bottom"] + space["footer_lines"], FOOTER[narrow][1],
                  sizes["footer"], "SemiBold", "muted", room)
     scratch.remove()
@@ -276,7 +277,7 @@ def draw(data, roles, faces, metrics, *, narrow, output):
 
     for block in (title, subtitle, rule, note, *(card[kind] for card in cards
                                                   for kind in ("heading", "body"))):
-        left, upper, right, lower = ink(block)
+        left, upper, right, lower = extent(block)
         if left < 0 or upper < 0 or right > width or lower > height:
             raise ValueError("A diagram label escaped its canvas: " +
                              " ".join(label.get_text() for label in block["lines"]))
@@ -287,14 +288,14 @@ def draw(data, roles, faces, metrics, *, narrow, output):
         measured = {}
         for kind in ("heading", "body"):
             block = card[kind]
-            extent = ink(block)
-            measured[kind] = [round(value, 3) for value in extent]
-            upper = min(extent[1], block["top"])
-            lower = max(extent[3], block["bottom"])
-            if (extent[0] < inner[0] - .01 or upper < inner[1] - .01 or
-                    extent[2] > inner[2] + .01 or lower > inner[3] + .01):
+            box = extent(block)
+            measured[kind] = [round(value, 3) for value in box]
+            upper = min(box[1], block["top"])
+            lower = max(box[3], block["bottom"])
+            if (box[0] < inner[0] - .01 or upper < inner[1] - .01 or
+                    box[2] > inner[2] + .01 or lower > inner[3] + .01):
                 raise ValueError("A diagram label escaped its padded panel: " +
-                                 block["lines"][0].get_text() + " measured=" + str(extent) +
+                                 block["lines"][0].get_text() + " measured=" + str(box) +
                                  " permitted=" + str(inner))
         if card["body"]["top"] < card["heading"]["bottom"] + space["title_to_body"] - .01:
             raise ValueError("A diagram body overlaps its heading: " +

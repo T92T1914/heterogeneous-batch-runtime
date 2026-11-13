@@ -188,6 +188,21 @@ class SiteTests(unittest.TestCase):
             self.assertTrue(colors, name)
             self.assertLessEqual({value.lower() for value in colors}, allowed, name)
 
+    def test_figure_palette_rejects_a_hue(self):
+        spec = importlib.util.spec_from_file_location("render_ownership_figure", ROOT / "tools/render_ownership_figure.py")
+        renderer = importlib.util.module_from_spec(spec)
+        spec.loader.exec_module(renderer)
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory)
+            (root / "docs").mkdir()
+            palette = json.loads((ROOT / "docs/figure-tokens-obscur.json").read_text())
+            (root / "docs/figure-tokens-obscur.json").write_text(json.dumps(palette))
+            self.assertEqual(renderer.palette(root)["Obscur"], palette["Obscur"])
+            palette["Obscur"]["accent"] = "#b3c8d8"
+            (root / "docs/figure-tokens-obscur.json").write_text(json.dumps(palette))
+            with self.assertRaisesRegex(ValueError, "Obscur carries no hue: accent"):
+                renderer.palette(root)
+
     def test_ownership_figure_dimensions_match_page_and_readme(self):
         layouts = json.loads((ROOT / "docs/runtime-ownership-figure.json").read_text())["layouts"]
         wide, narrow = layouts["runtime-ownership-obscur"], layouts["runtime-ownership-obscur-narrow"]

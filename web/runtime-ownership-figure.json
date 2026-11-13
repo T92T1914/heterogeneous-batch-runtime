@@ -289,12 +289,12 @@
   "inputs_sha256_lf": {
     "docs/runtime-ownership-input.json": "4e43eb6d791499949891ee3cd69bfbf1066327dfe9aacc518776291d33825d3e",
     "docs/figure-tokens-obscur.json": "3d2af60fb37b5a07d614b3cd89b60a07139f2a487853229c6ff71a719d50bb39",
-    "tools/render_ownership_figure.py": "9cdc329ee91fcf8db67d592bb718e5d921b1b45053eedaafde8bb0500f1f8af7"
+    "tools/render_ownership_figure.py": "387fa24910818ec1d9e39f43211cf27f7e496d933dd0908b3e5e5a2e65eebd9f"
   },
   "outputs_sha256": {
-    "docs/runtime-ownership-obscur.png": "693ea9073483a662e8d4b322c62b9773f4f48e08da89ad295056985271bfff8e",
-    "docs/runtime-ownership-obscur.svg": "f00532bb90e0a1b5dbdf6a110919874f5c08126bf20fc7a109ad011c1a9ce1e3",
-    "docs/runtime-ownership-obscur-narrow.png": "76f365ed458419f1ed236c1bddeff074b976d966661f4cba6ad7fc309c27fb86",
-    "docs/runtime-ownership-obscur-narrow.svg": "2578bdab5c8b22f273dfd76cce236ff3b6e26d9856010d4cef93e4ccf464940b"
+    "docs/runtime-ownership-obscur.png": "80e257564ca2d79a6866e62c1d027a47415ec6fae49cf997ad2c581663951b3c",
+    "docs/runtime-ownership-obscur.svg": "5231dacbad3bcc54867962c4535b1840dd4b0a93afc5d383af87b3eb808c27fc",
+    "docs/runtime-ownership-obscur-narrow.png": "9a59cae0ad31af382fc35034022d93feb5c0b595795ef188b392d96b1def4fd6",
+    "docs/runtime-ownership-obscur-narrow.svg": "9e9a510eb2406687ada6d10e2d7db8d50ff47e9960a9133f81f86d3973c8ebc0"
   }
 }
