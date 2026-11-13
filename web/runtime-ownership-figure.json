@@ -1,5 +1,5 @@
 {
-  "schema_version": 1,
+  "schema_version": 2,
   "evidence": {
     "schema_version": 1,
     "kind": "conceptual mechanism and worked arithmetic, not measured execution",
@@ -31,76 +31,129 @@
     "limits": "The arithmetic is the ordinary uncancelled example. The separate cancellation rule is not a promise that a cancelled request publishes a result. No timing or CPU/GPU comparison is shown."
   },
   "new_measurement": false,
-  "theme_revision": "7a57fe750ff50205a17e1d342106a0d3f2777159",
+  "palette": {
+    "repository": "https://github.com/T92T1914/clair-obscur-themes",
+    "file": "tokens-monochrome.json",
+    "version": "1.0.0",
+    "revision": "4693831b51f2b3fa268d830fd9b977fb70c83e3d"
+  },
+  "palette_roles": [
+    "canvas",
+    "text",
+    "muted",
+    "border",
+    "control"
+  ],
   "renderer": "tools/render_ownership_figure.py",
+  "spacing_px": {
+    "card_side": 28,
+    "card_top": 32,
+    "card_bottom": 28,
+    "title_to_body": 20,
+    "title_to_subtitle": 16,
+    "before_cards": 48,
+    "before_footer": 48,
+    "footer_lines": 14,
+    "below_footer": 49,
+    "radius": 18,
+    "outline": 2,
+    "connector": 2.5,
+    "line_spacing": 1.3
+  },
   "layouts": {
     "runtime-ownership-obscur": {
       "width": 1800,
-      "height": 800,
+      "height": 705,
+      "margin": 72,
+      "sizes_pt": {
+        "title": 40,
+        "subtitle": 30,
+        "card_title": 32,
+        "body": 30,
+        "footer": 30
+      },
       "panel_geometry": [
         {
+          "card": [
+            72,
+            254,
+            500,
+            239
+          ],
           "padded_panel": [
-            88,
-            304,
-            552,
-            560
+            100,
+            286,
+            544,
+            465
           ],
           "measured_labels": {
             "heading": [
-              88.0,
-              304.0,
-              432.984,
-              379.139
+              100.0,
+              286.0,
+              435.031,
+              339.776
             ],
             "body": [
-              88.0,
-              395.139,
-              434.125,
-              545.416
+              100.0,
+              359.776,
+              414.484,
+              464.358
             ]
           }
         },
         {
+          "card": [
+            650,
+            254,
+            500,
+            239
+          ],
           "padded_panel": [
-            668,
-            304,
-            1132,
-            560
+            678,
+            286,
+            1122,
+            465
           ],
           "measured_labels": {
             "heading": [
-              668.0,
-              304.0,
-              1029.109,
-              379.139
+              678.0,
+              286.0,
+              1024.109,
+              339.776
             ],
             "body": [
-              668.0,
-              395.139,
-              1013.547,
-              545.416
+              678.0,
+              359.776,
+              992.594,
+              464.358
             ]
           }
         },
         {
+          "card": [
+            1228,
+            254,
+            500,
+            239
+          ],
           "padded_panel": [
-            1248,
-            304,
-            1712,
-            560
+            1256,
+            286,
+            1700,
+            465
           ],
           "measured_labels": {
             "heading": [
-              1248.0,
-              304.0,
-              1585.531,
-              379.139
+              1256.0,
+              286.0,
+              1582.562,
+              339.776
             ],
             "body": [
-              1248.0,
-              395.139,
-              1509.922,
-              545.416
+              1256.0,
+              359.776,
+              1496.141,
+              464.358
             ]
           }
         }
@@ -108,71 +161,97 @@
     },
     "runtime-ownership-obscur-narrow": {
       "width": 960,
-      "height": 1280,
+      "height": 1383,
+      "margin": 48,
+      "sizes_pt": {
+        "title": 40,
+        "subtitle": 33,
+        "card_title": 34,
+        "body": 33,
+        "footer": 33
+      },
       "panel_geometry": [
         {
+          "card": [
+            48,
+            295,
+            864,
+            253
+          ],
           "padded_panel": [
-            88,
-            309,
-            872,
-            465
+            76,
+            327,
+            884,
+            520
           ],
           "measured_labels": {
             "heading": [
-              88.0,
-              309.0,
-              388.125,
-              374.338
+              76.0,
+              327.0,
+              430.969,
+              384.137
             ],
             "body": [
-              88.0,
-              390.338,
-              645.609,
-              455.676
+              76.0,
+              404.137,
+              422.125,
+              519.177
             ]
           }
         },
         {
+          "card": [
+            48,
+            572,
+            864,
+            193
+          ],
           "padded_panel": [
-            88,
-            549,
-            872,
-            705
+            76,
+            604,
+            884,
+            737
           ],
           "measured_labels": {
             "heading": [
-              88.0,
-              549.0,
-              402.094,
-              614.338
+              76.0,
+              604.0,
+              447.109,
+              661.137
             ],
             "body": [
-              88.0,
-              630.338,
-              513.0,
-              695.676
+              76.0,
+              681.137,
+              564.0,
+              736.594
             ]
           }
         },
         {
-          "padded_panel": [
-            88,
+          "card": [
+            48,
             789,
-            872,
-            945
+            864,
+            193
+          ],
+          "padded_panel": [
+            76,
+            821,
+            884,
+            954
           ],
           "measured_labels": {
             "heading": [
-              88.0,
-              789.0,
-              382.609,
-              854.338
+              76.0,
+              821.0,
+              425.531,
+              878.137
             ],
             "body": [
-              88.0,
-              870.338,
-              704.406,
-              935.676
+              76.0,
+              898.137,
+              781.266,
+              953.594
             ]
           }
         }
@@ -200,18 +279,22 @@
         "italic": false
       }
     },
+    "vertical_metrics": {
+      "ascent_em": 0.96875,
+      "descent_em": 0.2412109375
+    },
     "svg": "Outlined labels",
     "font_binaries_distributed": false
   },
   "inputs_sha256_lf": {
     "docs/runtime-ownership-input.json": "4e43eb6d791499949891ee3cd69bfbf1066327dfe9aacc518776291d33825d3e",
-    "web/theme-tokens.json": "889df65e0f4f4eea99a81c535d542e7332b537c000c332402a3ffa6a6cbb15b7",
-    "tools/render_ownership_figure.py": "415059479cf3901eb0d596658b7d2c4a4ccb9c604f390b1468f6d70e79c7d169"
+    "docs/figure-tokens-obscur.json": "3d2af60fb37b5a07d614b3cd89b60a07139f2a487853229c6ff71a719d50bb39",
+    "tools/render_ownership_figure.py": "387fa24910818ec1d9e39f43211cf27f7e496d933dd0908b3e5e5a2e65eebd9f"
   },
   "outputs_sha256": {
-    "docs/runtime-ownership-obscur.png": "7e3f074a9c297856ca47863b379cbc08568262eaa4243539f79e49727cd6ac16",
-    "docs/runtime-ownership-obscur.svg": "e656fd3a1d4a5bb0793e398917319201b19a6ce4e75657856e3aaa0c382be7a6",
-    "docs/runtime-ownership-obscur-narrow.png": "3b4d3b51b86e0d482118cff794f4e6210e6c0f00eed79ddae8c7cf03a5d9d047",
-    "docs/runtime-ownership-obscur-narrow.svg": "49c92ac9153897a1aaa645b5a3bd67caaeef848f73590ca2853fd58aab8dbaca"
+    "docs/runtime-ownership-obscur.png": "80e257564ca2d79a6866e62c1d027a47415ec6fae49cf997ad2c581663951b3c",
+    "docs/runtime-ownership-obscur.svg": "5231dacbad3bcc54867962c4535b1840dd4b0a93afc5d383af87b3eb808c27fc",
+    "docs/runtime-ownership-obscur-narrow.png": "9a59cae0ad31af382fc35034022d93feb5c0b595795ef188b392d96b1def4fd6",
+    "docs/runtime-ownership-obscur-narrow.svg": "9e9a510eb2406687ada6d10e2d7db8d50ff47e9960a9133f81f86d3973c8ebc0"
   }
 }

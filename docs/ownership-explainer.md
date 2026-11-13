@@ -23,6 +23,11 @@ The Obscur [wide](runtime-ownership-obscur.png) and
 [claim inputs](runtime-ownership-input.json) and
 [rendering record](runtime-ownership-figure.json) retain the source and font
 identities. SVG editions preserve labels as outlines. No fonts are distributed.
+The colors come from the monochrome Obscur tokens in
+[figure-tokens-obscur.json](figure-tokens-obscur.json), copied from a pinned
+revision of the theme project, so the figure has no hue. The cancellation rule
+stands apart by its Bold weight and its place at the head of the footer instead. The page keeps its own appearance
+tokens in `web/theme-tokens.json`.
 
 To regenerate in an isolated environment with the plotting dependencies and
 genuine static Inter Regular, SemiBold and Bold files:

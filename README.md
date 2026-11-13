@@ -10,7 +10,7 @@ Reading in another language? [Translation help](https://github.com/T92T1914/T92T
 
 <a href="https://t92t1914.github.io/heterogeneous-batch-runtime/#ownership">
   <picture>
-    <source media="(max-width: 680px)" srcset="docs/runtime-ownership-obscur-narrow.png" width="960" height="1280">
+    <source media="(max-width: 680px)" srcset="docs/runtime-ownership-obscur-narrow.png" width="960" height="1383">
     <img src="docs/runtime-ownership-obscur.png" alt="Conceptual owned-work example: values 2, minus 3 and 5 with mask 1, 0, 1 select 2 plus 5 and return 7. Cancellation intent does not mean running work has returned or its storage can be reused." width="900">
   </picture>
 </a>
