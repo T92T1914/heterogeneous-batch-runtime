@@ -33,6 +33,8 @@ jobs:
           python -m pip install . pytest
       - run: python tools/validate_evidence.py
       - run: python tools/report_reuse.py --check
+      - run: python tools/cost_model.py --check
+      - run: python -m unittest discover -s tests -p test_cost_model.py -v
       - run: python -m pytest tests/python -q
       - name: Actual Python array boundary with host CUDA stand-in
         shell: bash
