@@ -5,6 +5,7 @@ from html.parser import HTMLParser
 import importlib.util
 import json
 from pathlib import Path
+import re
 import shutil
 import tempfile
 import unittest
@@ -174,6 +175,27 @@ class SiteTests(unittest.TestCase):
         for theme in tokens["themes"].values():
             for role, value in theme.items():
                 self.assertIn(f"--{role}:{value}", css)
+
+    def test_ownership_figure_draws_only_obscur_roles(self):
+        record = json.loads((ROOT / "docs/runtime-ownership-figure.json").read_text())
+        palette = json.loads((ROOT / "docs/figure-tokens-obscur.json").read_text())
+        self.assertEqual(record["palette"], palette["source"])
+        allowed = {palette["Obscur"][role] for role in record["palette_roles"]}
+        for value in allowed:
+            self.assertTrue(value[1:3] == value[3:5] == value[5:7], value)
+        for name in ("docs/runtime-ownership-obscur.svg", "docs/runtime-ownership-obscur-narrow.svg"):
+            colors = set(re.findall(r"#[0-9a-fA-F]{6}\b", (ROOT / name).read_text()))
+            self.assertTrue(colors, name)
+            self.assertLessEqual({value.lower() for value in colors}, allowed, name)
+
+    def test_ownership_figure_dimensions_match_page_and_readme(self):
+        layouts = json.loads((ROOT / "docs/runtime-ownership-figure.json").read_text())["layouts"]
+        wide, narrow = layouts["runtime-ownership-obscur"], layouts["runtime-ownership-obscur-narrow"]
+        template = (ROOT / "web/index.template.html").read_text(encoding="utf-8")
+        self.assertIn(f'srcset="runtime-ownership-obscur-narrow.png" width="{narrow["width"]}" height="{narrow["height"]}"', template)
+        self.assertIn(f'width="{wide["width"]}" height="{wide["height"]}"></picture>', template)
+        readme = (ROOT / "README.md").read_text(encoding="utf-8")
+        self.assertIn(f'srcset="docs/runtime-ownership-obscur-narrow.png" width="{narrow["width"]}" height="{narrow["height"]}"', readme)
 
 
 if __name__ == "__main__":

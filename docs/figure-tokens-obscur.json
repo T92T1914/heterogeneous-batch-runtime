@@ -1,0 +1,18 @@
+{
+  "schema_version": 1,
+  "source": {
+    "repository": "https://github.com/T92T1914/clair-obscur-themes",
+    "file": "tokens-monochrome.json",
+    "version": "1.0.0",
+    "revision": "4693831b51f2b3fa268d830fd9b977fb70c83e3d"
+  },
+  "use": "Figures only. The page keeps web/theme-tokens.json.",
+  "Obscur": {
+    "canvas": "#000000", "panel": "#000000", "text": "#ffffff",
+    "muted": "#cccccc", "divider": "#505050", "control": "#151515",
+    "hover": "#252525", "selected": "#202020", "border": "#999999",
+    "accent": "#ffffff", "on_accent": "#000000", "focus": "#ffffff",
+    "success": "#ffffff", "warning": "#ffffff", "error": "#ffffff",
+    "code": "#080808", "disabled": "#aaaaaa"
+  }
+}
