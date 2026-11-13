@@ -175,6 +175,39 @@ test('first visit is Obscur in a light system and the ownership example reflows'
   }
 });
 
+test('Obscur bars carry a pattern and no hue, and Clair keeps its series colors', async t => {
+  const page = await fixture(t, {colorScheme:'dark'});
+  await ready(page);
+  const bars = () => page.locator('#chart .bar-row').evaluateAll(rows => Object.fromEntries(rows.map(row => {
+    const style = getComputedStyle(row.querySelector('.bar'));
+    return [row.dataset.kind, {color:style.backgroundColor, image:style.backgroundImage, outline:style.boxShadow}];
+  })));
+  const gray = value => { const [r, g, b] = value.match(/\d+/g).map(Number); return r === g && g === b; };
+  for (const appearance of ['obscur', 'auto']) {
+    await page.locator('#appearance').selectOption(appearance);
+    const kinds = await bars();
+    assert.deepEqual(Object.keys(kinds).sort(), ['cpu', 'cuda', 'reused']);
+    assert.equal(kinds.cpu.color, 'rgb(244, 244, 244)');
+    assert.equal(kinds.cpu.image, 'none');
+    assert.match(kinds.cuda.image, /repeating-linear-gradient/);
+    assert.equal(kinds.reused.color, 'rgba(0, 0, 0, 0)');
+    assert.equal(kinds.reused.image, 'none');
+    for (const kind of ['cuda', 'reused']) assert.match(kinds[kind].outline, /rgb\(244, 244, 244\).*inset|inset.*rgb\(244, 244, 244\)/);
+    for (const kind of Object.values(kinds)) for (const value of [kind.color, kind.image, kind.outline]) {
+      for (const color of value.match(/rgba?\([^)]*\)/g) ?? []) assert.ok(color.startsWith('rgba(0, 0, 0, 0') || gray(color), color);
+    }
+  }
+  for (const [appearance, scheme] of [['clair', 'dark'], ['auto', 'light']]) {
+    await page.emulateMedia({colorScheme:scheme});
+    await page.locator('#appearance').selectOption(appearance);
+    const clair = await bars();
+    assert.equal(clair.cpu.color, 'rgb(36, 36, 36)');
+    assert.equal(clair.cuda.color, 'rgb(54, 95, 120)');
+    assert.equal(clair.reused.color, 'rgb(39, 101, 72)');
+    assert.equal(clair.cuda.image, 'none');
+  }
+});
+
 for (const [width, appearance] of [[1280,'clair'], [390,'obscur']]) test(`comparison is readable at ${width} in ${appearance}`, async t => {
   const page = await fixture(t, {viewport:{width,height:width === 390 ? 844 : 900}, hasTouch:width === 390});
   await ready(page);
