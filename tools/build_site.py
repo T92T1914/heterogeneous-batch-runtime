@@ -162,40 +162,40 @@ def build_data(root=ROOT):
                   "device_bytes": int(r["device_bytes"])} for r in reuse if r["phase"] != "run"]
     cpu_inference_rows, cpu_lifecycle = inference_rows(cpu_inference)
     cuda_inference_rows, cuda_lifecycle = inference_rows(cuda_inference["comparison"])
-    numerical_limits = "Five warm samples, fixed condition order and a shared Windows workstation. First invocation is retained, not a cold-process measurement."
+    numerical_limits = "Five warm samples, fixed condition order and a shared Windows workstation. First invocation is retained, not a measurement of a cold process."
     inference_boundary = "Prepared tensors to completed host logits. Fresh C++ calls include session creation, admission, reconciliation and close. Reused setup and retirement are separate."
     inference_excluded = "PNG decoding/normalization, reference validation and journal writes. The direct Python baseline lacks the wrapper's request identity and generation accounting."
     studies = [
-        experiment("cpu", "CPU numerical paths", "Scalar references and one- or two-thread optimized calls across three workloads.",
+        experiment("cpu", "CPU numerical paths", "Scalar references and optimized calls on one or two threads across three workloads.",
                    "Extra threads and an optimized path can cost more than they save on small inputs. Inspect each workload and size.",
                    "Completed synchronous native call, including validation, allocation and output disposal.",
                    "Input generation, Python snapshots, runtime queueing and GPU transfers.", numerical_limits,
                    execution["measurement"]["revision"], "docs/evidence/baseline-cpu.csv", "docs/cpu-protocol.json", "docs/results-2026-09-29.md", cpu_rows),
-        experiment("cuda-baseline", "Original CPU / CUDA comparison", "The same original complete-call boundary with separate CUDA event intervals.",
-                   "CUDA complete-call medians were slower than optimized CPU in every tested condition. Shared bins helped uniform input but hurt concentrated input at the largest size.",
+        experiment("cuda-baseline", "Original CPU / CUDA comparison", "The same original boundary of the complete call, with separate CUDA event intervals.",
+                   "CUDA medians for the complete call were slower than optimized CPU in every tested condition. Shared bins helped uniform input but hurt concentrated input at the largest size.",
                    "Validation, allocations, checksum selection and result destruction. CUDA includes upload, launch, download, synchronization and resource cleanup.",
                    "Input generation, Python conversion and queueing. Device events are separate intervals and are never added to host elapsed time.", numerical_limits,
                    execution["measurement"]["revision"], "docs/evidence/baseline-cuda.csv", "docs/cuda-protocol.json", "docs/results-2026-09-29.md", gpu_rows),
-        experiment("dispatch", "CPU stencil dispatch correction", "The original and follow-up collections keep the same stencil arithmetic and thread counts.",
-                   "Moving AVX2 support detection out of the row loop lowered every listed stencil median in this follow-up. Thread startup still outweighed small work.",
+        experiment("dispatch", "CPU stencil dispatch correction", "The original and the later collection keep the same stencil arithmetic and thread counts.",
+                   "Moving AVX2 support detection out of the row loop lowered every listed stencil median in this later collection. Thread startup still outweighed small work.",
                    "Same completed native CPU boundary in two separate collections. Original CPU results are not relabelled as a new GPU baseline.",
-                   "Input generation, Python conversion and queueing.", numerical_limits + " Shared-host timing alone does not establish causality.",
+                   "Input generation, Python conversion and queueing.", numerical_limits + " Timing alone on a shared host does not establish causality.",
                    execution["followup"]["revision"], "docs/evidence/followup-cpu.csv", "docs/cpu-followup-protocol.json", "docs/results-2026-09-29.md", dispatch_rows),
         experiment("reuse", "Histogram resource reuse", "Six paths retain both CPU thread counts and global/shared bin methods. Each histogram uses 64 by 64 tiles.",
                    "Small inputs favored CPU. At 1024 by 1024, reused shared bins for uniform input and reused global bins for concentrated input beat the faster tested CPU median.",
                    "Call entry to an independently owned, usable host result. Both CUDA paths upload current input and synchronize. Simple calls retire resources inside the call.",
                    "Setup, final retirement, output comparison, checksum and host result destruction. Reused resources survive between calls. This boundary differs from the original study.",
-                   "24 warm samples per condition, rotated backend order and a shared Windows workstation. Two extra warmups are outside the retained rows. No pinned input, zero-copy or transfer overlap.",
+                   "24 warm samples per condition, rotated backend order and a shared Windows workstation. Two extra warmups are outside the retained rows. No pinned input, zero copy access or transfer overlap.",
                    reuse_receipt["source"], "docs/evidence/reuse.csv", "docs/reuse-protocol.json", "docs/reuse-results.md", reuse_rows, lifecycle),
-        experiment("inference-cpu", "CPU inference session reuse", "Serial one-image calls through one ONNX session, at application batch sizes 1, 2 and 8.",
+        experiment("inference-cpu", "CPU inference session reuse", "Serial calls of one image each through one ONNX session, at application batch sizes 1, 2 and 8.",
                    "Reusing the owner/session lowered repeated call cost. The direct Python CPU session was faster than the C++ wrapper at every tested batch size.",
                    inference_boundary, inference_excluded,
-                   "20 samples after five warmups. First invocation is separate. One-thread CPU configuration on a shared Windows workstation. This is also a wrapper comparison, not a language ranking.",
+                   "20 samples after five warmups. First invocation is separate. The CPU session used one thread on a shared Windows workstation. This is also a wrapper comparison, not a language ranking.",
                    cpu_inference["source_revision"], "docs/inference-cpu-reuse.json", "docs/inference-protocol.md", "docs/inference-results.md", cpu_inference_rows, cpu_lifecycle),
         experiment("inference-cuda", "Required CUDA inference", "Required CUDA owner/session paths compared with a direct CPU session in the same provider installation.",
                    "The direct Python CPU baseline was faster at all three tested batches. Reuse helped repeated CUDA calls, but setup and retirement still cost time.",
                    inference_boundary, inference_excluded,
-                   "20 samples after five warmups on a shared Windows workstation. Application batches are serial one-image calls, not fused GPU batching. Operator events prove placement, not kernel timing or overlap.",
+                   "20 samples after five warmups on a shared Windows workstation. Application batches are serial calls of one image each, not fused GPU batching. Operator events prove placement, not kernel timing or overlap.",
                    cuda_inference["comparison_source_revision"], "docs/inference-cuda-evidence.json", "docs/inference-cuda-protocol.md", "docs/inference-cuda-results.md", cuda_inference_rows, cuda_lifecycle),
     ]
     studies[2]["comparative_source_revision"] = execution["measurement"]["revision"]
@@ -242,7 +242,7 @@ def static_tables(data):
             content += table(["Condition", "Path", "Phase", "ms", "Explicit device bytes"], [[r["condition_label"], r["method_label"], r["phase"], number(r["milliseconds"]), r["device_bytes"] if r["device_bytes"] is not None else "Not a process/device total"] for r in study["lifecycle"]], study["title"] + ": separate setup and retirement observations")
         content += f'<p class="fine">Executed source <a href="{study["source_url"]}"><code translate="no">{study["source_revision"]}</code></a>. <a href="{study["raw_url"]}">Raw record</a>, <a href="{study["protocol_url"]}">protocol</a>, <a href="{study["report_url"]}">report</a>.</p>'
         if "comparative_source_revision" in study:
-            content += f'<p class="fine">Original source <a href="{study["comparative_source_url"]}"><code translate="no">{study["comparative_source_revision"]}</code></a> and <a href="{study["secondary_raw_url"]}">original CPU rows</a> remain separate from the follow-up.</p>'
+            content += f'<p class="fine">Original source <a href="{study["comparative_source_url"]}"><code translate="no">{study["comparative_source_revision"]}</code></a> and <a href="{study["secondary_raw_url"]}">original CPU rows</a> remain separate from the later collection.</p>'
         blocks.append(f'<details id="table-{study["id"]}"><summary>{escape(study["title"])}</summary><p>{escape(study["finding"])}</p><p><strong>Boundary:</strong> {escape(study["boundary"])}</p><p><strong>Outside:</strong> {escape(study["excluded"])}</p><p class="muted">{escape(study["limitations"])}</p>{content}</details>')
     return "\n".join(blocks)
 
@@ -267,7 +267,7 @@ def memory_tables(data):
         headers = ["Phase", "Completed requests", "Process working set MiB", "Process private commit MiB"]
         if backend == "cuda":
             headers.append("Shared device free MiB")
-        result.append(table(headers, rows, backend.upper() + ": separate fresh-process memory observation"))
+        result.append(table(headers, rows, backend.upper() + ": separate memory observation in a fresh process"))
     return "\n".join(result)
 
 

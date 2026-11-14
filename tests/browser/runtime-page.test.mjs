@@ -94,7 +94,7 @@ test('all six collections use real retained values, boundaries and source links'
   await page.locator('#metric').selectOption('kernel_ms');
   assert.equal(await page.locator('#selection-table tr[data-method^="cpu_"]').count(), 2);
   assert.match(await page.locator('#selection-table tr[data-method="cpu_optimized_1"]').textContent(), /Not measured/);
-  assert.match(await page.locator('#selection-status').textContent(), /do not represent complete-call time/);
+  assert.match(await page.locator('#selection-status').textContent(), /do not represent the time of the complete call/);
   await page.locator('#experiment').selectOption('inference-cuda');
   assert.equal(await page.locator('#metric').inputValue(), 'median_ms');
   assert.equal(await page.locator('#metric option[value="kernel_ms"]').isDisabled(), true);

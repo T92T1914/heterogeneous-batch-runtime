@@ -77,7 +77,7 @@ function boot() {
       const conditionLabel = study.conditions.find(item => item.id === condition).label;
       document.getElementById('comparison-title').textContent = study.title;
       document.getElementById('description').textContent = study.description;
-      document.getElementById('selection-status').textContent = `${conditionLabel}. ${view.label}. ${view.rows[0].samples} warm samples per path. ${metric === 'median_ms' ? 'Setup and first invocations are recorded separately where applicable.' : 'CPU device intervals are not measured. These values do not represent complete-call time.'}`;
+      document.getElementById('selection-status').textContent = `${conditionLabel}. ${view.label}. ${view.rows[0].samples} warm samples per path. ${metric === 'median_ms' ? 'Setup and first invocations are recorded separately where applicable.' : 'CPU device intervals are not measured. These values do not represent the time of the complete call.'}`;
       document.getElementById('chart-heading').textContent = `${conditionLabel}: ${view.label.toLowerCase()}`;
       document.getElementById('chart-maximum').textContent = `${view.maximum.toFixed(5)} ms`;
       const chart = document.getElementById('chart');
