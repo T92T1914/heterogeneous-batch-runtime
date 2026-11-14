@@ -31,3 +31,51 @@ jobs:
         run: |
           cmake --install build/cuda --prefix installed
           /opt/hbr-venv/bin/python tests/package_components.py --prefix installed --cuda-built
+  compile-windows:
+    # The retained CUDA runs were built with MSVC on Windows, so this job builds
+    # the same C++ targets with MSVC as the host compiler for nvcc. The compiler
+    # comes from NVIDIA's redistributable archives for CUDA 13.4.3, each checked
+    # against the SHA-256 in that release's manifest. It executes no CUDA work.
+    runs-on: windows-latest
+    steps:
+      - uses: actions/checkout@fbc6f3992d24b796d5a048ff273f7fcc4a7b6c09
+      - uses: actions/setup-python@ece7cb06caefa5fff74198d8649806c4678c61a1
+        with:
+          python-version: '3.11'
+      - name: Fetch the CUDA 13.4.3 compiler archives by hash
+        shell: pwsh
+        run: |
+          $ProgressPreference = 'SilentlyContinue'
+          $redist = 'https://developer.download.nvidia.com/compute/cuda/redist'
+          $archives = @(
+            @('cuda_nvcc/windows-x86_64/cuda_nvcc-windows-x86_64-13.4.92-archive.zip', '23950047aa5405993129a982a99924b4e6d5eb9bc312300030f3afd9b3b49ea4'),
+            @('cuda_cudart/windows-x86_64/cuda_cudart-windows-x86_64-13.4.92-archive.zip', '621a70c4778287b1abf8c27c61b841d797fda2aeff01033374dd19624bcfa249'),
+            @('cuda_crt/windows-x86_64/cuda_crt-windows-x86_64-13.4.92-archive.zip', 'a38e3aa75e259128a1c7fb46e706182e4babca407cd3f3c447d21ab7fb14c7fd'),
+            @('libnvvm/windows-x86_64/libnvvm-windows-x86_64-13.4.92-archive.zip', '64fa39ad6332d6c40a02115d64827272f6befbc86e50568254f44d37d924e10b'),
+            @('cccl/windows-x86_64/cccl-windows-x86_64-13.3.4.3.1-archive.zip', '17d0ca1592c0dfc974a5fc39f470a6b7bae40da239e3e19bd0752017735acbca')
+          )
+          $root = Join-Path $env:RUNNER_TEMP 'cuda'
+          New-Item -ItemType Directory -Force $root | Out-Null
+          foreach ($archive in $archives) {
+            $zip = Join-Path $env:RUNNER_TEMP (Split-Path $archive[0] -Leaf)
+            Invoke-WebRequest "$redist/$($archive[0])" -OutFile $zip
+            $hash = (Get-FileHash $zip -Algorithm SHA256).Hash.ToLowerInvariant()
+            if ($hash -ne $archive[1]) { throw "SHA-256 mismatch for $($archive[0]): $hash" }
+            Expand-Archive $zip -DestinationPath $env:RUNNER_TEMP -Force
+            $unpacked = Join-Path $env:RUNNER_TEMP ([IO.Path]::GetFileNameWithoutExtension($zip))
+            Copy-Item (Join-Path $unpacked '*') $root -Recurse -Force
+          }
+          "CUDA_PATH=$root" | Out-File $env:GITHUB_ENV -Append -Encoding utf8
+          "$root\bin" | Out-File $env:GITHUB_PATH -Append -Encoding utf8
+      - name: Configure, build and run host contracts with MSVC and nvcc
+        shell: cmd
+        run: |
+          for /f "usebackq delims=" %%i in (`"%ProgramFiles(x86)%\Microsoft Visual Studio\Installer\vswhere.exe" -latest -products * -requires Microsoft.VisualStudio.Component.VC.Tools.x86.x64 -property installationPath`) do set "VSINSTALL=%%i"
+          call "%VSINSTALL%\VC\Auxiliary\Build\vcvars64.bat" || exit /b 1
+          nvcc --version || exit /b 1
+          cmake -S . -B build/cuda -G Ninja -DCMAKE_BUILD_TYPE=Release -DHBR_CUDA=ON -DCMAKE_CUDA_ARCHITECTURES=89 || exit /b 1
+          cmake --build build/cuda --parallel 2 || exit /b 1
+          ctest --test-dir build/cuda --output-on-failure -E "^cuda_" || exit /b 1
+          cmake --install build/cuda --prefix installed || exit /b 1
+      - name: Installed discovery of a CUDA build
+        run: python tests/package_components.py --prefix installed --cuda-built
