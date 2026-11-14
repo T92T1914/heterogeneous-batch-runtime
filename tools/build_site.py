@@ -10,7 +10,7 @@ from pathlib import Path
 import statistics
 
 ROOT = Path(__file__).resolve().parents[1]
-SOURCE = "15e6e606da29a16e748a0c93197ec90e2c417625"
+SOURCE = "aa7fcafe5dde9f33707e0c1029a8bd67bc9ec240"
 REPO = "https://github.com/T92T1914/heterogeneous-batch-runtime"
 LABELS = {
     "scalar_1": "Scalar CPU, 1 thread", "optimized_1": "Optimized CPU, 1 thread",
