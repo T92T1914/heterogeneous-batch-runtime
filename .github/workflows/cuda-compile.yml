@@ -1,0 +1,33 @@
+name: CUDA compile
+on: [push, pull_request]
+permissions:
+  contents: read
+jobs:
+  compile:
+    # Hosted runners have no NVIDIA GPU. This job compiles and links the CUDA
+    # backend, its tests, its benchmarks and the CUDA Python binding, then runs
+    # only the host contracts and installed discovery. It executes no CUDA work.
+    runs-on: ubuntu-latest
+    container:
+      image: nvidia/cuda:13.4.3-devel-ubuntu24.04@sha256:5626a7d0ecafe3e7c115a452f6b05f20f214f8509346196a7835b205dc5b7fd9
+    steps:
+      - uses: actions/checkout@fbc6f3992d24b796d5a048ff273f7fcc4a7b6c09
+      - name: Install host build tools
+        run: |
+          apt-get update
+          DEBIAN_FRONTEND=noninteractive apt-get install -y --no-install-recommends cmake g++ make python3 python3-dev python3-venv
+      - name: Prepare Python for the binding
+        run: |
+          python3 -m venv /opt/hbr-venv
+          /opt/hbr-venv/bin/python -m pip install numpy pybind11==3.1.0
+      - name: Configure with CUDA and Python
+        run: |
+          nvcc --version
+          cmake -S . -B build/cuda -DCMAKE_BUILD_TYPE=Release -DHBR_CUDA=ON -DCMAKE_CUDA_ARCHITECTURES=89 -DHBR_PYTHON=ON -DPython_EXECUTABLE=/opt/hbr-venv/bin/python -Dpybind11_DIR="$(/opt/hbr-venv/bin/python -m pybind11 --cmakedir)"
+      - run: cmake --build build/cuda --parallel 2
+      - name: Host contracts only, since no GPU is present
+        run: ctest --test-dir build/cuda --output-on-failure -E '^cuda_'
+      - name: Installed discovery of a CUDA build
+        run: |
+          cmake --install build/cuda --prefix installed
+          /opt/hbr-venv/bin/python tests/package_components.py --prefix installed --cuda-built
