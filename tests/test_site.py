@@ -145,6 +145,16 @@ class SiteTests(unittest.TestCase):
         self.assertEqual(page.row_headings, 123 + 36 + 8 + 80 + 16)
         self.assertEqual(page.captions, 6 + 3 + 1 + 1 + 2)
 
+    def test_links_at_the_source_pin_name_files_in_this_tree(self):
+        page = Page()
+        page.feed(self.generated["web/index.html"])
+        prefix = site.link("")
+        pinned = [anchor[len(prefix):].split("#")[0] for anchor in page.anchors if anchor.startswith(prefix)]
+        self.assertIn("docs/limits.md", pinned)
+        self.assertIn("docs/cost-model.md", pinned)
+        for path in pinned:
+            self.assertTrue((ROOT / path).is_file(), path)
+
     def test_retained_mutation_is_rejected_before_generation(self):
         with tempfile.TemporaryDirectory() as directory:
             root = Path(directory)

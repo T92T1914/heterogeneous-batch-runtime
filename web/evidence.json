@@ -1,6 +1,6 @@
 {
   "schema_version": 1,
-  "source_revision": "15e6e606da29a16e748a0c93197ec90e2c417625",
+  "source_revision": "aa7fcafe5dde9f33707e0c1029a8bd67bc9ec240",
   "theme_revision": "7a57fe750ff50205a17e1d342106a0d3f2777159",
   "input_sha256": {
     "docs/evidence/execution.json": "e24da16890efe03272698bfbffba07d792048f84a96b469ec17af05469f6d8ec",
@@ -37,9 +37,9 @@
       "limitations": "Five warm samples, fixed condition order and a shared Windows workstation. First invocation is retained, not a cold-process measurement.",
       "source_revision": "675bd82ad9f2ed25cda41835835a1074ebc88ace",
       "source_url": "https://github.com/T92T1914/heterogeneous-batch-runtime/tree/675bd82ad9f2ed25cda41835835a1074ebc88ace",
-      "raw_url": "https://github.com/T92T1914/heterogeneous-batch-runtime/blob/15e6e606da29a16e748a0c93197ec90e2c417625/docs/evidence/baseline-cpu.csv",
+      "raw_url": "https://github.com/T92T1914/heterogeneous-batch-runtime/blob/aa7fcafe5dde9f33707e0c1029a8bd67bc9ec240/docs/evidence/baseline-cpu.csv",
       "protocol_url": "https://github.com/T92T1914/heterogeneous-batch-runtime/blob/675bd82ad9f2ed25cda41835835a1074ebc88ace/docs/cpu-protocol.json",
-      "report_url": "https://github.com/T92T1914/heterogeneous-batch-runtime/blob/15e6e606da29a16e748a0c93197ec90e2c417625/docs/results-2026-09-29.md",
+      "report_url": "https://github.com/T92T1914/heterogeneous-batch-runtime/blob/aa7fcafe5dde9f33707e0c1029a8bd67bc9ec240/docs/results-2026-09-29.md",
       "conditions": [
         {
           "id": "masked_reduce:32",
@@ -524,9 +524,9 @@
       "limitations": "Five warm samples, fixed condition order and a shared Windows workstation. First invocation is retained, not a cold-process measurement.",
       "source_revision": "675bd82ad9f2ed25cda41835835a1074ebc88ace",
       "source_url": "https://github.com/T92T1914/heterogeneous-batch-runtime/tree/675bd82ad9f2ed25cda41835835a1074ebc88ace",
-      "raw_url": "https://github.com/T92T1914/heterogeneous-batch-runtime/blob/15e6e606da29a16e748a0c93197ec90e2c417625/docs/evidence/baseline-cuda.csv",
+      "raw_url": "https://github.com/T92T1914/heterogeneous-batch-runtime/blob/aa7fcafe5dde9f33707e0c1029a8bd67bc9ec240/docs/evidence/baseline-cuda.csv",
       "protocol_url": "https://github.com/T92T1914/heterogeneous-batch-runtime/blob/675bd82ad9f2ed25cda41835835a1074ebc88ace/docs/cuda-protocol.json",
-      "report_url": "https://github.com/T92T1914/heterogeneous-batch-runtime/blob/15e6e606da29a16e748a0c93197ec90e2c417625/docs/results-2026-09-29.md",
+      "report_url": "https://github.com/T92T1914/heterogeneous-batch-runtime/blob/aa7fcafe5dde9f33707e0c1029a8bd67bc9ec240/docs/results-2026-09-29.md",
       "conditions": [
         {
           "id": "masked_reduce:32:uniform",
@@ -1071,9 +1071,9 @@
       "limitations": "Five warm samples, fixed condition order and a shared Windows workstation. First invocation is retained, not a cold-process measurement. Shared-host timing alone does not establish causality.",
       "source_revision": "b2cb6a8370646bb9a044ad677c8d4551bb8d1161",
       "source_url": "https://github.com/T92T1914/heterogeneous-batch-runtime/tree/b2cb6a8370646bb9a044ad677c8d4551bb8d1161",
-      "raw_url": "https://github.com/T92T1914/heterogeneous-batch-runtime/blob/15e6e606da29a16e748a0c93197ec90e2c417625/docs/evidence/followup-cpu.csv",
+      "raw_url": "https://github.com/T92T1914/heterogeneous-batch-runtime/blob/aa7fcafe5dde9f33707e0c1029a8bd67bc9ec240/docs/evidence/followup-cpu.csv",
       "protocol_url": "https://github.com/T92T1914/heterogeneous-batch-runtime/blob/b2cb6a8370646bb9a044ad677c8d4551bb8d1161/docs/cpu-followup-protocol.json",
-      "report_url": "https://github.com/T92T1914/heterogeneous-batch-runtime/blob/15e6e606da29a16e748a0c93197ec90e2c417625/docs/results-2026-09-29.md",
+      "report_url": "https://github.com/T92T1914/heterogeneous-batch-runtime/blob/aa7fcafe5dde9f33707e0c1029a8bd67bc9ec240/docs/results-2026-09-29.md",
       "conditions": [
         {
           "id": "32",
@@ -1285,7 +1285,7 @@
       "lifecycle": [],
       "comparative_source_revision": "675bd82ad9f2ed25cda41835835a1074ebc88ace",
       "comparative_source_url": "https://github.com/T92T1914/heterogeneous-batch-runtime/tree/675bd82ad9f2ed25cda41835835a1074ebc88ace",
-      "secondary_raw_url": "https://github.com/T92T1914/heterogeneous-batch-runtime/blob/15e6e606da29a16e748a0c93197ec90e2c417625/docs/evidence/baseline-cpu.csv"
+      "secondary_raw_url": "https://github.com/T92T1914/heterogeneous-batch-runtime/blob/aa7fcafe5dde9f33707e0c1029a8bd67bc9ec240/docs/evidence/baseline-cpu.csv"
     },
     {
       "id": "reuse",
@@ -1297,9 +1297,9 @@
       "limitations": "24 warm samples per condition, rotated backend order and a shared Windows workstation. Two extra warmups are outside the retained rows. No pinned input, zero-copy or transfer overlap.",
       "source_revision": "caa7391fdf20efe0a712d500043333e05541f555",
       "source_url": "https://github.com/T92T1914/heterogeneous-batch-runtime/tree/caa7391fdf20efe0a712d500043333e05541f555",
-      "raw_url": "https://github.com/T92T1914/heterogeneous-batch-runtime/blob/15e6e606da29a16e748a0c93197ec90e2c417625/docs/evidence/reuse.csv",
+      "raw_url": "https://github.com/T92T1914/heterogeneous-batch-runtime/blob/aa7fcafe5dde9f33707e0c1029a8bd67bc9ec240/docs/evidence/reuse.csv",
       "protocol_url": "https://github.com/T92T1914/heterogeneous-batch-runtime/blob/caa7391fdf20efe0a712d500043333e05541f555/docs/reuse-protocol.json",
-      "report_url": "https://github.com/T92T1914/heterogeneous-batch-runtime/blob/15e6e606da29a16e748a0c93197ec90e2c417625/docs/reuse-results.md",
+      "report_url": "https://github.com/T92T1914/heterogeneous-batch-runtime/blob/aa7fcafe5dde9f33707e0c1029a8bd67bc9ec240/docs/reuse-results.md",
       "conditions": [
         {
           "id": "32:uniform",
@@ -2085,9 +2085,9 @@
       "limitations": "20 samples after five warmups. First invocation is separate. One-thread CPU configuration on a shared Windows workstation. This is also a wrapper comparison, not a language ranking.",
       "source_revision": "8868e9fa6439478b8f8c1dda5e5498af0ff9d55a",
       "source_url": "https://github.com/T92T1914/heterogeneous-batch-runtime/tree/8868e9fa6439478b8f8c1dda5e5498af0ff9d55a",
-      "raw_url": "https://github.com/T92T1914/heterogeneous-batch-runtime/blob/15e6e606da29a16e748a0c93197ec90e2c417625/docs/inference-cpu-reuse.json",
+      "raw_url": "https://github.com/T92T1914/heterogeneous-batch-runtime/blob/aa7fcafe5dde9f33707e0c1029a8bd67bc9ec240/docs/inference-cpu-reuse.json",
       "protocol_url": "https://github.com/T92T1914/heterogeneous-batch-runtime/blob/8868e9fa6439478b8f8c1dda5e5498af0ff9d55a/docs/inference-protocol.md",
-      "report_url": "https://github.com/T92T1914/heterogeneous-batch-runtime/blob/15e6e606da29a16e748a0c93197ec90e2c417625/docs/inference-results.md",
+      "report_url": "https://github.com/T92T1914/heterogeneous-batch-runtime/blob/aa7fcafe5dde9f33707e0c1029a8bd67bc9ec240/docs/inference-results.md",
       "conditions": [
         {
           "id": "1",
@@ -2303,9 +2303,9 @@
       "limitations": "20 samples after five warmups on a shared Windows workstation. Application batches are serial one-image calls, not fused GPU batching. Operator events prove placement, not kernel timing or overlap.",
       "source_revision": "7a40f5fd43a213dab94ea5345fb87c697d3f4612",
       "source_url": "https://github.com/T92T1914/heterogeneous-batch-runtime/tree/7a40f5fd43a213dab94ea5345fb87c697d3f4612",
-      "raw_url": "https://github.com/T92T1914/heterogeneous-batch-runtime/blob/15e6e606da29a16e748a0c93197ec90e2c417625/docs/inference-cuda-evidence.json",
+      "raw_url": "https://github.com/T92T1914/heterogeneous-batch-runtime/blob/aa7fcafe5dde9f33707e0c1029a8bd67bc9ec240/docs/inference-cuda-evidence.json",
       "protocol_url": "https://github.com/T92T1914/heterogeneous-batch-runtime/blob/7a40f5fd43a213dab94ea5345fb87c697d3f4612/docs/inference-cuda-protocol.md",
-      "report_url": "https://github.com/T92T1914/heterogeneous-batch-runtime/blob/15e6e606da29a16e748a0c93197ec90e2c417625/docs/inference-cuda-results.md",
+      "report_url": "https://github.com/T92T1914/heterogeneous-batch-runtime/blob/aa7fcafe5dde9f33707e0c1029a8bd67bc9ec240/docs/inference-cuda-results.md",
       "conditions": [
         {
           "id": "1",
