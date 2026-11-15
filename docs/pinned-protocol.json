@@ -27,7 +27,7 @@
   "summary": ["median", "minimum", "maximum", "25th percentile", "75th percentile", "sample count"],
   "limits": {"largest_pinned_bytes": 10485760, "measurement_timeout_seconds": 120},
   "scope": "pinned input only, through the unchanged runtime interface, with no pinned output, transfer overlap, multiple streams, zero copy, device resident input or Python",
-  "environment": "record CPU, GPU, driver, toolkit, compiler, OS, source, protocol and binary identities, GPU utilization and processes before and after, and preserve ordinary applications and default settings",
+  "environment": "record CPU, GPU, driver, CUDA toolkit compiler, host compiler, OS, source, protocol and binary identities and GPU utilization, memory and temperature before and after in the receipt that tools/run_pinned.py writes, have the person who starts the run check the GPU processes beforehand, confirm it with --confirm-gpu-free and keep that list in a private record outside the repository, since the computer is a shared desktop, and preserve ordinary applications and default settings",
   "decision": "retain slower and neutral results and report the pinned and pageable medians side by side for each condition without a general bandwidth claim",
   "historical_evidence": "leave the 504 original rows, the 900 reuse rows, their protocols and the cost model unchanged"
 }
