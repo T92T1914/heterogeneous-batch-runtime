@@ -8,7 +8,7 @@ This page gathers those gates and the narrower open limits in one place so a rea
 
 ### Linux GPU execution
 
-Linux verification ran Ubuntu 24.04.5 under WSL2 with GCC 13.3, and the hosted Ubuntu jobs run the Release, sanitizer, Clang and ThreadSanitizer builds on CPU runners. None of that executes CUDA. The project counts WSL as a Linux execution environment, not as a separate Linux host or as Linux GPU evidence. Closing this gate would need a Linux machine with a compatible NVIDIA GPU and its own executed CUDA evidence.
+Linux verification ran Ubuntu 24.04.5 under WSL2 with GCC 13.3, and the hosted Ubuntu jobs run the Release, sanitizer, Clang and ThreadSanitizer builds on CPU runners. None of that executes CUDA. The hosted [`CUDA compile`](../.github/workflows/cuda-compile.yml) workflow builds the CUDA backend with nvcc 13.4, under GCC in a Linux container and under MSVC on Windows, and it executes no CUDA work either. It shows that the source compiles, not how it behaves on a device. The project counts WSL as a Linux execution environment, not as a separate Linux host or as Linux GPU evidence. Closing this gate would need a Linux machine with a compatible NVIDIA GPU and its own executed CUDA evidence.
 
 Recorded in the [September execution report](results-2026-09-29.md#correctness-and-packaging), the [reuse results](reuse-results.md#correctness-ownership-and-limits), the [Python CUDA verification](python-cuda-results.md#executed-coverage), the [CPU inference record](inference-results.md#pending-evidence) and the [required CUDA inference record](inference-cuda-results.md#source-identities-and-remaining-gates).
 
