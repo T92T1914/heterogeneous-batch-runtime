@@ -27,6 +27,10 @@ jobs:
       - run: cmake --build build/cuda --parallel 2
       - name: Host contracts only, since no GPU is present
         run: ctest --test-dir build/cuda --output-on-failure -E '^cuda_'
+      - name: Pinned benchmark plan equals its protocol, without touching a device
+        run: |
+          ./build/cuda/hbr_cuda_pinned_bench --plan > pinned-plan.json
+          /opt/hbr-venv/bin/python tools/check_pinned_plan.py pinned-plan.json
       - name: Installed discovery of a CUDA build
         run: |
           cmake --install build/cuda --prefix installed
