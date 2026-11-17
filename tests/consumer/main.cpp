@@ -2,6 +2,9 @@
 #ifdef CHECK_CUDA
 #include <hbr/cuda.hpp>
 #endif
+#ifdef CHECK_SYCL
+#include <hbr/sycl.hpp>
+#endif
 #include <vector>
 int main() {
     const std::vector<double> values{2,-3,5};
@@ -13,5 +16,8 @@ int main() {
     const auto result=histogram.run(mask);
     if (result.request_id!=1 || result.value[0]!=1 || result.value[1]!=2) return 3;
     histogram.close();
+#endif
+#ifdef CHECK_SYCL
+    if (hbr::sycl_device().name.empty()) return 4;
 #endif
 }

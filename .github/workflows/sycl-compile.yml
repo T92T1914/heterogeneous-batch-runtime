@@ -1,0 +1,56 @@
+name: SYCL compile
+on: [push, pull_request]
+permissions:
+  contents: read
+jobs:
+  compile:
+    # Hosted runners have no GPU. This job builds the SYCL backend with the DPC++ 7.2.0
+    # release for the CUDA target sm_89, the toolchain the local RTX 4090 runs use, then
+    # runs the tests that need no GPU and the installed discovery check. It executes no
+    # SYCL work on a device, so it shows that the source builds and links, not how it
+    # behaves on one.
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@fbc6f3992d24b796d5a048ff273f7fcc4a7b6c09
+      - uses: actions/setup-python@ece7cb06caefa5fff74198d8649806c4678c61a1
+        with:
+          python-version: '3.11'
+      - name: Fetch DPC++ 7.2.0 and the CUDA 13.2.2 device tools by hash
+        run: |
+          set -euo pipefail
+          fetch() {
+            curl -fsSL --retry 3 -o "$2" "$1"
+            echo "$3  $2" | sha256sum --check --strict
+          }
+          mkdir -p "$RUNNER_TEMP/dpcpp" "$RUNNER_TEMP/cuda"
+          fetch https://github.com/intel/llvm/releases/download/v7.2.0/sycl_linux.tar.gz \
+            "$RUNNER_TEMP/sycl_linux.tar.gz" 385586a25e75ac727883f0be5e442dec0ee81b3c20f9a29037a79921ad2f1728
+          tar -xzf "$RUNNER_TEMP/sycl_linux.tar.gz" -C "$RUNNER_TEMP/dpcpp"
+          redist=https://developer.download.nvidia.com/compute/cuda/redist
+          while read -r path sum; do
+            archive="$RUNNER_TEMP/$(basename "$path")"
+            fetch "$redist/$path" "$archive" "$sum"
+            tar -xJf "$archive" -C "$RUNNER_TEMP/cuda" --strip-components=1
+          done <<'ARCHIVES'
+          cuda_nvcc/linux-x86_64/cuda_nvcc-linux-x86_64-13.2.86-archive.tar.xz b04e5ca5b41f8b5629ce5f16930920e6af437f32c9777fcb67e0361f732b6f43
+          cuda_cudart/linux-x86_64/cuda_cudart-linux-x86_64-13.2.86-archive.tar.xz d6be2b3546fa93e5dec9e3d118d31f9540d0b7af5319ee3c6726f202dfc5b5d4
+          cuda_crt/linux-x86_64/cuda_crt-linux-x86_64-13.2.86-archive.tar.xz 174ad29ab90c9301bd25f32f935345e65f19fbb0f39c15788daae25b0e924892
+          cuda_cccl/linux-x86_64/cuda_cccl-linux-x86_64-13.2.86-archive.tar.xz a14f52d5cc8a00a22bccd6c0ab6b1427c7dde7e8251adf321e768a7fc47bb2a5
+          libnvvm/linux-x86_64/libnvvm-linux-x86_64-13.2.86-archive.tar.xz 029fc2a43904a2208a83dfd5834c4c343394d1117279f849863ae94208a88b8a
+          ARCHIVES
+          echo "DPCPP=$RUNNER_TEMP/dpcpp" >> "$GITHUB_ENV"
+          echo "CUDA_ROOT=$RUNNER_TEMP/cuda" >> "$GITHUB_ENV"
+          echo "LD_LIBRARY_PATH=$RUNNER_TEMP/dpcpp/lib" >> "$GITHUB_ENV"
+      - name: Configure with SYCL for sm_89
+        run: |
+          "$DPCPP/bin/clang++" --version
+          cmake -S . -B build/sycl -DCMAKE_BUILD_TYPE=Release -DCMAKE_CXX_COMPILER="$DPCPP/bin/clang++" -DHBR_SYCL=ON "-DHBR_SYCL_FLAGS=--cuda-path=$CUDA_ROOT"
+      - run: cmake --build build/sycl --parallel 2
+      - name: The shared library carries an sm_89 device image
+        run: strings -n 6 build/sycl/libhbr_sycl.so | grep -q '^\.target sm_89'
+      - name: Tests that need no GPU, including the rejection when no GPU is offered
+        run: ctest --test-dir build/sycl --output-on-failure -E '^sycl_'
+      - name: Installed discovery of a SYCL build, with a consumer the default compiler links
+        run: |
+          cmake --install build/sycl --prefix installed
+          python tests/package_components.py --prefix installed --sycl-built

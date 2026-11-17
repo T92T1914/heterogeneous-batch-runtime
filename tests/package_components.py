@@ -1,7 +1,9 @@
 """Exercise installed CMake discovery and a completed CPU consumer.
 
-The optional CUDA capability is checked at configuration only. No GPU executable
-is launched by this check, including when --cuda-built is supplied.
+The optional CUDA capability is checked at configuration only. With --sycl-built
+the SYCL consumer is also compiled and linked by the default compiler, which shows
+that an application needs no SYCL compiler. No GPU executable is launched by this
+check, including when --cuda-built or --sycl-built is supplied.
 """
 from __future__ import annotations
 
@@ -12,7 +14,7 @@ import tempfile
 
 
 def verify(prefix: Path, output: Path, cmake: str, generator: str | None,
-           architecture: str | None, cuda_built: bool) -> None:
+           architecture: str | None, cuda_built: bool, sycl_built: bool = False) -> None:
     configure = [cmake]
     if generator:
         configure += ["-G", generator]
@@ -49,8 +51,17 @@ def verify(prefix: Path, output: Path, cmake: str, generator: str | None,
         probe("required_cuda", "find_package(hbr CONFIG REQUIRED COMPONENTS cuda)\n"
               "if(NOT hbr_cuda_FOUND OR NOT TARGET hbr::hbr_cuda)\n"
               '  message(FATAL_ERROR "Compiled CUDA discovery lost")\nendif()\n')
-    for component in ("hip", "sycl", "CUDA"):
-        name = "required_uppercase_cuda" if component == "CUDA" else f"required_{component}"
+    if not sycl_built:
+        # A caller's stale variable must not stand in for a component that was not built.
+        probe("required_sycl", "set(hbr_sycl_FOUND TRUE)\n"
+              "find_package(hbr CONFIG REQUIRED COMPONENTS sycl)\n",
+              "The hbr sycl component was not built")
+    else:
+        probe("required_sycl", "find_package(hbr CONFIG REQUIRED COMPONENTS sycl)\n"
+              "if(NOT hbr_sycl_FOUND OR NOT TARGET hbr::hbr_sycl)\n"
+              '  message(FATAL_ERROR "Compiled SYCL discovery lost")\nendif()\n')
+    for component in ("hip", "CUDA", "SYCL"):
+        name = f"required_uppercase_{component.lower()}" if component.isupper() else f"required_{component}"
         probe(name, f"set(hbr_{component}_FOUND TRUE)\n"
               f"find_package(hbr CONFIG REQUIRED COMPONENTS {component})\n",
               f"Unsupported hbr component '{component}'")
@@ -58,11 +69,14 @@ def verify(prefix: Path, output: Path, cmake: str, generator: str | None,
           "if(NOT hbr_cpu_FOUND OR NOT TARGET hbr::hbr)\n"
           '  message(FATAL_ERROR "CPU discovery lost")\nendif()\n')
     wrong_cuda = "NOT hbr_cuda_FOUND" if cuda_built else "hbr_cuda_FOUND"
+    wrong_sycl = "NOT hbr_sycl_FOUND" if sycl_built else "hbr_sycl_FOUND"
     probe("optional_backends", "find_package(hbr CONFIG REQUIRED COMPONENTS cpu OPTIONAL_COMPONENTS cuda hip sycl)\n"
-          "if(NOT hbr_FOUND OR NOT hbr_cpu_FOUND OR hbr_hip_FOUND OR hbr_sycl_FOUND)\n"
+          "if(NOT hbr_FOUND OR NOT hbr_cpu_FOUND OR hbr_hip_FOUND)\n"
           '  message(FATAL_ERROR "Optional backend discovery invalid")\nendif()\n'
           f"if({wrong_cuda})\n"
-          '  message(FATAL_ERROR "Compiled CUDA capability invalid")\nendif()\n')
+          '  message(FATAL_ERROR "Compiled CUDA capability invalid")\nendif()\n'
+          f"if({wrong_sycl})\n"
+          '  message(FATAL_ERROR "Compiled SYCL capability invalid")\nendif()\n')
     probe("legacy", "find_package(hbr CONFIG REQUIRED)\n"
           "if(NOT TARGET hbr::hbr)\n"
           '  message(FATAL_ERROR "Legacy discovery lost")\nendif()\n')
@@ -84,6 +98,15 @@ def verify(prefix: Path, output: Path, cmake: str, generator: str | None,
         run("consumer_requires_cuda", configure + ["-S", str(consumer), "-B", str(output / "cuda-consumer-build"),
                                                    f"-Dhbr_DIR={package}", "-DHBR_CONSUMER_CUDA=ON"],
             "The hbr cuda component was not built")
+    sycl_build = output / "sycl-consumer-build"
+    sycl_configure = configure + ["-S", str(consumer), "-B", str(sycl_build),
+                                  f"-Dhbr_DIR={package}", "-DHBR_CONSUMER_SYCL=ON"]
+    if not sycl_built:
+        run("consumer_requires_sycl", sycl_configure, "The hbr sycl component was not built")
+    else:
+        # Compiled and linked by the default compiler, never run, so no device is touched.
+        run("sycl_consumer_configure", sycl_configure)
+        run("sycl_consumer_build", [cmake, "--build", str(sycl_build), "--config", "Release", "--parallel", "2"])
 
 
 def main() -> None:
@@ -93,16 +116,17 @@ def main() -> None:
     parser.add_argument("--generator")
     parser.add_argument("--architecture")
     parser.add_argument("--cuda-built", action="store_true")
+    parser.add_argument("--sycl-built", action="store_true")
     parser.add_argument("--output", type=Path)
     args = parser.parse_args()
     if args.output is not None:
         args.output.mkdir(parents=True, exist_ok=False)
         verify(args.prefix.resolve(), args.output.resolve(), args.cmake,
-               args.generator, args.architecture, args.cuda_built)
+               args.generator, args.architecture, args.cuda_built, args.sycl_built)
     else:
         with tempfile.TemporaryDirectory(prefix="hbr-components-") as temporary:
             verify(args.prefix.resolve(), Path(temporary), args.cmake,
-                   args.generator, args.architecture, args.cuda_built)
+                   args.generator, args.architecture, args.cuda_built, args.sycl_built)
 
 
 if __name__ == "__main__":
