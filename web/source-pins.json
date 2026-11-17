@@ -1,6 +1,6 @@
 {
   "schema_version": 1,
-  "source_revision": "aa7fcafe5dde9f33707e0c1029a8bd67bc9ec240",
+  "source_revision": "ddbc5accc816fc6cdda4404ec7c2eb9ea6fb639c",
   "theme_revision": "7a57fe750ff50205a17e1d342106a0d3f2777159",
   "files": {
     "docs/evidence/execution.json": "e24da16890efe03272698bfbffba07d792048f84a96b469ec17af05469f6d8ec",
@@ -18,7 +18,7 @@
     "docs/inference-protocol.md": "69a9324e3037f95afc792e261d05750f34bc19450d01dbf15b9fbc5d53b50a51",
     "docs/inference-cuda-protocol.md": "00aaf72f52f0624c4d256ebc2be0b08a0492b9d157e930dd90a7736465797450",
     "docs/contracts.md": "2e942301798214be07464c883389886510aab3aafc2cfa157595574191ccc698",
-    "docs/backend-discovery.md": "989c356e309ce11b50a6b4e200fe8aed1d8f68bd761f891c6e224325b2091202",
+    "docs/backend-discovery.md": "36acc9dafc6f8ff248f0c3648bed7658d979eb9a8506f6fcd2f5552098f39eed",
     "docs/python-cuda-results.md": "747cf0ef56c3a3e075bc60e51f0da4bc320a9a8f4cbffd119a6bbba2231e74fd",
     "docs/results-2026-09-29.md": "c01586324883f562fc36c6c5163377626e8a0df65b53e5199dfd8f237fc9d49d",
     "docs/reuse-results.md": "54eb95284a1f3902f571e1f8c52af79204354ef55db49f02a627e40043f0747c",
