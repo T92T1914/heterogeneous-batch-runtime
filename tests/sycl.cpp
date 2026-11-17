@@ -3,11 +3,17 @@
 #include "hbr/sycl.hpp"
 #include <exception>
 #include <iostream>
+#include <limits>
 #include <stdexcept>
 #include <string>
 #include <vector>
 // With no GPU offered, validation still runs first and an empty image needs no device.
-// Any other call must fail visibly as std::runtime_error.
+// Any other call must fail visibly as std::runtime_error, and not as a validation error that
+// derives from it.
+template<class F> bool needs_device(F call) {
+    try { call(); } catch (const std::overflow_error&) { return false; } catch (const std::runtime_error&) { return true; }
+    return false;
+}
 int without_gpu() {
     const std::vector<std::uint8_t> nine(9, 1);
     try { (void)hbr::sycl_tile_histogram(nine, 3, 3, 0, 1); return 1; } catch (const std::invalid_argument&) {}
@@ -15,7 +21,15 @@ int without_gpu() {
     if (!hbr::sycl_tile_histogram({}, 0, 5, 2, 2).empty()) return 1;
     const std::vector<std::uint8_t> wide(2048 * 4096);
     try { (void)hbr::sycl_tile_histogram(wide, 2048, 4096, 1, 1); return 1; } catch (const std::overflow_error&) {}
-    try { (void)hbr::sycl_tile_histogram(nine, 3, 3, 2, 2); return 1; } catch (const std::runtime_error&) {}
+    if (!needs_device([&] { (void)hbr::sycl_tile_histogram(nine, 3, 3, 2, 2); })) return 1;
+    const std::vector<double> three(3, 1.0);
+    try { (void)hbr::sycl_masked_reduce(three, std::vector<std::uint8_t>(2, 1)); return 1; } catch (const std::invalid_argument&) {}
+    try { (void)hbr::sycl_masked_reduce(std::vector<double>{std::numeric_limits<double>::infinity()}, std::vector<std::uint8_t>{0}); return 1; }
+    catch (const std::invalid_argument&) {}
+    try { (void)hbr::sycl_masked_reduce(std::vector<double>{std::numeric_limits<double>::max(), 1.0}, std::vector<std::uint8_t>{1, 1}); return 1; }
+    catch (const std::overflow_error&) {}
+    if (hbr::sycl_masked_reduce({}, {}) != 0.0) return 1;
+    if (!needs_device([&] { (void)hbr::sycl_masked_reduce(three, std::vector<std::uint8_t>(3, 1)); })) return 1;
     try { (void)hbr::sycl_device(); return 1; }
     catch (const std::runtime_error& error) { std::cout << "rejected as expected: " << error.what() << '\n'; }
     return 0;

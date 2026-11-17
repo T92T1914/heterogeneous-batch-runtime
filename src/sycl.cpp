@@ -1,5 +1,8 @@
 #include "hbr/sycl.hpp"
+#include "hbr/detail/validation.hpp"
 #include <sycl/sycl.hpp>
+#include <algorithm>
+#include <cmath>
 #include <exception>
 #include <limits>
 #include <memory>
@@ -31,6 +34,9 @@ void fault_point() {
     throw std::runtime_error("injected host exception");
 #endif
 }
+void finite(std::span<const double> data) {
+    for (double value : data) if (!std::isfinite(value)) throw std::invalid_argument("input values must be finite");
+}
 void allocation_change(int delta) {
 #ifdef HBR_TEST_SYCL_FAULTS
     test::live += delta;
@@ -52,12 +58,13 @@ std::string backend_name(sycl::backend backend) {
     }
 }
 template<bool Local> class TileHistogram;
+class MaskedReduce;
 // The GPU selector's score, limited to GPUs that can run every kernel this library carries.
 // On a host with GPUs from several backends, the plain GPU selector could prefer one that
 // this build has no device image for.
 int compatible_gpu(const sycl::device& device) {
     if (!device.is_gpu() || !sycl::is_compatible<TileHistogram<true>>(device)
-        || !sycl::is_compatible<TileHistogram<false>>(device)) return -1;
+        || !sycl::is_compatible<TileHistogram<false>>(device) || !sycl::is_compatible<MaskedReduce>(device)) return -1;
     return sycl::gpu_selector_v(device);
 }
 sycl::device select_gpu() { return sycl::device([](const sycl::device& device) { return compatible_gpu(device); }); }
@@ -152,6 +159,29 @@ template<bool Local> void launch(sycl::queue& queue, const std::uint8_t* image, 
         });
     });
 }
+// Mirrors reduce_kernel in src/cuda.cu: each work item sums a grid stride of the selected
+// values, then the work group adds its 256 lanes in a fixed tree. The first pass leaves one
+// partial sum per work group and a second pass with one work group and no mask adds those.
+void reduce(sycl::queue& queue, const double* values, const std::uint8_t* mask, std::size_t n,
+    std::size_t groups, double* output) {
+    queue.submit([&](sycl::handler& handler) {
+        sycl::local_accessor<double, 1> shared(sycl::range<1>(lanes), handler);
+        handler.parallel_for<MaskedReduce>(sycl::nd_range<1>(groups * lanes, lanes), [=](sycl::nd_item<1> item) {
+            const std::size_t lane = item.get_local_id(0);
+            double value = 0;
+            for (std::size_t i = item.get_global_id(0); i < n; i += groups * lanes)
+                if (!mask || mask[i]) value += values[i];
+            shared[lane] = value;
+            sycl::group_barrier(item.get_group());
+            for (std::size_t stride = lanes / 2; stride; stride >>= 1) {
+                if (lane < stride) shared[lane] += shared[lane + stride];
+                sycl::group_barrier(item.get_group());
+            }
+            if (!lane) output[item.get_group(0)] = shared[0];
+        });
+    });
+}
+std::size_t reduce_groups(std::size_t n) { return std::min<std::size_t>(4096, n / lanes + (n % lanes != 0)); }
 }
 SyclDevice sycl_device() {
     // A SYCL error leaves this library only as std::runtime_error, so an application
@@ -195,6 +225,36 @@ std::vector<std::uint64_t> sycl_tile_histogram(std::span<const std::uint8_t> ima
         else launch<false>(op.queue(), x, rows, cols, tr, tc, nc, tiles, bins);
         fault_point();
         op.queue().memcpy(value.data(), bins, product(value.size(), sizeof(std::uint64_t)));
+        op.finish();
+        return value;
+    } catch (const sycl::exception& error) {
+        throw std::runtime_error(std::string("SYCL: ") + error.what());
+    }
+}
+double sycl_masked_reduce(std::span<const double> values, std::span<const std::uint8_t> mask) {
+    if (values.size() != mask.size()) throw std::invalid_argument("mask shape mismatch");
+    finite(values);
+    detail::reduction_range(values, mask);
+    if (values.empty()) return 0.0;
+    try {
+        const sycl::device device = select_gpu();
+        if (!device.has(sycl::aspect::fp64)) throw std::runtime_error("SYCL: the selected GPU lacks fp64");
+        // Declared before the operation, so on failure the queue drains before this storage goes.
+        double value = 0;
+        Operation op(device);
+        const auto groups = reduce_groups(values.size());
+        auto* x = op.allocate<double>(values.size());
+        auto* m = op.allocate<std::uint8_t>(mask.size());
+        auto* partial = op.allocate<double>(groups);
+        auto* result = op.allocate<double>(1);
+        fault_point();
+        op.queue().memcpy(x, values.data(), values.size_bytes());
+        op.queue().memcpy(m, mask.data(), mask.size_bytes());
+        fault_point();
+        reduce(op.queue(), x, m, values.size(), groups, partial);
+        reduce(op.queue(), partial, nullptr, groups, 1, result);
+        fault_point();
+        op.queue().memcpy(&value, result, sizeof(double));
         op.finish();
         return value;
     } catch (const sycl::exception& error) {
