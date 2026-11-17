@@ -13,6 +13,8 @@ int without_gpu() {
     try { (void)hbr::sycl_tile_histogram(nine, 3, 3, 0, 1); return 1; } catch (const std::invalid_argument&) {}
     try { (void)hbr::sycl_tile_histogram(nine, 3, 4, 1, 1); return 1; } catch (const std::invalid_argument&) {}
     if (!hbr::sycl_tile_histogram({}, 0, 5, 2, 2).empty()) return 1;
+    const std::vector<std::uint8_t> wide(2048 * 4096);
+    try { (void)hbr::sycl_tile_histogram(wide, 2048, 4096, 1, 1); return 1; } catch (const std::overflow_error&) {}
     try { (void)hbr::sycl_tile_histogram(nine, 3, 3, 2, 2); return 1; } catch (const std::runtime_error&) {}
     try { (void)hbr::sycl_device(); return 1; }
     catch (const std::runtime_error& error) { std::cout << "rejected as expected: " << error.what() << '\n'; }

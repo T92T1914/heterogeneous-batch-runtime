@@ -56,6 +56,10 @@ int main() {
         rejects<std::invalid_argument>([&] { (void)hbr::sycl_tile_histogram(nine, 3, 4, 1, 1); }, "shape mismatch accepted");
         rejects<std::overflow_error>([&] {
             (void)hbr::sycl_tile_histogram(nine, std::numeric_limits<std::size_t>::max(), 2, 1, 1); }, "shape overflow accepted");
+        // 2048 by 4096 single pixel tiles is 8,388,608 work groups of 256, past the int range DPC++
+        // allows for a kernel's global range by default, so it is refused before any allocation.
+        const std::vector<std::uint8_t> wide(2048 * 4096);
+        rejects<std::overflow_error>([&] { (void)hbr::sycl_tile_histogram(wide, 2048, 4096, 1, 1); }, "tile grid limit missing");
 
         // The result owns its storage, and the borrowed input is never modified.
         std::vector<std::uint8_t> image(64 * 64);

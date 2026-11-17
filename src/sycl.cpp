@@ -10,7 +10,10 @@
 #include "sycl_faults.hpp"
 namespace hbr::test {
 thread_local int failure = -1, count = 0, live = 0, drain_count = 0, drain_error_count = 0;
+thread_local bool as_sycl = false, async = false;
 void fail_at(int point) { failure = point; count = 0; }
+void fail_as_sycl(bool value) { as_sycl = value; }
+void fail_async(bool value) { async = value; }
 int checkpoints() { return count; }
 int live_allocations() { return live; }
 int drains() { return drain_count; }
@@ -23,7 +26,9 @@ namespace {
 constexpr std::size_t lanes = 256;
 void fault_point() {
 #ifdef HBR_TEST_SYCL_FAULTS
-    if (test::count++ == test::failure) throw std::runtime_error("injected host exception");
+    if (test::count++ != test::failure) return;
+    if (test::as_sycl) throw sycl::exception(sycl::make_error_code(sycl::errc::runtime), "injected SYCL exception");
+    throw std::runtime_error("injected host exception");
 #endif
 }
 void allocation_change(int delta) {
@@ -97,6 +102,12 @@ public:
     void finish() {
         fault_point();
         queue_.wait_and_throw();
+#ifdef HBR_TEST_SYCL_FAULTS
+        // Stands in for an error the asynchronous handler kept, to exercise the rethrow below.
+        if (test::async && !*errors_)
+            *errors_ = std::make_exception_ptr(sycl::exception(sycl::make_error_code(sycl::errc::runtime),
+                "injected asynchronous SYCL error"));
+#endif
         if (*errors_) std::rethrow_exception(*errors_);
     }
 private:
@@ -164,7 +175,10 @@ std::vector<std::uint64_t> sycl_tile_histogram(std::span<const std::uint8_t> ima
     if (product(rows, cols) != image.size()) throw std::invalid_argument("image shape mismatch");
     const auto nr = rows / tr + (rows % tr != 0), nc = cols / tc + (cols % tc != 0);
     const auto tiles = product(nr, nc);
-    if (tiles > 2147483647ULL) throw std::overflow_error("tile grid too large");
+    // DPC++ requires by default that a kernel's global range fits in int, and each tile takes
+    // one work group of 256 work items.
+    if (tiles > static_cast<std::size_t>(std::numeric_limits<int>::max()) / lanes)
+        throw std::overflow_error("tile grid too large");
     // Declared before the operation, so on failure the queue drains before this storage goes.
     std::vector<std::uint64_t> value(product(tiles, lanes), 0);
     if (image.empty()) return value;
