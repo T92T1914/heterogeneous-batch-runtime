@@ -66,6 +66,12 @@ int main() {
         inject_everywhere(8, [&] { return hbr::sycl_masked_reduce(values, mask) == sum; });
         std::cout << "8 checkpoints passed for the masked reduction, as host and as SYCL exceptions\n";
 
+        std::vector<double> image(13 * 11);
+        for (std::size_t i = 0; i < image.size(); ++i) image[i] = static_cast<double>(i % 17) / 4 - 2;
+        const auto filtered = hbr::stencil3x3(image, 13, 11, {hbr::Backend::scalar, 1});
+        inject_everywhere(6, [&] { return hbr::sycl_stencil3x3(image, 13, 11) == filtered; });
+        std::cout << "6 checkpoints passed for the stencil, as host and as SYCL exceptions\n";
+
         check(hbr::test::drain_errors() == 0, "cleanup synchronization failed");
         std::cout << "A kept asynchronous SYCL error was thrown after the drain\n";
         std::cout << "The real asynchronous handler, device loss, SYCL allocation failure and GPU sanitizer coverage are not established\n";

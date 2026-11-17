@@ -29,4 +29,10 @@ std::vector<std::uint64_t> sycl_tile_histogram(std::span<const std::uint8_t> ima
 // as in masked_reduce. The summation order differs from the CPU, so the sum can differ in the
 // last bits.
 double sycl_masked_reduce(std::span<const double> values, std::span<const std::uint8_t> mask);
+// The counterpart of cuda_stencil3x3 and stencil3x3: the mean of each interior 3 by 3
+// neighborhood, each input divided by nine and added in the scalar order, bounded to the largest
+// finite magnitude, with the border and images under 3 in either dimension copied. Nonfinite
+// input and a shape mismatch are rejected before any device is selected. Same completed call
+// contract as the histogram.
+std::vector<double> sycl_stencil3x3(std::span<const double> image, std::size_t rows, std::size_t cols);
 }
