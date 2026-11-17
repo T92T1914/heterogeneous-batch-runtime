@@ -23,4 +23,10 @@ SyclDevice sycl_device();
 // std::runtime_error.
 std::vector<std::uint64_t> sycl_tile_histogram(std::span<const std::uint8_t> image, std::size_t rows,
     std::size_t cols, std::size_t tile_rows, std::size_t tile_cols, bool local_bins = true);
+// The counterpart of cuda_masked_reduce: the binary64 sum of the values whose mask byte is
+// nonzero, under the same completed call contract. Nonfinite input, a size mismatch and a
+// selected absolute sum beyond the binary64 range are rejected before any device is selected,
+// as in masked_reduce. The summation order differs from the CPU, so the sum can differ in the
+// last bits.
+double sycl_masked_reduce(std::span<const double> values, std::span<const std::uint8_t> mask);
 }
