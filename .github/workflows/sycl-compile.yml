@@ -46,8 +46,12 @@ jobs:
           "$DPCPP/bin/clang++" --version
           cmake -S . -B build/sycl -DCMAKE_BUILD_TYPE=Release -DCMAKE_CXX_COMPILER="$DPCPP/bin/clang++" -DHBR_SYCL=ON "-DHBR_SYCL_FLAGS=--cuda-path=$CUDA_ROOT"
       - run: cmake --build build/sycl --parallel 2
-      - name: The shared library carries an sm_89 device image
-        run: strings -n 6 build/sycl/libhbr_sycl.so | grep -q '^\.target sm_89'
+      - name: The shared library carries an sm_89 device image for each kernel
+        run: |
+          set -euo pipefail
+          readelf -S -W build/sycl/libhbr_sycl.so | grep -q '__CLANG_OFFLOAD_BUNDLE__sycl-nvptx64'
+          strings -n 6 build/sycl/libhbr_sycl.so | grep '^sycl-nvptx64-nvidia-cuda-sm_89\._ZTS' | tee kernel-images.txt
+          test "$(wc -l < kernel-images.txt)" -ge 2
       - name: Tests that need no GPU, including the rejection when no GPU is offered
         run: ctest --test-dir build/sycl --output-on-failure -E '^sycl_'
       - name: Installed discovery of a SYCL build, with a consumer the default compiler links
