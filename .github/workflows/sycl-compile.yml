@@ -5,10 +5,10 @@ permissions:
 jobs:
   compile:
     # Hosted runners have no GPU. This job builds the SYCL backend with the DPC++ 7.2.0
-    # release for the CUDA target sm_89, the toolchain the local RTX 4090 runs use, then
-    # runs the tests that need no GPU and the installed discovery check. It executes no
-    # SYCL work on a device, so it shows that the source builds and links, not how it
-    # behaves on one.
+    # release and the CUDA 13.2.2 device tools for the CUDA target sm_89, the same files as
+    # the local WSL build, then runs the tests that need no GPU and the installed discovery
+    # check. It executes no SYCL work on a device, so it shows that the source builds and
+    # links, not how it behaves on one.
     runs-on: ubuntu-24.04
     steps:
       - uses: actions/checkout@fbc6f3992d24b796d5a048ff273f7fcc4a7b6c09
@@ -40,7 +40,7 @@ jobs:
           ARCHIVES
           echo "DPCPP=$RUNNER_TEMP/dpcpp" >> "$GITHUB_ENV"
           echo "CUDA_ROOT=$RUNNER_TEMP/cuda" >> "$GITHUB_ENV"
-          echo "LD_LIBRARY_PATH=$RUNNER_TEMP/dpcpp/lib" >> "$GITHUB_ENV"
+          echo "LD_LIBRARY_PATH=$RUNNER_TEMP/dpcpp/lib${LD_LIBRARY_PATH:+:$LD_LIBRARY_PATH}" >> "$GITHUB_ENV"
       - name: Configure with SYCL for sm_89
         run: |
           "$DPCPP/bin/clang++" --version
