@@ -59,12 +59,14 @@ std::string backend_name(sycl::backend backend) {
 }
 template<bool Local> class TileHistogram;
 class MaskedReduce;
+class Stencil;
 // The GPU selector's score, limited to GPUs that can run every kernel this library carries.
 // On a host with GPUs from several backends, the plain GPU selector could prefer one that
 // this build has no device image for.
 int compatible_gpu(const sycl::device& device) {
     if (!device.is_gpu() || !sycl::is_compatible<TileHistogram<true>>(device)
-        || !sycl::is_compatible<TileHistogram<false>>(device) || !sycl::is_compatible<MaskedReduce>(device)) return -1;
+        || !sycl::is_compatible<TileHistogram<false>>(device) || !sycl::is_compatible<MaskedReduce>(device)
+        || !sycl::is_compatible<Stencil>(device)) return -1;
     return sycl::gpu_selector_v(device);
 }
 sycl::device select_gpu() { return sycl::device([](const sycl::device& device) { return compatible_gpu(device); }); }
@@ -181,7 +183,27 @@ void reduce(sycl::queue& queue, const double* values, const std::uint8_t* mask, 
         });
     });
 }
-std::size_t reduce_groups(std::size_t n) { return std::min<std::size_t>(4096, n / lanes + (n % lanes != 0)); }
+// Mirrors stencil_kernel in src/cuda.cu and the scalar loop in src/kernels.cpp: the border is
+// copied, and each interior output adds its nine inputs, each divided by nine, in the same order.
+void stencil(sycl::queue& queue, const double* image, double* output, std::size_t rows, std::size_t cols,
+    std::size_t groups) {
+    queue.submit([&](sycl::handler& handler) {
+        handler.parallel_for<Stencil>(sycl::nd_range<1>(groups * lanes, lanes), [=](sycl::nd_item<1> item) {
+            constexpr double largest = std::numeric_limits<double>::max();
+            for (std::size_t i = item.get_global_id(0); i < rows * cols; i += groups * lanes) {
+                const auto r = i / cols, c = i % cols;
+                if (!r || !c || r + 1 == rows || c + 1 == cols) { output[i] = image[i]; continue; }
+                double sum = image[i - cols - 1] / 9.0;
+                sum += image[i - cols] / 9.0; sum += image[i - cols + 1] / 9.0;
+                sum += image[i - 1] / 9.0; sum += image[i] / 9.0; sum += image[i + 1] / 9.0;
+                sum += image[i + cols - 1] / 9.0; sum += image[i + cols] / 9.0; sum += image[i + cols + 1] / 9.0;
+                // A finite mean is bounded. The last rounded addition can overflow at the limit.
+                output[i] = sycl::fmax(-largest, sycl::fmin(largest, sum));
+            }
+        });
+    });
+}
+std::size_t grid_groups(std::size_t n) { return std::min<std::size_t>(4096, n / lanes + (n % lanes != 0)); }
 }
 SyclDevice sycl_device() {
     // A SYCL error leaves this library only as std::runtime_error, so an application
@@ -242,7 +264,7 @@ double sycl_masked_reduce(std::span<const double> values, std::span<const std::u
         // Declared before the operation, so on failure the queue drains before this storage goes.
         double value = 0;
         Operation op(device);
-        const auto groups = reduce_groups(values.size());
+        const auto groups = grid_groups(values.size());
         auto* x = op.allocate<double>(values.size());
         auto* m = op.allocate<std::uint8_t>(mask.size());
         auto* partial = op.allocate<double>(groups);
@@ -255,6 +277,30 @@ double sycl_masked_reduce(std::span<const double> values, std::span<const std::u
         reduce(op.queue(), partial, nullptr, groups, 1, result);
         fault_point();
         op.queue().memcpy(&value, result, sizeof(double));
+        op.finish();
+        return value;
+    } catch (const sycl::exception& error) {
+        throw std::runtime_error(std::string("SYCL: ") + error.what());
+    }
+}
+std::vector<double> sycl_stencil3x3(std::span<const double> image, std::size_t rows, std::size_t cols) {
+    if (product(rows, cols) != image.size()) throw std::invalid_argument("image shape mismatch");
+    finite(image);
+    // Declared before the operation, so on failure the queue drains before this storage goes.
+    std::vector<double> value(image.size());
+    if (image.empty()) return value;
+    try {
+        const sycl::device device = select_gpu();
+        if (!device.has(sycl::aspect::fp64)) throw std::runtime_error("SYCL: the selected GPU lacks fp64");
+        Operation op(device);
+        auto* x = op.allocate<double>(image.size());
+        auto* output = op.allocate<double>(image.size());
+        fault_point();
+        op.queue().memcpy(x, image.data(), image.size_bytes());
+        fault_point();
+        stencil(op.queue(), x, output, rows, cols, grid_groups(image.size()));
+        fault_point();
+        op.queue().memcpy(value.data(), output, image.size_bytes());
         op.finish();
         return value;
     } catch (const sycl::exception& error) {

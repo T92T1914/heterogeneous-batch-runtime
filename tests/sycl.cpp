@@ -30,6 +30,12 @@ int without_gpu() {
     catch (const std::overflow_error&) {}
     if (hbr::sycl_masked_reduce({}, {}) != 0.0) return 1;
     if (!needs_device([&] { (void)hbr::sycl_masked_reduce(three, std::vector<std::uint8_t>(3, 1)); })) return 1;
+    try { (void)hbr::sycl_stencil3x3(three, 2, 2); return 1; } catch (const std::invalid_argument&) {}
+    try { (void)hbr::sycl_stencil3x3({}, std::numeric_limits<std::size_t>::max(), 2); return 1; } catch (const std::overflow_error&) {}
+    try { (void)hbr::sycl_stencil3x3(std::vector<double>{std::numeric_limits<double>::quiet_NaN()}, 1, 1); return 1; }
+    catch (const std::invalid_argument&) {}
+    if (!hbr::sycl_stencil3x3({}, 0, 4).empty()) return 1;
+    if (!needs_device([&] { (void)hbr::sycl_stencil3x3(three, 1, 3); })) return 1;
     try { (void)hbr::sycl_device(); return 1; }
     catch (const std::runtime_error& error) { std::cout << "rejected as expected: " << error.what() << '\n'; }
     return 0;
