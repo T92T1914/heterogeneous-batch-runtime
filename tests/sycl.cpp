@@ -5,12 +5,29 @@
 #include <iostream>
 #include <stdexcept>
 #include <string>
+#include <vector>
+// With no GPU offered, validation still runs first and an empty image needs no device.
+// Any other call must fail visibly as std::runtime_error.
+int without_gpu() {
+    const std::vector<std::uint8_t> nine(9, 1);
+    try { (void)hbr::sycl_tile_histogram(nine, 3, 3, 0, 1); return 1; } catch (const std::invalid_argument&) {}
+    try { (void)hbr::sycl_tile_histogram(nine, 3, 4, 1, 1); return 1; } catch (const std::invalid_argument&) {}
+    if (!hbr::sycl_tile_histogram({}, 0, 5, 2, 2).empty()) return 1;
+    try { (void)hbr::sycl_tile_histogram(nine, 3, 3, 2, 2); return 1; } catch (const std::runtime_error&) {}
+    try { (void)hbr::sycl_device(); return 1; }
+    catch (const std::runtime_error& error) { std::cout << "rejected as expected: " << error.what() << '\n'; }
+    return 0;
+}
 int main(int argc, char** argv) {
     const bool expect_no_gpu = argc == 2 && std::string(argv[1]) == "--expect-no-gpu";
     if (argc > 1 && !expect_no_gpu) { std::cerr << "usage: hbr_sycl_tests [--expect-no-gpu]\n"; return 2; }
     try {
+        if (expect_no_gpu) {
+            const int status = without_gpu();
+            if (status) std::cerr << "a call succeeded or failed with the wrong type although no GPU was offered\n";
+            return status;
+        }
         const auto device = hbr::sycl_device();
-        if (expect_no_gpu) { std::cerr << "selected " << device.name << " although no GPU was offered\n"; return 1; }
         std::cout << "backend " << device.backend << '\n' << "platform " << device.platform << '\n'
                   << "device " << device.name << '\n' << "driver " << device.driver_version << '\n'
                   << "global memory bytes " << device.global_memory << '\n'
@@ -20,13 +37,9 @@ int main(int argc, char** argv) {
         if (device.backend.empty() || device.platform.empty() || device.name.empty() || !device.global_memory || !device.local_memory)
             throw std::runtime_error("SYCL device description incomplete");
         std::cout << "SYCL device discovery passed\n";
-    } catch (const std::runtime_error& error) {
-        if (expect_no_gpu) { std::cout << "rejected as expected: " << error.what() << '\n'; return 0; }
-        std::cerr << error.what() << '\n';
-        return 1;
     } catch (const std::exception& error) {
-        // Anything other than std::runtime_error breaks the interface promise, even when no GPU was expected.
-        std::cerr << "unexpected exception type: " << error.what() << '\n';
+        // Anything that escapes here is a failure, including an exception of the wrong type.
+        std::cerr << error.what() << '\n';
         return 1;
     }
 }
