@@ -7,8 +7,10 @@ jobs:
     # Hosted runners have no GPU. This job builds the SYCL backend with the DPC++ 7.2.0
     # release and the CUDA 13.2.2 device tools for the CUDA target sm_89, the same files as
     # the local WSL build, then runs the tests that need no GPU and the installed discovery
-    # check. It executes no SYCL work on a device, so it shows that the source builds and
-    # links, not how it behaves on one.
+    # check. A second build adds the CUDA backend for the SYCL and CUDA timing comparison,
+    # runs its tests that need no GPU and checks the comparison's plan against the protocol.
+    # It executes no SYCL or CUDA work on a device,
+    # so it shows that the source builds and links, not how it behaves on one.
     runs-on: ubuntu-24.04
     steps:
       - uses: actions/checkout@fbc6f3992d24b796d5a048ff273f7fcc4a7b6c09
@@ -38,6 +40,9 @@ jobs:
           cuda_cccl/linux-x86_64/cuda_cccl-linux-x86_64-13.2.86-archive.tar.xz a14f52d5cc8a00a22bccd6c0ab6b1427c7dde7e8251adf321e768a7fc47bb2a5
           libnvvm/linux-x86_64/libnvvm-linux-x86_64-13.2.86-archive.tar.xz 029fc2a43904a2208a83dfd5834c4c343394d1117279f849863ae94208a88b8a
           ARCHIVES
+          # nvcc looks for its libraries in lib64, as the full installer lays them out, and
+          # the archives put them in lib.
+          ln -s lib "$RUNNER_TEMP/cuda/lib64"
           echo "DPCPP=$RUNNER_TEMP/dpcpp" >> "$GITHUB_ENV"
           echo "CUDA_ROOT=$RUNNER_TEMP/cuda" >> "$GITHUB_ENV"
           echo "LD_LIBRARY_PATH=$RUNNER_TEMP/dpcpp/lib${LD_LIBRARY_PATH:+:$LD_LIBRARY_PATH}" >> "$GITHUB_ENV"
@@ -58,3 +63,15 @@ jobs:
         run: |
           cmake --install build/sycl --prefix installed
           python tests/package_components.py --prefix installed --sycl-built
+      - name: Build both backends together for the timing comparison, with g++ as the host compiler for nvcc 13.2.86
+        run: |
+          cmake -S . -B build/compare -DCMAKE_BUILD_TYPE=Release -DCMAKE_CXX_COMPILER="$DPCPP/bin/clang++" \
+            -DHBR_SYCL=ON "-DHBR_SYCL_FLAGS=--cuda-path=$CUDA_ROOT" -DHBR_CUDA=ON -DCMAKE_CUDA_COMPILER="$CUDA_ROOT/bin/nvcc" \
+            -DCMAKE_CUDA_HOST_COMPILER=g++ -DCMAKE_CUDA_ARCHITECTURES=89
+          cmake --build build/compare --parallel 2
+      - name: Tests of the combined build that need no GPU
+        run: ctest --test-dir build/compare --output-on-failure -E '^(cuda|sycl)_'
+      - name: Comparison plan equals its protocol, without touching a device
+        run: |
+          ./build/compare/hbr_sycl_cuda_bench --plan > sycl-cuda-plan.json
+          python tools/check_sycl_cuda_plan.py sycl-cuda-plan.json

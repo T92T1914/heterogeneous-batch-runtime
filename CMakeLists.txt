@@ -111,6 +111,12 @@ if(HBR_SYCL)
   target_compile_options(hbr_sycl PRIVATE ${HBR_SYCL_OPTIONS} -Wall -Wextra -ffp-contract=off)
   target_link_options(hbr_sycl PRIVATE ${HBR_SYCL_OPTIONS})
   install(TARGETS hbr_sycl EXPORT hbrTargets ARCHIVE DESTINATION lib LIBRARY DESTINATION lib RUNTIME DESTINATION bin)
+  if(HBR_CUDA)
+    # The timing comparison calls both backends in one process. Configure it with the DPC++
+    # clang++ as the C++ compiler and set CMAKE_CUDA_HOST_COMPILER for nvcc.
+    add_executable(hbr_sycl_cuda_bench tools/sycl_cuda_benchmark.cpp)
+    target_link_libraries(hbr_sycl_cuda_bench PRIVATE hbr hbr_cuda hbr_sycl)
+  endif()
   if(BUILD_TESTING)
     # Tests whose names start with sycl_ need a SYCL GPU. host_sycl_selection hides every
     # GPU and expects a visible rejection, so it runs on any host.
