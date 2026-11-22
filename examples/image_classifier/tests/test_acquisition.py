@@ -93,3 +93,100 @@ def test_acquire_verified_response_and_existing_retry_do_not_redownload(
     assert len(calls)==1
     assert not list(destination.glob('.acquire-*'))
     assert 'fixture.onnx' in capsys.readouterr().out
+
+def _manifest_with_sources(tmp_path,monkeypatch,expected,sources):
+    record={'name':'fixture.h','url':sources[0],'fallback_urls':sources[1:],
+            'bytes':len(expected),'sha256':sha256(expected).hexdigest()}
+    model={'name':'fixture.onnx','url':'https://example.invalid/model',
+           'bytes':len(expected),'sha256':sha256(expected).hexdigest()}
+    (tmp_path/'artifacts.json').write_text(json.dumps({'model':model,'headers':[record]}))
+    monkeypatch.setattr(module,'__file__',str(tmp_path/'acquire.py'))
+    destination=tmp_path/'artifacts'
+    destination.mkdir()
+    (destination/'fixture.onnx').write_bytes(expected)
+    return destination
+
+def _opener(calls,answers):
+    class Response:
+        def __init__(self,body):self.body=body
+        def __enter__(self):return self
+        def __exit__(self,*args):return False
+        def read(self,limit):return self.body[:limit]
+    def open_response(request,timeout):
+        calls.append(request.full_url)
+        answer=answers[request.full_url]
+        if isinstance(answer,Exception):raise answer
+        return Response(answer)
+    return open_response
+
+def test_unreachable_source_falls_back_to_the_next_without_logging_urls(
+        tmp_path,monkeypatch,capsys):
+    expected=b'fixture header'
+    primary='https://example.invalid/moved?private=signed-query'
+    archive='https://archive.example.invalid/sha256/raw'
+    destination=_manifest_with_sources(tmp_path,monkeypatch,expected,[primary,archive])
+    calls=[]
+    gone=module.urllib.error.HTTPError(primary,404,'Not Found',{},None)
+    monkeypatch.setattr(module.urllib.request,'urlopen',_opener(calls,{primary:gone,archive:expected}))
+    module.acquire(destination)
+    assert calls==[primary,archive]
+    assert (destination/'sdk'/'include'/'fixture.h').read_bytes()==expected
+    logged=capsys.readouterr().out
+    assert 'Source 1 of 2 for fixture.h failed (HTTP 404). Trying source 2.' in logged
+    assert 'https://' not in logged and 'signed-query' not in logged
+
+def test_response_broken_during_read_falls_back_and_drops_partial_bytes(tmp_path,monkeypatch):
+    expected=b'fixture header'
+    primary='https://example.invalid/header'
+    archive='https://archive.example.invalid/sha256/raw'
+    destination=_manifest_with_sources(tmp_path,monkeypatch,expected,[primary,archive])
+    calls=[]
+    class Broken:
+        def __enter__(self):return self
+        def __exit__(self,*args):return False
+        def read(self,limit):raise ConnectionResetError('reset during body')
+    opener=_opener(calls,{archive:expected})
+    def open_response(request,timeout):
+        if request.full_url==primary:
+            calls.append(primary)
+            return Broken()
+        return opener(request,timeout)
+    monkeypatch.setattr(module.urllib.request,'urlopen',open_response)
+    module.acquire(destination)
+    assert calls==[primary,archive]
+    assert (destination/'sdk'/'include'/'fixture.h').read_bytes()==expected
+
+def test_identity_failure_is_not_retried_from_another_source(tmp_path,monkeypatch):
+    expected=b'fixture header'
+    primary='https://example.invalid/header'
+    archive='https://archive.example.invalid/sha256/raw'
+    destination=_manifest_with_sources(tmp_path,monkeypatch,expected,[primary,archive])
+    calls=[]
+    monkeypatch.setattr(module.urllib.request,'urlopen',
+                        _opener(calls,{primary:b'fixture HEADER',archive:expected}))
+    with pytest.raises(ValueError,match='failed size or identity validation'):
+        module.acquire(destination)
+    assert calls==[primary]
+    assert not (destination/'sdk'/'include'/'fixture.h').exists()
+
+def test_every_source_unreachable_publishes_nothing(tmp_path,monkeypatch):
+    expected=b'fixture header'
+    primary='https://example.invalid/header'
+    archive='https://archive.example.invalid/sha256/raw'
+    destination=_manifest_with_sources(tmp_path,monkeypatch,expected,[primary,archive])
+    calls=[]
+    answers={primary:module.urllib.error.HTTPError(primary,404,'Not Found',{},None),
+             archive:module.urllib.error.URLError('timed out')}
+    monkeypatch.setattr(module.urllib.request,'urlopen',_opener(calls,answers))
+    with pytest.raises(ConnectionError,match='no source answered for fixture.h: HTTP 404, URLError') as failure:
+        module.acquire(destination)
+    assert 'https://' not in str(failure.value)
+    assert calls==[primary,archive]
+    assert not (destination/'sdk'/'include'/'fixture.h').exists()
+    assert not list((destination/'sdk'/'include').glob('.acquire-*'))
+
+def test_manifest_headers_name_an_archive_source_keyed_by_their_own_hash():
+    manifest=json.loads((Path(__file__).parents[1]/'artifacts.json').read_text())
+    for record in manifest['headers']:
+        assert record['fallback_urls']==[
+            'https://archive.softwareheritage.org/api/1/content/sha256:'+record['sha256']+'/raw/']

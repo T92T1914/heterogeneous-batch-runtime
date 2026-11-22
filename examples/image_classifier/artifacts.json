@@ -19,7 +19,10 @@
       "sha256": "e035e30c27e74c8c00e0f483e576e12b4067d17f12e9237fd6eff8b346c9b381",
       "bytes": 401136,
       "license": "MIT",
-      "source_tag": "v1.30.0"
+      "source_tag": "v1.30.0",
+      "fallback_urls": [
+        "https://archive.softwareheritage.org/api/1/content/sha256:e035e30c27e74c8c00e0f483e576e12b4067d17f12e9237fd6eff8b346c9b381/raw/"
+      ]
     },
     {
       "name": "onnxruntime_cxx_api.h",
@@ -27,7 +30,10 @@
       "sha256": "a738d39d35473e6986f7f4e444c49e5c17add5cc4e62a7f20c1200d7688a7db0",
       "bytes": 169936,
       "license": "MIT",
-      "source_tag": "v1.30.0"
+      "source_tag": "v1.30.0",
+      "fallback_urls": [
+        "https://archive.softwareheritage.org/api/1/content/sha256:a738d39d35473e6986f7f4e444c49e5c17add5cc4e62a7f20c1200d7688a7db0/raw/"
+      ]
     },
     {
       "name": "onnxruntime_cxx_inline.h",
@@ -35,7 +41,10 @@
       "sha256": "05f5c93a6b10f9e364b694749ff708c3e2a4dd3300af2a7ce20e57fc7b14cda4",
       "bytes": 158088,
       "license": "MIT",
-      "source_tag": "v1.30.0"
+      "source_tag": "v1.30.0",
+      "fallback_urls": [
+        "https://archive.softwareheritage.org/api/1/content/sha256:05f5c93a6b10f9e364b694749ff708c3e2a4dd3300af2a7ce20e57fc7b14cda4/raw/"
+      ]
     },
     {
       "name": "onnxruntime_float16.h",
@@ -43,7 +52,10 @@
       "sha256": "88b242845d25981633a0bbd1c148e273cf8bfb016ea3f57c4af41a06530f72b0",
       "bytes": 17991,
       "license": "MIT",
-      "source_tag": "v1.30.0"
+      "source_tag": "v1.30.0",
+      "fallback_urls": [
+        "https://archive.softwareheritage.org/api/1/content/sha256:88b242845d25981633a0bbd1c148e273cf8bfb016ea3f57c4af41a06530f72b0/raw/"
+      ]
     },
     {
       "name": "onnxruntime_error_code.h",
@@ -51,7 +63,10 @@
       "sha256": "5ce3b054e798eced8d14f5b86e98692fd33470463f96194ce0700a2d53dd8721",
       "bytes": 2775,
       "license": "MIT",
-      "source_tag": "v1.30.0"
+      "source_tag": "v1.30.0",
+      "fallback_urls": [
+        "https://archive.softwareheritage.org/api/1/content/sha256:5ce3b054e798eced8d14f5b86e98692fd33470463f96194ce0700a2d53dd8721/raw/"
+      ]
     },
     {
       "name": "onnxruntime_ep_c_api.h",
@@ -59,7 +74,10 @@
       "sha256": "e6c986c9e98583f8113b2c6bc3864814883b806d501cf24da4d239c45753e235",
       "bytes": 156950,
       "license": "MIT",
-      "source_tag": "v1.30.0"
+      "source_tag": "v1.30.0",
+      "fallback_urls": [
+        "https://archive.softwareheritage.org/api/1/content/sha256:e6c986c9e98583f8113b2c6bc3864814883b806d501cf24da4d239c45753e235/raw/"
+      ]
     }
   ]
 }
