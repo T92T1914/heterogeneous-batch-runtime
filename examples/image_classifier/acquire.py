@@ -34,9 +34,11 @@ def publish(target, data, expected_hash):
 def fetch(record):
     """Read at most one byte past the pinned size from the first source that answers.
 
-    A source that cannot be reached passes the request to the next one. Bytes
-    that do arrive are returned as they are, so an identity failure stops
-    acquisition and is never retried from another source.
+    A source that cannot be reached, or whose response breaks off with a
+    network error before the read completes, passes the request to the next
+    one. Its partial bytes are dropped. Bytes that do arrive in full are
+    returned as they are, so an identity failure stops acquisition and is
+    never retried from another source.
     """
     sources=[record['url'],*record.get('fallback_urls',[])]
     failures=[]

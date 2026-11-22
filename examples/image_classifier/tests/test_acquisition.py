@@ -135,6 +135,27 @@ def test_unreachable_source_falls_back_to_the_next_without_logging_urls(
     assert 'Source 1 of 2 for fixture.h failed (HTTP 404). Trying source 2.' in logged
     assert 'https://' not in logged and 'signed-query' not in logged
 
+def test_response_broken_during_read_falls_back_and_drops_partial_bytes(tmp_path,monkeypatch):
+    expected=b'fixture header'
+    primary='https://example.invalid/header'
+    archive='https://archive.example.invalid/sha256/raw'
+    destination=_manifest_with_sources(tmp_path,monkeypatch,expected,[primary,archive])
+    calls=[]
+    class Broken:
+        def __enter__(self):return self
+        def __exit__(self,*args):return False
+        def read(self,limit):raise ConnectionResetError('reset during body')
+    opener=_opener(calls,{archive:expected})
+    def open_response(request,timeout):
+        if request.full_url==primary:
+            calls.append(primary)
+            return Broken()
+        return opener(request,timeout)
+    monkeypatch.setattr(module.urllib.request,'urlopen',open_response)
+    module.acquire(destination)
+    assert calls==[primary,archive]
+    assert (destination/'sdk'/'include'/'fixture.h').read_bytes()==expected
+
 def test_identity_failure_is_not_retried_from_another_source(tmp_path,monkeypatch):
     expected=b'fixture header'
     primary='https://example.invalid/header'
