@@ -4,7 +4,8 @@ The runner itself runs on Windows, where git can read the worktree. It starts th
 Linux binary with `wsl -d <distro> --exec` and reads the binary and the CMake records
 of its build through the distro's \\\\wsl.localhost share. Before anything runs, it
 requires that the build was configured from this checkout and that ninja has no work
-left in it, so the binary matches the committed source. The receipt names the source,
+left in it, so the binary matches the committed source. The receipt records that the
+build came from this checkout but not the checkout's path, which stays private. It names the source,
 the protocol, the binary, the command, the compilers, the WSL kernel and the host
 compiler for nvcc, and records the GPU state before and after the run and the idle
 readings the benchmark prints. It records no process list, because the measuring
@@ -122,7 +123,10 @@ def collect(command, binary, out_dir, build_dir, desktop_load, identity=source_i
     if build_state is not None:
         state = build_state()
         check_build(state)
-        receipt.update(state)
+        # The check above compares the full path. The receipt keeps only its outcome, because
+        # the path of the checkout on the measuring computer is private and the receipt is not.
+        state = {key: value for key, value in state.items() if key != "build_source_dir"}
+        receipt.update(state, build_source="this checkout")
     plan = subprocess.run([*command, "--plan"], capture_output=True, text=True, timeout=120)
     protocol = json.loads(PROTOCOL.read_text(encoding="utf-8"))
     if plan.returncode != 0 or check_sycl_cuda_plan.differences(json.loads(plan.stdout), protocol):

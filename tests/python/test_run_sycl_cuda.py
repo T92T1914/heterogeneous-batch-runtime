@@ -223,6 +223,10 @@ def test_a_refused_build_runs_nothing_and_an_accepted_one_is_recorded(tmp_path, 
                              gpu=lambda: GPU, build_state=lambda: dict(BUILD))
     assert receipt["status"] == "passed" and receipt["cuda_host_compiler"] == "/usr/bin/g++: g++ 13.3.0"
     assert receipt["build_dry_run"] == "ninja: no work to do." and receipt["wsl_kernel"] == "6.0.0-stand-in"
+    # The check saw the checkout's path, and the receipt keeps only that the build came from it.
+    assert "build_source_dir" not in receipt and receipt["build_source"] == "this checkout"
+    written = (tmp_path / "evidence" / "sycl-cuda-execution.json").read_text(encoding="utf-8")
+    assert "/mnt/" not in written and BUILD["build_source_dir"] not in written
 
 
 def test_source_identity_names_the_protocol_commit():
