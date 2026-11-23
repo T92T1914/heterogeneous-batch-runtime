@@ -30,6 +30,8 @@ HEADER = ["side", "workload", "backend", "iteration", "order", "host_ms", *DEVIC
 SEQUENCE_HEADER = HEADER[:5]
 # What the benchmark prints to stderr for each idle reading, which the runner keeps.
 IDLE = re.compile(r"GPU idle (before|after) (\d+): utilization (\d+) percent, memory (\d+) MiB")
+# The idle readings a complete run prints, in order: before each side and after the last.
+IDLE_POINTS = [f"before {side}" for side in SIDES] + [f"after {SIDES[-1]}"]
 
 
 def tiles(side):

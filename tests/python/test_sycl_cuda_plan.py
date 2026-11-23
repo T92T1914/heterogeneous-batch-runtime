@@ -130,7 +130,10 @@ def test_main_checks_the_run_order_when_given_one(tmp_path, capsys):
 def test_the_benchmark_and_the_report_share_one_order_formula():
     text = source("tools/sycl_cuda_benchmark.cpp")
     assert "return {(iteration+condition+order/2)%3, (order%2+iteration%2)%2};" in text
-    assert "const auto [workload,backend]=slot(condition,iteration,order);" in text
+    # Once in --sequence and once in the --run loop, so neither can drift from the other.
+    assert text.count("const auto [workload,backend]=slot(condition,iteration,order);") == 2
+    run = text[text.index('std::cout<<"side,workload,backend,iteration,order,host_ms'):]
+    assert "const auto [workload,backend]=slot(condition,iteration,order);" in run
     report = source("tools/report_sycl_cuda.py")
     assert "WORKLOADS[(iteration + condition + order // 2) % len(WORKLOADS)]" in report
     assert "BACKENDS[(order + iteration) % len(BACKENDS)]" in report
@@ -144,3 +147,14 @@ def test_the_gpu_reading_comes_before_the_clock_and_the_uuid_is_not_printed():
     assert '"nvmlDeviceGetHandleByUUID"' in text
     assert "std::cerr<<uuid" not in text and "<<monitor" not in text
     assert "constexpr auto idle_pause=std::chrono::seconds(2);" in text
+
+
+def test_the_idle_reading_line_is_the_one_the_report_parses():
+    text = source("tools/sycl_cuda_benchmark.cpp")
+    assert ('std::cerr<<"GPU idle "<<point<<": utilization "<<r.util_percent<<" percent, memory "'
+            '<<r.memory_mib<<" MiB\\n";') in text
+    assert 'idle_reading(monitor,"before "+std::to_string(side));' in text
+    assert 'idle_reading(monitor,"after "+std::to_string(sides.back()));' in text
+    line = "GPU idle before 1024: utilization 7 percent, memory 6648 MiB"
+    assert check.report_sycl_cuda.IDLE.fullmatch(line)
+    assert check.report_sycl_cuda.IDLE_POINTS == ["before 32", "before 256", "before 1024", "after 1024"]

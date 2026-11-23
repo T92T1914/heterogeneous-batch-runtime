@@ -153,6 +153,9 @@ def collect(command, binary, out_dir, build_dir, desktop_load, identity=source_i
     if status == "passed":
         try:
             report_sycl_cuda.validate(list(csv.DictReader(stdout.decode("utf-8-sig").splitlines())))
+            points = [reading["point"] for reading in receipt["gpu_idle_readings"]]
+            if points != report_sycl_cuda.IDLE_POINTS:
+                raise ValueError(f"idle readings {points}, expected {report_sycl_cuda.IDLE_POINTS}")
         except (ValueError, UnicodeDecodeError) as error:
             status, receipt["validation_error"] = "invalid", str(error)
     if status == "passed" and not (receipt["source_unchanged"] and receipt["desktop_load_confirmed"]):

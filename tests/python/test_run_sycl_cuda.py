@@ -34,10 +34,12 @@ def same_identity(check_clean=True):
 
 
 IDLE = ["GPU idle before 32: utilization 21 percent, memory 6640 MiB",
+        "GPU idle before 256: utilization 19 percent, memory 6644 MiB",
+        "GPU idle before 1024: utilization 18 percent, memory 6648 MiB",
         "GPU idle after 1024: utilization 17 percent, memory 6650 MiB"]
 
 
-def stand_in(tmp_path, rows, exit_code=0, plan=PLAN, error=None, sleep=0, sequence=None):
+def stand_in(tmp_path, rows, exit_code=0, plan=PLAN, error=None, sleep=0, sequence=None, idle=IDLE):
     """A script inside a CMake build tree that answers --plan, --sequence and --run like the benchmark, without a device."""
     build = tmp_path / "build"
     version = build / "CMakeFiles" / "3.28.3"
@@ -62,11 +64,11 @@ def stand_in(tmp_path, rows, exit_code=0, plan=PLAN, error=None, sleep=0, sequen
         f"if sys.argv[1] == '--plan':\n    print({json.dumps(json.dumps(plan))})\n    sys.exit(0)\n"
         f"if sys.argv[1] == '--sequence':\n    sys.stdout.write(open({str(order)!r}, newline='').read())\n    sys.exit(0)\n"
         "print('CUDA: Stand-in GPU SM 8.9', file=sys.stderr, flush=True)\n"
-        f"print({IDLE[0]!r}, file=sys.stderr, flush=True)\n"
-        f"sys.stdout.write(open({str(data)!r}, newline='').read())\n"
+        + "".join(f"print({line!r}, file=sys.stderr, flush=True)\n" for line in idle[:-1])
+        + f"sys.stdout.write(open({str(data)!r}, newline='').read())\n"
         "sys.stdout.flush()\n"
         f"time.sleep({sleep})\n"
-        + (f"print({IDLE[1]!r}, file=sys.stderr)\n" if not error else "")
+        + (f"print({idle[-1]!r}, file=sys.stderr)\n" if idle and not error else "")
         + (f"print({error!r}, file=sys.stderr)\n" if error else "")
         + f"sys.exit({exit_code})\n", encoding="utf-8")
     return [sys.executable, str(script)], script, build
@@ -92,8 +94,8 @@ def test_a_valid_run_writes_its_samples_and_a_passed_receipt(tmp_path, rows):
     assert receipt["command"][0] == sys.executable and receipt["command"][1].endswith("stand_in.py")
     assert receipt["schema_version"] == 2
     assert receipt["stderr"] == ["CUDA: Stand-in GPU SM 8.9", *IDLE]
-    assert [r["point"] for r in receipt["gpu_idle_readings"]] == ["before 32", "after 1024"]
-    assert receipt["gpu_idle_readings"][1] == {"point": "after 1024", "gpu_util_percent": 17, "gpu_memory_mib": 6650}
+    assert [r["point"] for r in receipt["gpu_idle_readings"]] == ["before 32", "before 256", "before 1024", "after 1024"]
+    assert receipt["gpu_idle_readings"][3] == {"point": "after 1024", "gpu_util_percent": 17, "gpu_memory_mib": 6650}
     assert receipt["gpu_before"] == receipt["gpu_after"] == GPU
     assert receipt["source_unchanged"] is True and receipt["desktop_load_confirmed"] is True
     assert json.loads((out / "sycl-cuda-execution.json").read_text(encoding="utf-8")) == receipt
@@ -111,9 +113,16 @@ def test_rows_that_break_the_protocol_are_kept_and_marked_invalid(tmp_path, rows
 def test_a_failed_run_keeps_its_partial_samples_and_error_text(tmp_path, rows):
     receipt, out = collect(tmp_path, rows[:10], exit_code=1, error="sycl histogram mismatch")
     assert receipt["status"] == "failed" and receipt["exit_code"] == 1
-    assert receipt["stderr"] == ["CUDA: Stand-in GPU SM 8.9", IDLE[0], "sycl histogram mismatch"]
-    assert [r["point"] for r in receipt["gpu_idle_readings"]] == ["before 32"]
+    assert receipt["stderr"] == ["CUDA: Stand-in GPU SM 8.9", *IDLE[:3], "sycl histogram mismatch"]
+    assert [r["point"] for r in receipt["gpu_idle_readings"]] == ["before 32", "before 256", "before 1024"]
     assert (out / "sycl-cuda.csv").read_bytes().count(b"\n") == 11
+
+
+@pytest.mark.parametrize("idle", [IDLE[:3], IDLE[1:], [IDLE[1], IDLE[0], *IDLE[2:]], []])
+def test_a_run_whose_idle_readings_are_missing_or_moved_is_invalid(tmp_path, rows, idle):
+    receipt, _ = collect(tmp_path, rows, idle=idle)
+    assert receipt["status"] == "invalid" and receipt["exit_code"] == 0
+    assert receipt["validation_error"].startswith("idle readings")
 
 
 def test_a_timed_out_run_is_kept_with_the_rows_it_printed(tmp_path, rows, monkeypatch):
