@@ -9,10 +9,17 @@
 #include <cstring>
 #include <iomanip>
 #include <iostream>
+#include <sstream>
 #include <span>
 #include <stdexcept>
 #include <string>
+#include <thread>
+#include <utility>
 #include <vector>
+#if __has_include(<dlfcn.h>)
+#include <dlfcn.h>
+#define HBR_HAS_DLOPEN 1
+#endif
 
 // The complete CUDA and SYCL calls of the three workloads, timed at one host boundary and
 // interleaved in one process. Both libraries are used unchanged through their public calls,
@@ -21,14 +28,95 @@ using Clock=std::chrono::steady_clock;
 constexpr std::array<unsigned,3> sides{32,256,1024};
 constexpr std::array<const char*,3> workloads{"masked_reduce","tile_histogram","stencil3x3"};
 constexpr std::array<const char*,2> backends{"cuda","sycl"};
-constexpr int samples=25, warmups=2;
+constexpr int samples=121, warmups=2;
 constexpr std::size_t tile=64;
 constexpr int combinations=static_cast<int>(workloads.size()*backends.size());
+constexpr auto idle_pause=std::chrono::seconds(2);
 
 void checked(cudaError_t status) {
     if (status!=cudaSuccess) throw std::runtime_error(std::string("CUDA: ")+cudaGetErrorString(status));
 }
 double elapsed(Clock::time_point start) { return std::chrono::duration<double,std::milli>(Clock::now()-start).count(); }
+
+// The workload and backend at run position `order` of iteration `iteration` for the side at
+// index `condition`. Each iteration takes the three workloads in turn, rotated by
+// iteration+condition, and runs each one as a CUDA call and a SYCL call back to back. CUDA
+// goes first in even iterations and SYCL in odd ones, so over any six iterations each
+// workload holds each place in the round with each backend first exactly once.
+std::pair<int,int> slot(int condition,int iteration,int order) {
+    return {(iteration+condition+order/2)%3, (order%2+iteration%2)%2};
+}
+
+// The NVIDIA management library, opened at run time so that the build needs no NVML header
+// or stub library. The declarations follow NVML's public C API: nvmlUtilization_t, the
+// version 1 nvmlMemory_t, and nvmlReturn_t and nvmlDevice_t as an int and a pointer.
+class GpuMonitor {
+public:
+    struct Reading { unsigned util_percent; unsigned long long memory_mib; };
+    explicit GpuMonitor(const std::string& uuid) {
+#ifdef HBR_HAS_DLOPEN
+        library_=dlopen("libnvidia-ml.so.1",RTLD_NOW|RTLD_LOCAL);
+        if (!library_) throw std::runtime_error("NVML: libnvidia-ml.so.1 could not be opened");
+        try {
+            const auto init=symbol<int(*)()>("nvmlInit_v2");
+            const auto shutdown=symbol<int(*)()>("nvmlShutdown");
+            const auto by_uuid=symbol<int(*)(const char*,void**)>("nvmlDeviceGetHandleByUUID");
+            error_=symbol<const char*(*)(int)>("nvmlErrorString");
+            utilization_=symbol<int(*)(void*,Utilization*)>("nvmlDeviceGetUtilizationRates");
+            memory_=symbol<int(*)(void*,Memory*)>("nvmlDeviceGetMemoryInfo");
+            check(init(),"nvmlInit_v2");
+            shutdown_=shutdown;
+            check(by_uuid(uuid.c_str(),&device_),"nvmlDeviceGetHandleByUUID");
+        } catch (...) { close(); throw; }
+#else
+        (void)uuid;
+        throw std::runtime_error("NVML: this platform has no dlopen, so the GPU cannot be read");
+#endif
+    }
+    GpuMonitor(const GpuMonitor&)=delete;
+    GpuMonitor& operator=(const GpuMonitor&)=delete;
+    ~GpuMonitor() { close(); }
+    // Utilization is the percent of the last NVML sample period, between 1/6 and 1 second,
+    // in which any kernel of any process ran. Memory is what all processes hold on the card.
+    Reading read() const {
+        Utilization u{}; Memory m{};
+        check(utilization_(device_,&u),"nvmlDeviceGetUtilizationRates");
+        check(memory_(device_,&m),"nvmlDeviceGetMemoryInfo");
+        return {u.gpu, m.used/(1024ull*1024ull)};
+    }
+private:
+    struct Utilization { unsigned int gpu, memory; };
+    struct Memory { unsigned long long total, free, used; };
+    template<class F> F symbol(const char* name) const {
+#ifdef HBR_HAS_DLOPEN
+        if (auto* found=dlsym(library_,name)) return reinterpret_cast<F>(found);
+#endif
+        throw std::runtime_error(std::string("NVML: no symbol ")+name);
+    }
+    void check(int status,const char* call) const {
+        if (status) throw std::runtime_error(std::string("NVML: ")+call+": "+(error_ ? error_(status) : std::to_string(status)));
+    }
+    void close() {
+        if (shutdown_) shutdown_();
+#ifdef HBR_HAS_DLOPEN
+        if (library_) dlclose(library_);
+#endif
+        shutdown_=nullptr; library_=nullptr;
+    }
+    void* library_=nullptr; void* device_=nullptr;
+    int (*shutdown_)()=nullptr;
+    int (*utilization_)(void*,Utilization*)=nullptr;
+    int (*memory_)(void*,Memory*)=nullptr;
+    const char* (*error_)(int)=nullptr;
+};
+
+// A reading after a pause long enough to cover a whole NVML sample period, so this process
+// adds no kernel time to it. It goes to stderr, which the runner keeps in the receipt.
+void idle_reading(const GpuMonitor& monitor,const std::string& point) {
+    std::this_thread::sleep_for(idle_pause);
+    const auto r=monitor.read();
+    std::cerr<<"GPU idle "<<point<<": utilization "<<r.util_percent<<" percent, memory "<<r.memory_mib<<" MiB\n";
+}
 
 struct Inputs {
     std::span<const double> values;
@@ -85,12 +173,25 @@ bool same_bits(const Sample& a,const Sample& b) {
     const auto x=a.values(), y=b.values();
     return x.size()==y.size() && !std::memcmp(x.data(),y.data(),x.size_bytes());
 }
-void row(unsigned side,int workload,int backend,int iteration,int order,const Sample& s,std::size_t pixels) {
+void row(unsigned side,int workload,int backend,int iteration,int order,const Sample& s,std::size_t pixels,
+         const GpuMonitor::Reading& gpu) {
     std::cout<<side<<','<<workloads[workload]<<','<<backends[backend]<<','<<iteration<<','<<order<<','<<s.host_ms<<',';
     // A SYCL row leaves the device fields empty, so no zero reads as a measurement.
     if (s.device_timing) std::cout<<s.timing.upload_ms<<','<<s.timing.kernel_ms<<','<<s.timing.download_ms<<',';
     else std::cout<<",,,";
-    std::cout<<checksum(s)<<','<<upload_bytes(workload,pixels)<<','<<download_bytes(workload,side)<<'\n';
+    std::cout<<checksum(s)<<','<<upload_bytes(workload,pixels)<<','<<download_bytes(workload,side)<<','
+        <<gpu.util_percent<<','<<gpu.memory_mib<<'\n';
+}
+// Every run row's side, workload, backend, iteration and order, in the order --run prints
+// them, without touching a device, so the hosted job can compare it with the report's.
+void sequence() {
+    std::cout<<"side,workload,backend,iteration,order\n";
+    for (int condition=0;condition<static_cast<int>(sides.size());++condition)
+        for (int iteration=0;iteration<samples;++iteration)
+            for (int order=0;order<combinations;++order) {
+                const auto [workload,backend]=slot(condition,iteration,order);
+                std::cout<<sides[condition]<<','<<workloads[workload]<<','<<backends[backend]<<','<<iteration<<','<<order<<'\n';
+            }
 }
 void plan() {
     std::cout<<"{\"square_sides\": [";
@@ -149,14 +250,26 @@ private:
 // Device discovery for both backends before any recorded call. cudaFree(nullptr) creates
 // the CUDA primary context. The SYCL query selects the same GPU the calls select. On a host
 // with two different cards the backends could pick different ones, so differing names stop
-// the benchmark. Two cards of the same model would still pass this check.
-void discover() {
+// the benchmark. Two cards of the same model would still pass this check. Returns the UUID
+// of the CUDA device in NVML's form, so that NVML reads the card the CUDA calls use.
+std::string discover() {
     const auto cuda=hbr::cuda_device();
     checked(cudaFree(nullptr));
     const auto sycl=hbr::sycl_device();
     std::cerr<<"CUDA: "<<cuda.name<<" SM "<<cuda.major<<'.'<<cuda.minor<<'\n'
         <<"SYCL: "<<sycl.backend<<' '<<sycl.name<<" driver "<<sycl.driver_version<<'\n';
     if (cuda.name!=sycl.name) throw std::runtime_error("CUDA and SYCL report different GPUs");
+    int device=0;
+    checked(cudaGetDevice(&device));
+    cudaDeviceProp prop{};
+    checked(cudaGetDeviceProperties(&prop,device));
+    std::ostringstream uuid;
+    uuid<<"GPU-"<<std::hex<<std::setfill('0');
+    for (int i=0;i<16;++i) {
+        if (i==4 || i==6 || i==8 || i==10) uuid<<'-';
+        uuid<<std::setw(2)<<static_cast<unsigned>(static_cast<unsigned char>(prop.uuid.bytes[i]));
+    }
+    return uuid.str();
 }
 
 int main(int argc,char** argv) {
@@ -164,9 +277,14 @@ int main(int argc,char** argv) {
         if (argc!=2) return 2;
         const std::string mode=argv[1];
         if (mode=="--plan") { plan(); return 0; }
+        if (mode=="--sequence") { sequence(); return 0; }
         if (mode!="--run" && mode!="--verify") return 2;
-        discover();
+        // The UUID stays out of the output, since the evidence is public. A mismatch stops here.
+        const GpuMonitor monitor(discover());
+        std::cerr<<"NVML: the CUDA device found by its UUID\n";
         if (mode=="--verify") {
+            const auto r=monitor.read();
+            std::cerr<<"GPU reading: utilization "<<r.util_percent<<" percent, memory "<<r.memory_mib<<" MiB\n";
             // One call of each condition, checked as in a run, with no time printed.
             std::cout<<"side,workload,cuda_checksum,sycl_checksum,outputs_equal_bit_for_bit\n"<<std::setprecision(17);
             for (auto side : sides) {
@@ -182,23 +300,25 @@ int main(int argc,char** argv) {
             }
             return 0;
         }
-        std::cout<<"side,workload,backend,iteration,order,host_ms,upload_ms,kernel_ms,download_ms,checksum,upload_bytes,download_bytes\n"
+        std::cout<<"side,workload,backend,iteration,order,host_ms,upload_ms,kernel_ms,download_ms,checksum,upload_bytes,download_bytes,gpu_util_percent,gpu_memory_mib\n"
             <<std::setprecision(17);
-        int condition=0;
-        for (auto side : sides) {
+        for (int condition=0;condition<static_cast<int>(sides.size());++condition) {
+            const unsigned side=sides[condition];
             Side data(side);
+            idle_reading(monitor,"before "+std::to_string(side));
             for (int iteration=0;iteration<samples;++iteration) {
                 for (int order=0;order<combinations;++order) {
-                    const int index=(order+iteration+condition)%combinations;
-                    const int workload=index%3, backend=index/3;
+                    const auto [workload,backend]=slot(condition,iteration,order);
+                    // Read before the clock starts, so the reading is never inside a timing.
+                    const auto gpu=monitor.read();
                     const auto sample=execute(workload,backend,data.inputs(),side);
                     data.verify(workload,backend,sample);
-                    row(side,workload,backend,iteration,order,sample,data.pixels());
+                    row(side,workload,backend,iteration,order,sample,data.pixels(),gpu);
                 }
                 if (!iteration) for (int warm=0;warm<warmups;++warm) for (int index=0;index<combinations;++index)
                     data.verify(index%3,index/3,execute(index%3,index/3,data.inputs(),side));
             }
-            ++condition;
         }
+        idle_reading(monitor,"after "+std::to_string(sides.back()));
     } catch(const std::exception& e) { std::cerr<<e.what()<<'\n'; return 1; }
 }

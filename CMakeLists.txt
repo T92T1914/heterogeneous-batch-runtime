@@ -113,9 +113,10 @@ if(HBR_SYCL)
   install(TARGETS hbr_sycl EXPORT hbrTargets ARCHIVE DESTINATION lib LIBRARY DESTINATION lib RUNTIME DESTINATION bin)
   if(HBR_CUDA)
     # The timing comparison calls both backends in one process. Configure it with the DPC++
-    # clang++ as the C++ compiler and set CMAKE_CUDA_HOST_COMPILER for nvcc.
+    # clang++ as the C++ compiler and set CMAKE_CUDA_HOST_COMPILER for nvcc. It opens the
+    # driver's NVML library at run time to read the card's load, so it links only dlopen.
     add_executable(hbr_sycl_cuda_bench tools/sycl_cuda_benchmark.cpp)
-    target_link_libraries(hbr_sycl_cuda_bench PRIVATE hbr hbr_cuda hbr_sycl)
+    target_link_libraries(hbr_sycl_cuda_bench PRIVATE hbr hbr_cuda hbr_sycl ${CMAKE_DL_LIBS})
   endif()
   if(BUILD_TESTING)
     # Tests whose names start with sycl_ need a SYCL GPU. host_sycl_selection hides every
