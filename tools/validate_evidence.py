@@ -1,6 +1,7 @@
 """Check retained numerical benchmark rows and their published byte identities."""
 import csv
 import hashlib
+import importlib.util
 import json
 import math
 from pathlib import Path
@@ -43,3 +44,55 @@ for check in receipt['local_verification']:
     if check['status']!='passed' or any(c['status']!='passed' or c['exit_code']!=0 for c in check['checks']):
         raise ValueError('Claimed local validation did not pass')
 print('504 retained timing rows, artifact hashes and local verification summaries passed')
+
+# The SYCL and CUDA comparison: two runs under docs/sycl-cuda-protocol.json. The second run's
+# receipt is published. The first run's receipt recorded a local path and stays private, so its
+# CSV is checked against the hash and source that receipt holds. The results page must carry,
+# under each run's heading, the tables report_sycl_cuda.py makes from that run's CSV, the
+# recorded hashes and revisions, and the headline range and pair count that follow from both.
+spec = importlib.util.spec_from_file_location('report_sycl_cuda', Path(__file__).resolve().parent / 'report_sycl_cuda.py')
+report_sycl_cuda = importlib.util.module_from_spec(spec)
+spec.loader.exec_module(report_sycl_cuda)
+FIRST_SYCL_RUN = {'csv_sha256': '4d5ee831b4a92c18c83c8883f1e22eac4206a7a35ba176267dde3c533c475d79',
+                  'source': '1c31bb781251e6561bb2e0a63c84b1b9ae357ff2'}
+sycl_receipt = json.loads((root / 'sycl-cuda-execution.json').read_text(encoding='utf-8'))
+sycl_bytes = (root / 'sycl-cuda.csv').read_bytes()
+first_bytes = (root / 'sycl-cuda-attempt-1.csv').read_bytes()
+if hashlib.sha256(sycl_bytes).hexdigest() != sycl_receipt['csv_sha256']:
+    raise ValueError('Retained evidence changed: sycl-cuda.csv')
+if hashlib.sha256(first_bytes).hexdigest() != FIRST_SYCL_RUN['csv_sha256']:
+    raise ValueError('Retained evidence changed: sycl-cuda-attempt-1.csv')
+if hashlib.sha256((root.parent / 'sycl-cuda-protocol.json').read_bytes()).hexdigest() != sycl_receipt['protocol_sha256']:
+    raise ValueError('The SYCL and CUDA protocol changed after its runs')
+if sycl_receipt['status'] != 'passed' or sycl_receipt['exit_code'] != 0:
+    raise ValueError('The SYCL and CUDA run did not pass')
+sycl_rows = list(csv.DictReader(sycl_bytes.decode('utf-8-sig').splitlines()))
+first_rows = list(csv.DictReader(first_bytes.decode('utf-8-sig').splitlines()))
+results_page = (root.parent / 'sycl-cuda-results.md').read_text(encoding='utf-8')
+sections = {}
+for part in ('\n' + results_page).split('\n## ')[1:]:
+    heading, _, body = part.partition('\n')
+    sections[heading] = body
+for heading, tables in (('Second run', report_sycl_cuda.report(sycl_rows, sycl_receipt)),
+                        ('First run', report_sycl_cuda.report(first_rows))):
+    if tables not in sections.get(heading, ''):
+        raise ValueError(f'The SYCL and CUDA results page differs from its samples under {heading}')
+for value in (FIRST_SYCL_RUN['csv_sha256'], FIRST_SYCL_RUN['source'], sycl_receipt['csv_sha256'], sycl_receipt['source'],
+              sycl_receipt['binary_sha256'], sycl_receipt['protocol_sha256'], sycl_receipt['protocol_commit']):
+    if value not in results_page:
+        raise ValueError(f'The SYCL and CUDA results page does not cite {value}')
+gaps, slower = [], []
+for rows in (first_rows, sycl_rows):
+    runs = report_sycl_cuda.validate(rows)
+    stats = report_sycl_cuda.summarize(runs)
+    for side in report_sycl_cuda.SIDES:
+        for workload in report_sycl_cuda.WORKLOADS:
+            cuda, sycl = stats[(side, workload, 'cuda')]['host_ms'], stats[(side, workload, 'sycl')]['host_ms']
+            gaps.append(100 * (1 - sycl['median'] / cuda['median']))
+            pairs = zip(runs[(side, workload, 'cuda')][1:], runs[(side, workload, 'sycl')][1:])
+            slower.append(sum(float(s['host_ms']) > float(c['host_ms']) for c, s in pairs))
+headline = (f'The gap was between {min(gaps):.1f} and {max(gaps):.1f} percent of the CUDA median.',
+            f'between {min(slower)} and {max(slower)} of the {report_sycl_cuda.PROTOCOL["warm_samples"]} back to back pairs had SYCL slower')
+if any(text not in results_page for text in headline):
+    raise ValueError(f'The SYCL and CUDA results page headline differs from its samples: {headline}')
+print(f'{len(sycl_rows)} and {len(first_rows)} SYCL and CUDA rows, the receipt, the unchanged protocol, the results tables and the page citations passed')
