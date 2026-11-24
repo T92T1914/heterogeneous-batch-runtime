@@ -21,8 +21,8 @@ runner = load("run_sycl_cuda", ROOT / "tools" / "run_sycl_cuda.py")
 synthetic = load("test_report_sycl_cuda_rows", ROOT / "tests" / "python" / "test_report_sycl_cuda.py")
 
 PLAN = {"square_sides": [32, 256, 1024], "workloads": ["masked_reduce", "tile_histogram", "stencil3x3"],
-        "backends": ["cuda", "sycl"], "tile_shape": [64, 64], "samples_per_condition": 25,
-        "additional_unrecorded_warmups": 2, "run_rows": 450}
+        "backends": ["cuda", "sycl"], "tile_shape": [64, 64], "samples_per_condition": 121,
+        "additional_unrecorded_warmups": 2, "run_rows": 2178}
 IDENTITY = {"source": "a" * 40, "source_tree": "b" * 40, "protocol_commit": "c" * 40}
 GPU = "Stand-in GPU, 1.0, 24564 MiB, 3 %, 100 MiB, 30"
 BUILD = {"build_source_dir": "/mnt/c/Work/hbr", "build_dry_run": "ninja: no work to do.",
@@ -33,8 +33,14 @@ def same_identity(check_clean=True):
     return dict(IDENTITY)
 
 
-def stand_in(tmp_path, rows, exit_code=0, plan=PLAN, error=None, sleep=0):
-    """A script inside a CMake build tree that answers --plan and --run like the benchmark, without a device."""
+IDLE = ["GPU idle before 32: utilization 21 percent, memory 6640 MiB",
+        "GPU idle before 256: utilization 19 percent, memory 6644 MiB",
+        "GPU idle before 1024: utilization 18 percent, memory 6648 MiB",
+        "GPU idle after 1024: utilization 17 percent, memory 6650 MiB"]
+
+
+def stand_in(tmp_path, rows, exit_code=0, plan=PLAN, error=None, sleep=0, sequence=None, idle=IDLE):
+    """A script inside a CMake build tree that answers --plan, --sequence and --run like the benchmark, without a device."""
     build = tmp_path / "build"
     version = build / "CMakeFiles" / "3.28.3"
     version.mkdir(parents=True)
@@ -47,23 +53,31 @@ def stand_in(tmp_path, rows, exit_code=0, plan=PLAN, error=None, sleep=0):
         writer = csv.DictWriter(stream, fieldnames=synthetic.report.HEADER, lineterminator="\n")
         writer.writeheader()
         writer.writerows(rows)
+    order = tmp_path / "sequence.csv"
+    with order.open("w", newline="", encoding="utf-8") as stream:
+        stream.write("side,workload,backend,iteration,order\n")
+        for row in sequence if sequence is not None else synthetic.report.expected_sequence():
+            stream.write(",".join(map(str, row)) + "\n")
     script = build / "stand_in.py"
     script.write_text(
         "import sys, time\n"
         f"if sys.argv[1] == '--plan':\n    print({json.dumps(json.dumps(plan))})\n    sys.exit(0)\n"
+        f"if sys.argv[1] == '--sequence':\n    sys.stdout.write(open({str(order)!r}, newline='').read())\n    sys.exit(0)\n"
         "print('CUDA: Stand-in GPU SM 8.9', file=sys.stderr, flush=True)\n"
-        f"sys.stdout.write(open({str(data)!r}, newline='').read())\n"
+        + "".join(f"print({line!r}, file=sys.stderr, flush=True)\n" for line in idle[:-1])
+        + f"sys.stdout.write(open({str(data)!r}, newline='').read())\n"
         "sys.stdout.flush()\n"
         f"time.sleep({sleep})\n"
+        + (f"print({idle[-1]!r}, file=sys.stderr)\n" if idle and not error else "")
         + (f"print({error!r}, file=sys.stderr)\n" if error else "")
         + f"sys.exit({exit_code})\n", encoding="utf-8")
     return [sys.executable, str(script)], script, build
 
 
-def collect(tmp_path, rows, gpu_free=True, identity=same_identity, gpu=lambda: GPU, **kwargs):
+def collect(tmp_path, rows, desktop_load=True, identity=same_identity, gpu=lambda: GPU, **kwargs):
     command, script, build = stand_in(tmp_path, rows, **kwargs)
     out = tmp_path / "evidence"
-    return runner.collect(command, script, out, build, gpu_free, identity=identity, gpu=gpu), out
+    return runner.collect(command, script, out, build, desktop_load, identity=identity, gpu=gpu), out
 
 
 @pytest.fixture(scope="module")
@@ -78,9 +92,12 @@ def test_a_valid_run_writes_its_samples_and_a_passed_receipt(tmp_path, rows):
     assert receipt["protocol_sha256"] == hashlib.sha256(runner.PROTOCOL.read_bytes()).hexdigest()
     assert receipt["compilers"] == {"cxx": "Clang 23.1.1", "cuda": "NVIDIA 13.2.86"}
     assert receipt["command"][0] == sys.executable and receipt["command"][1].endswith("stand_in.py")
-    assert receipt["stderr"] == ["CUDA: Stand-in GPU SM 8.9"]
+    assert receipt["schema_version"] == 2
+    assert receipt["stderr"] == ["CUDA: Stand-in GPU SM 8.9", *IDLE]
+    assert [r["point"] for r in receipt["gpu_idle_readings"]] == ["before 32", "before 256", "before 1024", "after 1024"]
+    assert receipt["gpu_idle_readings"][3] == {"point": "after 1024", "gpu_util_percent": 17, "gpu_memory_mib": 6650}
     assert receipt["gpu_before"] == receipt["gpu_after"] == GPU
-    assert receipt["source_unchanged"] is True and receipt["gpu_free_confirmed"] is True
+    assert receipt["source_unchanged"] is True and receipt["desktop_load_confirmed"] is True
     assert json.loads((out / "sycl-cuda-execution.json").read_text(encoding="utf-8")) == receipt
 
 
@@ -96,8 +113,16 @@ def test_rows_that_break_the_protocol_are_kept_and_marked_invalid(tmp_path, rows
 def test_a_failed_run_keeps_its_partial_samples_and_error_text(tmp_path, rows):
     receipt, out = collect(tmp_path, rows[:10], exit_code=1, error="sycl histogram mismatch")
     assert receipt["status"] == "failed" and receipt["exit_code"] == 1
-    assert receipt["stderr"] == ["CUDA: Stand-in GPU SM 8.9", "sycl histogram mismatch"]
+    assert receipt["stderr"] == ["CUDA: Stand-in GPU SM 8.9", *IDLE[:3], "sycl histogram mismatch"]
+    assert [r["point"] for r in receipt["gpu_idle_readings"]] == ["before 32", "before 256", "before 1024"]
     assert (out / "sycl-cuda.csv").read_bytes().count(b"\n") == 11
+
+
+@pytest.mark.parametrize("idle", [IDLE[:3], IDLE[1:], [IDLE[1], IDLE[0], *IDLE[2:]], []])
+def test_a_run_whose_idle_readings_are_missing_or_moved_is_invalid(tmp_path, rows, idle):
+    receipt, _ = collect(tmp_path, rows, idle=idle)
+    assert receipt["status"] == "invalid" and receipt["exit_code"] == 0
+    assert receipt["validation_error"].startswith("idle readings")
 
 
 def test_a_timed_out_run_is_kept_with_the_rows_it_printed(tmp_path, rows, monkeypatch):
@@ -123,7 +148,7 @@ def test_a_failing_step_after_the_run_does_not_lose_the_samples(tmp_path, rows):
     assert receipt["status"] == "passed" and (out / "sycl-cuda.csv").exists()
 
 
-def test_passed_needs_an_unchanged_source_and_a_confirmed_free_gpu(tmp_path, rows):
+def test_passed_needs_an_unchanged_source_and_a_confirmed_desktop_load(tmp_path, rows):
     sources = iter(["a" * 40, "d" * 40])
 
     def moved(check_clean=True):
@@ -131,8 +156,8 @@ def test_passed_needs_an_unchanged_source_and_a_confirmed_free_gpu(tmp_path, row
 
     receipt, _ = collect(tmp_path / "moved", rows, identity=moved)
     assert receipt["source_unchanged"] is False and receipt["status"] == "unqualified"
-    receipt, _ = collect(tmp_path / "busy", rows, gpu_free=False)
-    assert receipt["gpu_free_confirmed"] is False and receipt["status"] == "unqualified"
+    receipt, _ = collect(tmp_path / "unchecked", rows, desktop_load=False)
+    assert receipt["desktop_load_confirmed"] is False and receipt["status"] == "unqualified"
 
 
 def test_an_earlier_attempt_is_never_overwritten(tmp_path, rows):
@@ -198,8 +223,35 @@ def test_a_refused_build_runs_nothing_and_an_accepted_one_is_recorded(tmp_path, 
                              gpu=lambda: GPU, build_state=lambda: dict(BUILD))
     assert receipt["status"] == "passed" and receipt["cuda_host_compiler"] == "/usr/bin/g++: g++ 13.3.0"
     assert receipt["build_dry_run"] == "ninja: no work to do." and receipt["wsl_kernel"] == "6.0.0-stand-in"
+    # The check saw the checkout's path, and the receipt keeps only that the build came from it.
+    assert "build_source_dir" not in receipt and receipt["build_source"] == "this checkout"
+    written = (tmp_path / "evidence" / "sycl-cuda-execution.json").read_text(encoding="utf-8")
+    assert "/mnt/" not in written and BUILD["build_source_dir"] not in written
 
 
 def test_source_identity_names_the_protocol_commit():
     identity = runner.source_identity(check_clean=False)
     assert all(len(identity[key]) == 40 for key in ("source", "source_tree", "protocol_commit"))
+
+
+def test_a_binary_whose_order_differs_from_the_report_runs_nothing(tmp_path, rows):
+    sequence = synthetic.report.expected_sequence()
+    swapped = sequence[:1] + [sequence[2], sequence[1]] + sequence[3:]
+    command, script, build = stand_in(tmp_path, rows, sequence=swapped)
+    with pytest.raises(SystemExit, match="run order differs"):
+        runner.collect(command, script, tmp_path / "evidence", build, True, identity=same_identity, gpu=lambda: GPU)
+    assert not (tmp_path / "evidence").exists()
+
+
+def test_the_flag_for_the_desktop_load_reaches_the_receipt(monkeypatch):
+    seen = {}
+
+    def fake_collect(command, binary, out_dir, build_dir, desktop_load, **kwargs):
+        seen["desktop_load"] = desktop_load
+        return {"status": "passed", "exit_code": 0}
+
+    monkeypatch.setattr(runner, "collect", fake_collect)
+    assert runner.main(["/opt/x/bench", "--build-dir", "/opt/x", "--confirm-desktop-load"]) == 0
+    assert seen["desktop_load"] is True
+    with pytest.raises(SystemExit):
+        runner.main(["/opt/x/bench", "--build-dir", "/opt/x", "--confirm-gpu-free"])

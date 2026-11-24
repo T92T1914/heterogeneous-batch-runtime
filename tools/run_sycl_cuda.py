@@ -4,12 +4,14 @@ The runner itself runs on Windows, where git can read the worktree. It starts th
 Linux binary with `wsl -d <distro> --exec` and reads the binary and the CMake records
 of its build through the distro's \\\\wsl.localhost share. Before anything runs, it
 requires that the build was configured from this checkout and that ninja has no work
-left in it, so the binary matches the committed source. The receipt names the source,
+left in it, so the binary matches the committed source. The receipt records that the
+build came from this checkout but not the checkout's path, which stays private. It names the source,
 the protocol, the binary, the command, the compilers, the WSL kernel and the host
-compiler for nvcc, and records the GPU state before and after the run. It records no
-process list, because the measuring computer is a shared desktop. The person who
-starts the run confirms the GPU precondition with --confirm-gpu-free after checking
-the processes privately.
+compiler for nvcc, and records the GPU state before and after the run and the idle
+readings the benchmark prints. It records no process list, because the measuring
+computer is a shared desktop. The run goes ahead at the usual desktop load, and the
+person who starts it confirms with --confirm-desktop-load, after checking the processes
+privately, that no game is running.
 
 A run that fails, times out or breaks the protocol is still written, with its status
 and its error text. The time limit is enforced inside the distro, so a hung run stops
@@ -101,7 +103,7 @@ def check_build(state, root=ROOT):
         raise SystemExit("The build is not up to date with this checkout. Build it again first. Nothing ran.")
 
 
-def collect(command, binary, out_dir, build_dir, gpu_free, identity=source_identity, gpu=gpu_state,
+def collect(command, binary, out_dir, build_dir, desktop_load, identity=source_identity, gpu=gpu_state,
             build_state=None):
     """Run the plan check and the benchmark, then write the CSV and the receipt. Returns the receipt.
 
@@ -111,21 +113,28 @@ def collect(command, binary, out_dir, build_dir, gpu_free, identity=source_ident
     out_dir = Path(out_dir)
     if (out_dir / SAMPLES).exists() or (out_dir / RECEIPT).exists():
         raise SystemExit(f"{out_dir / SAMPLES} or its receipt exists. Rename and keep that attempt first.")
-    receipt = {"schema_version": 1, **identity(),
+    receipt = {"schema_version": 2, **identity(),
                "protocol_sha256": sha256(PROTOCOL.read_bytes()),
                "binary_sha256": sha256(Path(binary).read_bytes()),
                "command": list(command),
                "compilers": compilers(binary, build_dir),
                "cpu": platform.processor(), "os": platform.platform(),
-               "gpu_free_confirmed": bool(gpu_free)}
+               "desktop_load_confirmed": bool(desktop_load)}
     if build_state is not None:
         state = build_state()
         check_build(state)
-        receipt.update(state)
+        # The check above compares the full path. The receipt keeps only its outcome, because
+        # the path of the checkout on the measuring computer is private and the receipt is not.
+        state = {key: value for key, value in state.items() if key != "build_source_dir"}
+        receipt.update(state, build_source="this checkout")
     plan = subprocess.run([*command, "--plan"], capture_output=True, text=True, timeout=120)
     protocol = json.loads(PROTOCOL.read_text(encoding="utf-8"))
     if plan.returncode != 0 or check_sycl_cuda_plan.differences(json.loads(plan.stdout), protocol):
         raise SystemExit("The binary's plan differs from docs/sycl-cuda-protocol.json. Nothing ran.")
+    sequence = subprocess.run([*command, "--sequence"], capture_output=True, text=True, timeout=120)
+    if sequence.returncode != 0 or report_sycl_cuda.sequence_differences(
+            list(csv.DictReader(sequence.stdout.splitlines()))):
+        raise SystemExit("The binary's run order differs from the one the report expects. Nothing ran.")
     out_dir.mkdir(parents=True, exist_ok=True)
     receipt["gpu_before"] = gpu()
     receipt["started_utc"] = now()
@@ -140,6 +149,7 @@ def collect(command, binary, out_dir, build_dir, gpu_free, identity=source_ident
     receipt["exit_code"] = exit_code
     receipt["csv_sha256"] = sha256(stdout)
     receipt["stderr"] = stderr.decode("utf-8", "replace").strip().splitlines()
+    receipt["gpu_idle_readings"] = report_sycl_cuda.idle_readings(receipt)
     receipt["gpu_after"] = guarded(gpu)
     current = guarded(lambda: identity(check_clean=False)["source"])
     receipt["source_unchanged"] = current == receipt["source"]
@@ -147,9 +157,12 @@ def collect(command, binary, out_dir, build_dir, gpu_free, identity=source_ident
     if status == "passed":
         try:
             report_sycl_cuda.validate(list(csv.DictReader(stdout.decode("utf-8-sig").splitlines())))
+            points = [reading["point"] for reading in receipt["gpu_idle_readings"]]
+            if points != report_sycl_cuda.IDLE_POINTS:
+                raise ValueError(f"idle readings {points}, expected {report_sycl_cuda.IDLE_POINTS}")
         except (ValueError, UnicodeDecodeError) as error:
             status, receipt["validation_error"] = "invalid", str(error)
-    if status == "passed" and not (receipt["source_unchanged"] and receipt["gpu_free_confirmed"]):
+    if status == "passed" and not (receipt["source_unchanged"] and receipt["desktop_load_confirmed"]):
         status = "unqualified"
     receipt["status"] = status
     (out_dir / RECEIPT).write_text(json.dumps(receipt, indent=2) + "\n", encoding="utf-8")
@@ -163,14 +176,14 @@ def main(argv=None):
     parser.add_argument("--distro", default=DISTRO)
     parser.add_argument("--library-path", default=LIBRARY_PATH, help="LD_LIBRARY_PATH for the binary")
     parser.add_argument("--out-dir", type=Path, default=ROOT / "docs" / "evidence")
-    parser.add_argument("--confirm-gpu-free", action="store_true",
-                        help="I checked privately that no game or other GPU workload is running")
+    parser.add_argument("--confirm-desktop-load", action="store_true",
+                        help="I checked privately that no game is running and only the usual desktop applications use the GPU")
     args = parser.parse_args(argv)
     # timeout stops the benchmark inside the distro at the protocol's limit and kills it 5 seconds later.
     command = in_distro(args.distro, "timeout", "-k", "5", str(TIMEOUT), "env",
                         f"LD_LIBRARY_PATH={args.library_path}", args.binary)
     receipt = collect(command, share(args.distro, args.binary), args.out_dir, share(args.distro, args.build_dir),
-                      args.confirm_gpu_free, build_state=lambda: distro_build(args.distro, args.build_dir))
+                      args.confirm_desktop_load, build_state=lambda: distro_build(args.distro, args.build_dir))
     print(f"{receipt['status']}: exit {receipt['exit_code']}, receipt in {args.out_dir / RECEIPT}")
     return 0 if receipt["status"] == "passed" else 1
 

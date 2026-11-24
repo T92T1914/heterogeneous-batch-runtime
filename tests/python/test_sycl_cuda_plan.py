@@ -9,8 +9,8 @@ spec.loader.exec_module(check)
 
 # What tools/sycl_cuda_benchmark.cpp prints for --plan at this revision.
 PLAN = {"square_sides": [32, 256, 1024], "workloads": ["masked_reduce", "tile_histogram", "stencil3x3"],
-        "backends": ["cuda", "sycl"], "tile_shape": [64, 64], "samples_per_condition": 25,
-        "additional_unrecorded_warmups": 2, "run_rows": 450}
+        "backends": ["cuda", "sycl"], "tile_shape": [64, 64], "samples_per_condition": 121,
+        "additional_unrecorded_warmups": 2, "run_rows": 2178}
 
 
 def protocol():
@@ -31,7 +31,7 @@ def test_a_changed_sample_count_is_named():
 
 
 def test_a_dropped_backend_is_named():
-    assert check.differences(dict(PLAN, backends=["cuda"], run_rows=225), protocol()) == ["backends", "run_rows"]
+    assert check.differences(dict(PLAN, backends=["cuda"], run_rows=1089), protocol()) == ["backends", "run_rows"]
 
 
 def test_protocol_counts_must_follow_from_its_conditions():
@@ -46,7 +46,7 @@ def test_plan_constants_appear_in_the_benchmark_source():
     assert "sides{32,256,1024}" in text
     assert 'workloads{"masked_reduce","tile_histogram","stencil3x3"}' in text
     assert 'backends{"cuda","sycl"}' in text
-    assert "samples=25, warmups=2" in text
+    assert "samples=121, warmups=2" in text
     assert "tile=64" in text
     assert '"run_rows\\": "<<sides.size()*combinations*samples' in text
 
@@ -98,10 +98,63 @@ def test_main_accepts_the_plan_and_rejects_a_missing_argument(tmp_path, capsys):
     path = tmp_path / "plan.json"
     path.write_text(json.dumps(PLAN), encoding="utf-8")
     assert check.main(["check_sycl_cuda_plan.py", str(path)]) == 0
-    assert "450 run rows" in capsys.readouterr().out
+    assert "2178 run rows" in capsys.readouterr().out
     assert check.main(["check_sycl_cuda_plan.py"]) == 2
 
 
 def test_the_benchmark_stops_when_the_backends_report_different_gpus():
     assert 'if (cuda.name!=sycl.name) throw std::runtime_error("CUDA and SYCL report different GPUs");' \
         in source("tools/sycl_cuda_benchmark.cpp")
+
+
+def write_sequence(path, rows):
+    with path.open("w", newline="", encoding="utf-8") as stream:
+        stream.write("side,workload,backend,iteration,order\n")
+        for row in rows:
+            stream.write(",".join(map(str, row)) + "\n")
+
+
+def test_main_checks_the_run_order_when_given_one(tmp_path, capsys):
+    plan = tmp_path / "plan.json"
+    plan.write_text(json.dumps(PLAN), encoding="utf-8")
+    sequence = check.report_sycl_cuda.expected_sequence()
+    good, bad = tmp_path / "good.csv", tmp_path / "bad.csv"
+    write_sequence(good, sequence)
+    write_sequence(bad, sequence[:6] + [sequence[7], sequence[6]] + sequence[8:])
+    assert check.main(["check_sycl_cuda_plan.py", str(plan), str(good)]) == 0
+    assert "Run order matches" in capsys.readouterr().out
+    assert check.main(["check_sycl_cuda_plan.py", str(plan), str(bad)]) == 1
+    assert "sequence row 8 is" in capsys.readouterr().err
+
+
+def test_the_benchmark_and_the_report_share_one_order_formula():
+    text = source("tools/sycl_cuda_benchmark.cpp")
+    assert "return {(iteration+condition+order/2)%3, (order%2+iteration%2)%2};" in text
+    # Once in --sequence and once in the --run loop, so neither can drift from the other.
+    assert text.count("const auto [workload,backend]=slot(condition,iteration,order);") == 2
+    run = text[text.index('std::cout<<"side,workload,backend,iteration,order,host_ms'):]
+    assert "const auto [workload,backend]=slot(condition,iteration,order);" in run
+    report = source("tools/report_sycl_cuda.py")
+    assert "WORKLOADS[(iteration + condition + order // 2) % len(WORKLOADS)]" in report
+    assert "BACKENDS[(order + iteration) % len(BACKENDS)]" in report
+
+
+def test_the_gpu_reading_comes_before_the_clock_and_the_uuid_is_not_printed():
+    text = source("tools/sycl_cuda_benchmark.cpp")
+    run = text[text.index("const auto gpu=monitor.read();"):]
+    assert run.index("const auto gpu=monitor.read();") < run.index("execute(workload,backend,data.inputs(),side)")
+    assert 'dlopen("libnvidia-ml.so.1",RTLD_NOW|RTLD_LOCAL)' in text
+    assert '"nvmlDeviceGetHandleByUUID"' in text
+    assert "std::cerr<<uuid" not in text and "<<monitor" not in text
+    assert "constexpr auto idle_pause=std::chrono::seconds(2);" in text
+
+
+def test_the_idle_reading_line_is_the_one_the_report_parses():
+    text = source("tools/sycl_cuda_benchmark.cpp")
+    assert ('std::cerr<<"GPU idle "<<point<<": utilization "<<r.util_percent<<" percent, memory "'
+            '<<r.memory_mib<<" MiB\\n";') in text
+    assert 'idle_reading(monitor,"before "+std::to_string(side));' in text
+    assert 'idle_reading(monitor,"after "+std::to_string(sides.back()));' in text
+    line = "GPU idle before 1024: utilization 7 percent, memory 6648 MiB"
+    assert check.report_sycl_cuda.IDLE.fullmatch(line)
+    assert check.report_sycl_cuda.IDLE_POINTS == ["before 32", "before 256", "before 1024", "after 1024"]
