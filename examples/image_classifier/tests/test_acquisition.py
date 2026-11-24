@@ -3,6 +3,8 @@ import importlib.util
 from pathlib import Path
 import pytest
 import json
+import socketserver
+import threading
 
 spec=importlib.util.spec_from_file_location('hbr_acquire',Path(__file__).parents[1]/'acquire.py')
 module=importlib.util.module_from_spec(spec);spec.loader.exec_module(module)
@@ -43,6 +45,7 @@ def test_acquire_rejects_response_with_deciding_identity_without_leaking_body(
     monkeypatch.setattr(module,'__file__',str(tmp_path/'acquire.py'))
     reads=[]
     class Response:
+        headers={}
         def __enter__(self):return self
         def __exit__(self,*args):return False
         def read(self,limit):
@@ -77,6 +80,7 @@ def test_acquire_verified_response_and_existing_retry_do_not_redownload(
     monkeypatch.setattr(module,'__file__',str(tmp_path/'acquire.py'))
     calls=[]
     class Response:
+        headers={}
         def __enter__(self):return self
         def __exit__(self,*args):return False
         def read(self,limit):
@@ -108,6 +112,7 @@ def _manifest_with_sources(tmp_path,monkeypatch,expected,sources):
 
 def _opener(calls,answers):
     class Response:
+        headers={}
         def __init__(self,body):self.body=body
         def __enter__(self):return self
         def __exit__(self,*args):return False
@@ -277,4 +282,96 @@ def test_identity_failure_after_a_timeout_still_stops_at_once(tmp_path,monkeypat
     with pytest.raises(ValueError,match='failed size or identity validation'):
         module.acquire(destination)
     assert calls==[primary,primary]
+    assert not (destination/'sdk'/'include'/'fixture.h').exists()
+
+class _LocalServer(socketserver.ThreadingTCPServer):
+    daemon_threads=True
+
+@pytest.fixture
+def local_server(monkeypatch):
+    """A server on this machine that sends raw response bytes for each path.
+
+    The two gaps below live in how http.client reads a body, so these tests
+    send real bytes over a socket and let the standard library parse them.
+    """
+    monkeypatch.setenv('no_proxy','*')
+    answers={};paths=[]
+    class Handler(socketserver.StreamRequestHandler):
+        def handle(self):
+            path=self.rfile.readline().decode('ascii').split()[1]
+            while self.rfile.readline() not in (b'\r\n',b'\n',b''):pass
+            paths.append(path)
+            self.wfile.write(answers[path])
+    server=_LocalServer(('127.0.0.1',0),Handler)
+    threading.Thread(target=server.serve_forever,daemon=True).start()
+    yield f'http://127.0.0.1:{server.server_address[1]}',answers,paths
+    server.shutdown();server.server_close()
+
+def _complete(body):
+    return b'HTTP/1.1 200 OK\r\nContent-Length: %d\r\nConnection: close\r\n\r\n%s'%(len(body),body)
+
+def test_chunked_body_that_breaks_off_falls_back(tmp_path,monkeypatch,capsys,local_server):
+    base,answers,paths=local_server
+    expected=b'fixture header'
+    answers['/primary']=(b'HTTP/1.1 200 OK\r\nTransfer-Encoding: chunked\r\nConnection: close\r\n\r\n'
+                         b'e\r\nfixture')
+    answers['/archive']=_complete(expected)
+    destination=_manifest_with_sources(tmp_path,monkeypatch,expected,[base+'/primary',base+'/archive'])
+    module.acquire(destination)
+    assert paths==['/primary','/archive']
+    assert (destination/'sdk'/'include'/'fixture.h').read_bytes()==expected
+    logged=capsys.readouterr().out
+    assert 'Source 1 of 2 for fixture.h failed (IncompleteRead). Trying source 2.' in logged
+    assert 'http://' not in logged
+
+def test_body_shorter_than_its_declared_length_falls_back(tmp_path,monkeypatch,capsys,local_server):
+    base,answers,paths=local_server
+    expected=b'fixture header'
+    answers['/primary']=b'HTTP/1.1 200 OK\r\nContent-Length: 14\r\nConnection: close\r\n\r\nfixture'
+    answers['/archive']=_complete(expected)
+    destination=_manifest_with_sources(tmp_path,monkeypatch,expected,[base+'/primary',base+'/archive'])
+    module.acquire(destination)
+    assert paths==['/primary','/archive']
+    assert (destination/'sdk'/'include'/'fixture.h').read_bytes()==expected
+    assert 'Source 1 of 2 for fixture.h failed (IncompleteRead). Trying source 2.' in capsys.readouterr().out
+
+def test_short_body_from_the_last_source_publishes_nothing(tmp_path,monkeypatch,local_server):
+    base,answers,paths=local_server
+    expected=b'fixture header'
+    answers['/archive']=b'HTTP/1.1 200 OK\r\nContent-Length: 14\r\nConnection: close\r\n\r\nfixture'
+    destination=_manifest_with_sources(tmp_path,monkeypatch,expected,[base+'/archive'])
+    with pytest.raises(ConnectionError,match='no source answered for fixture.h: IncompleteRead;'):
+        module.acquire(destination)
+    assert paths==['/archive']
+    assert not (destination/'sdk'/'include'/'fixture.h').exists()
+
+@pytest.mark.parametrize('body',[b'fixture',b'fixture HEADER'])
+def test_complete_body_with_the_wrong_identity_still_stops_at_once(
+        tmp_path,monkeypatch,local_server,body):
+    base,answers,paths=local_server
+    expected=b'fixture header'
+    answers['/primary']=_complete(body)
+    answers['/archive']=_complete(expected)
+    destination=_manifest_with_sources(tmp_path,monkeypatch,expected,[base+'/primary',base+'/archive'])
+    with pytest.raises(ValueError,match='failed size or identity validation'):
+        module.acquire(destination)
+    assert paths==['/primary']
+    assert not (destination/'sdk'/'include'/'fixture.h').exists()
+
+@pytest.mark.parametrize('answer',[
+    b'HTTP/1.1 200 OK\r\nTransfer-Encoding: chunked\r\nContent-Length: 14\r\nConnection: close\r\n\r\n'
+    b'7\r\nfixture\r\n0\r\n\r\n',
+    b'HTTP/1.1 200 OK\r\nContent-Length: \xb2\r\nConnection: close\r\n\r\nfixture',
+    b'HTTP/1.1 200 OK\r\nContent-Length: 1'+b'0'*5000+b'\r\nConnection: close\r\n\r\nfixture',
+],ids=['chunked-with-length','superscript-length','oversized-length'])
+def test_complete_body_whose_length_http_client_ignores_still_stops_at_once(
+        tmp_path,monkeypatch,local_server,answer):
+    base,answers,paths=local_server
+    expected=b'fixture header'
+    answers['/primary']=answer
+    answers['/archive']=_complete(expected)
+    destination=_manifest_with_sources(tmp_path,monkeypatch,expected,[base+'/primary',base+'/archive'])
+    with pytest.raises(ValueError,match='failed size or identity validation'):
+        module.acquire(destination)
+    assert paths==['/primary']
     assert not (destination/'sdk'/'include'/'fixture.h').exists()

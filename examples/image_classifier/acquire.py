@@ -1,6 +1,7 @@
 """Acquire only pinned public artifacts into an explicitly selected directory."""
 import argparse
 from hashlib import sha256
+import http.client
 import json
 from pathlib import Path
 import urllib.error
@@ -38,16 +39,34 @@ def timed_out(error):
     return isinstance(error,TimeoutError) or (
         isinstance(error,urllib.error.URLError) and isinstance(error.reason,TimeoutError))
 
+def declared_length(headers):
+    """The body length a response declares, read the way http.client reads it.
+
+    Content-Length counts for nothing when a Transfer-Encoding is present, and a
+    value int() refuses or a negative one declares no length. A body with no
+    declared length is taken as complete, so its bytes go to the identity check.
+    """
+    if headers.get('Transfer-Encoding'):
+        return None
+    try:
+        length=int(headers.get('Content-Length',''))
+    except ValueError:
+        return None
+    return length if length>=0 else None
+
 def fetch(record):
     """Read at most one byte past the pinned size from the first source that answers.
 
     A source that times out is tried again, up to TIMEOUT_ATTEMPTS times in all,
     because one slow answer from the archive once failed the hosted check. A
-    source that cannot be reached, or whose response breaks off with a network
-    error before the read completes, passes the request to the next one. Its
-    partial bytes are dropped. Bytes that do arrive in full are returned as
-    they are, so an identity failure stops acquisition and is never retried,
-    from the same source or another one.
+    source that cannot be reached, or whose response breaks off before the read
+    completes, passes the request to the next one. Its partial bytes are
+    dropped. A response breaks off when the network fails during the read, when
+    a chunked body ends before its last chunk, or when the connection closes
+    before the length the response declared. That last case raises no error in
+    http.client, so it is checked here. Bytes that do arrive in full are
+    returned as they are, so an identity failure stops acquisition and is never
+    retried, from the same source or another one.
     """
     sources=[record['url'],*record.get('fallback_urls',[])]
     failures=[]
@@ -56,9 +75,17 @@ def fetch(record):
         for attempt in range(1,TIMEOUT_ATTEMPTS+1):
             try:
                 with urllib.request.urlopen(request,timeout=30) as response:
-                    return response.read(record['bytes']+1)
+                    limit=record['bytes']+1
+                    data=response.read(limit)
+                    declared=declared_length(response.headers)
+                    if declared is not None and len(data)<min(declared,limit):
+                        raise http.client.IncompleteRead(data,declared-len(data))
+                    return data
             except urllib.error.HTTPError as error:
                 failures.append(f'HTTP {error.code}')
+                break
+            except http.client.IncompleteRead as error:
+                failures.append(type(error).__name__)
                 break
             except OSError as error:
                 failures.append(type(error).__name__)
