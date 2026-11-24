@@ -1,0 +1,72 @@
+{
+  "schema_version": 2,
+  "source": "968c0e825b9ae4536b1a51d0ff9705fa327bbecb",
+  "source_tree": "ffa76674da6cf930373feb38c0ca23fc6aade98a",
+  "protocol_commit": "2db1fab2cab940c457131b4f790fc5e8d4c8301b",
+  "protocol_sha256": "1017a32df752f6812240db0b250bbb2e532eda9c5383ea5d67feb010397aed51",
+  "binary_sha256": "2932070fdfbfdd3a17c172d34104316c1aa8b86d2f2e801829e6239bc2dc87fc",
+  "command": [
+    "wsl",
+    "-d",
+    "HBR-SYCL-20261115",
+    "--exec",
+    "timeout",
+    "-k",
+    "5",
+    "600",
+    "env",
+    "LD_LIBRARY_PATH=/opt/dpcpp-7.2.0/lib:/usr/lib/wsl/lib",
+    "/opt/hbr-sycl-cuda/build/hbr_sycl_cuda_bench"
+  ],
+  "compilers": {
+    "cxx": "Clang 23.1.1",
+    "cuda": "NVIDIA 13.2.86"
+  },
+  "cpu": "AMD64 Family 25 Model 97 Stepping 2, AuthenticAMD",
+  "os": "Windows-10-10.0.26300-SP0",
+  "desktop_load_confirmed": true,
+  "build_dry_run": "ninja: no work to do.",
+  "cuda_host_compiler": "/usr/bin/g++: g++ (Ubuntu 13.3.0-6ubuntu2~24.04.1) 13.3.0",
+  "wsl_distro": "HBR-SYCL-20261115",
+  "wsl_kernel": "6.18.33.2-microsoft-standard-WSL2",
+  "build_source": "this checkout",
+  "gpu_before": "NVIDIA GeForce RTX 4090, 621.24, 24564 MiB, 26 %, 7141 MiB, 42.33",
+  "started_utc": "2026-11-23T06:59:12.354943+00:00",
+  "finished_utc": "2026-11-23T06:59:26.593892+00:00",
+  "exit_code": 0,
+  "csv_sha256": "2e6f08ea7287bf7b35d4ca3c2e4c368b793af72b299d80677f9bc218b6f63d4f",
+  "stderr": [
+    "CUDA: NVIDIA GeForce RTX 4090 SM 8.9",
+    "SYCL: cuda NVIDIA GeForce RTX 4090 driver CUDA 13.5",
+    "NVML: the CUDA device found by its UUID",
+    "GPU idle before 32: utilization 21 percent, memory 7952 MiB",
+    "GPU idle before 256: utilization 14 percent, memory 7962 MiB",
+    "GPU idle before 1024: utilization 23 percent, memory 7966 MiB",
+    "GPU idle after 1024: utilization 25 percent, memory 7960 MiB"
+  ],
+  "gpu_idle_readings": [
+    {
+      "point": "before 32",
+      "gpu_util_percent": 21,
+      "gpu_memory_mib": 7952
+    },
+    {
+      "point": "before 256",
+      "gpu_util_percent": 14,
+      "gpu_memory_mib": 7962
+    },
+    {
+      "point": "before 1024",
+      "gpu_util_percent": 23,
+      "gpu_memory_mib": 7966
+    },
+    {
+      "point": "after 1024",
+      "gpu_util_percent": 25,
+      "gpu_memory_mib": 7960
+    }
+  ],
+  "gpu_after": "NVIDIA GeForce RTX 4090, 621.24, 24564 MiB, 24 %, 7146 MiB, 42.22",
+  "source_unchanged": true,
+  "status": "passed"
+}
