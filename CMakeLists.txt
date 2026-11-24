@@ -68,8 +68,10 @@ if(HBR_CUDA)
   target_link_libraries(hbr_cuda_bench PRIVATE hbr hbr_cuda)
   add_executable(hbr_cuda_reuse_bench tools/cuda_reuse_benchmark.cpp)
   target_link_libraries(hbr_cuda_reuse_bench PRIVATE hbr hbr_cuda)
+  # The pinned benchmark opens the driver's NVML library at run time to read the card's
+  # load, so it links only dlopen on Linux. On Windows it loads nvml.dll from System32.
   add_executable(hbr_cuda_pinned_bench tools/cuda_pinned_benchmark.cpp)
-  target_link_libraries(hbr_cuda_pinned_bench PRIVATE hbr hbr_cuda)
+  target_link_libraries(hbr_cuda_pinned_bench PRIVATE hbr hbr_cuda ${CMAKE_DL_LIBS})
   if(BUILD_TESTING)
     add_executable(hbr_cuda_tests tests/cuda.cpp)
     target_link_libraries(hbr_cuda_tests PRIVATE hbr hbr_cuda)
