@@ -31,26 +31,41 @@ def publish(target, data, expected_hash):
         if temporary is not None:
             temporary.unlink(missing_ok=True)
 
+TIMEOUT_ATTEMPTS=2
+
+def timed_out(error):
+    """True for a connection or read that ran past its timeout, as urllib raises either one."""
+    return isinstance(error,TimeoutError) or (
+        isinstance(error,urllib.error.URLError) and isinstance(error.reason,TimeoutError))
+
 def fetch(record):
     """Read at most one byte past the pinned size from the first source that answers.
 
-    A source that cannot be reached, or whose response breaks off with a
-    network error before the read completes, passes the request to the next
-    one. Its partial bytes are dropped. Bytes that do arrive in full are
-    returned as they are, so an identity failure stops acquisition and is
-    never retried from another source.
+    A source that times out is tried again, up to TIMEOUT_ATTEMPTS times in all,
+    because one slow answer from the archive once failed the hosted check. A
+    source that cannot be reached, or whose response breaks off with a network
+    error before the read completes, passes the request to the next one. Its
+    partial bytes are dropped. Bytes that do arrive in full are returned as
+    they are, so an identity failure stops acquisition and is never retried,
+    from the same source or another one.
     """
     sources=[record['url'],*record.get('fallback_urls',[])]
     failures=[]
     for position,url in enumerate(sources,1):
         request=urllib.request.Request(url,headers={'User-Agent':'hbr-image-classifier/0.1'})
-        try:
-            with urllib.request.urlopen(request,timeout=30) as response:
-                return response.read(record['bytes']+1)
-        except urllib.error.HTTPError as error:
-            failures.append(f'HTTP {error.code}')
-        except OSError as error:
-            failures.append(type(error).__name__)
+        for attempt in range(1,TIMEOUT_ATTEMPTS+1):
+            try:
+                with urllib.request.urlopen(request,timeout=30) as response:
+                    return response.read(record['bytes']+1)
+            except urllib.error.HTTPError as error:
+                failures.append(f'HTTP {error.code}')
+                break
+            except OSError as error:
+                failures.append(type(error).__name__)
+                if not timed_out(error) or attempt==TIMEOUT_ATTEMPTS:
+                    break
+                print(f"Source {position} of {len(sources)} for {record['name']} timed out. "
+                      f"Trying it again, attempt {attempt+1} of {TIMEOUT_ATTEMPTS}.", flush=True)
         if position<len(sources):
             print(f"Source {position} of {len(sources)} for {record['name']} failed "
                   f"({failures[-1]}). Trying source {position+1}.", flush=True)
