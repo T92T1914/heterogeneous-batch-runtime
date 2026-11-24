@@ -8,6 +8,7 @@ anything on a device.
 import argparse
 import csv
 import functools
+import hashlib
 import json
 import math
 from pathlib import Path
@@ -252,9 +253,21 @@ def tables(stats, pairs, loads, idle=None):
     return "\n".join(out) + "\n"
 
 
+def checked_idle_readings(receipt):
+    """The receipt's idle readings, only from a passed run that kept all four in order."""
+    if receipt.get("status") != "passed":
+        raise ValueError(f"the receipt's status is {receipt.get('status')!r}, not 'passed'")
+    readings = idle_readings(receipt)
+    points = [r["point"] for r in readings]
+    if points != IDLE_POINTS:
+        raise ValueError(f"idle readings {points}, expected {IDLE_POINTS}")
+    return readings
+
+
 def report(rows, receipt=None):
     runs = validate(rows)
-    return tables(summarize(runs), paired(runs), load(runs), None if receipt is None else idle_readings(receipt))
+    return tables(summarize(runs), paired(runs), load(runs),
+                  None if receipt is None else checked_idle_readings(receipt))
 
 
 def main(argv=None):
@@ -264,7 +277,12 @@ def main(argv=None):
     args = parser.parse_args(argv)
     with args.csv.open(newline="", encoding="utf-8-sig") as stream:
         rows = list(csv.DictReader(stream))
-    receipt = json.loads(args.receipt.read_text(encoding="utf-8")) if args.receipt else None
+    receipt = None
+    if args.receipt:
+        receipt = json.loads(args.receipt.read_text(encoding="utf-8"))
+        # The receipt must describe these samples and not another attempt's.
+        if receipt.get("csv_sha256") != hashlib.sha256(args.csv.read_bytes()).hexdigest():
+            raise SystemExit(f"{args.receipt} does not name {args.csv} by its SHA-256.")
     sys.stdout.write(report(rows, receipt))
     return 0
 
