@@ -1,4 +1,5 @@
 import csv
+import hashlib
 import importlib.util
 import json
 from pathlib import Path
@@ -166,14 +167,26 @@ def test_a_short_row_is_a_value_error(rows):
         report.validate(changed)
 
 
-def test_main_reads_the_benchmark_csv(rows, tmp_path, capsys):
-    path = tmp_path / "sycl-cuda.csv"
+RECEIPT_STDERR = ["CUDA: Stand-in GPU SM 8.9", "GPU idle before 32: utilization 21 percent, memory 6640 MiB",
+                  "GPU idle before 256: utilization 19 percent, memory 6644 MiB",
+                  "GPU idle before 1024: utilization 18 percent, memory 6648 MiB",
+                  "GPU idle after 1024: utilization 17 percent, memory 6650 MiB"]
+
+
+def write_csv(rows, path):
     with path.open("w", newline="", encoding="utf-8") as stream:
         writer = csv.DictWriter(stream, fieldnames=report.HEADER, lineterminator="\n")
         writer.writeheader()
         writer.writerows(rows)
+    return hashlib.sha256(path.read_bytes()).hexdigest()
+
+
+def test_main_reads_the_benchmark_csv(rows, tmp_path, capsys):
+    path = tmp_path / "sycl-cuda.csv"
+    digest = write_csv(rows, path)
     receipt = tmp_path / "receipt.json"
-    receipt.write_text(json.dumps({"stderr": RECEIPT_STDERR}), encoding="utf-8")
+    receipt.write_text(json.dumps({"status": "passed", "stderr": RECEIPT_STDERR, "csv_sha256": digest}),
+                       encoding="utf-8")
     assert report.main([str(path), "--receipt", str(receipt)]) == 0
     out = capsys.readouterr().out
     assert "SYCL ÷ CUDA" in out
@@ -183,10 +196,26 @@ def test_main_reads_the_benchmark_csv(rows, tmp_path, capsys):
     assert "Idle reading" not in capsys.readouterr().out
 
 
-RECEIPT_STDERR = ["CUDA: Stand-in GPU SM 8.9", "GPU idle before 32: utilization 21 percent, memory 6640 MiB",
-                  "GPU idle before 256: utilization 19 percent, memory 6644 MiB",
-                  "GPU idle before 1024: utilization 18 percent, memory 6648 MiB",
-                  "GPU idle after 1024: utilization 17 percent, memory 6650 MiB"]
+def test_main_refuses_a_receipt_of_another_attempt(rows, tmp_path):
+    path = tmp_path / "sycl-cuda.csv"
+    write_csv(rows, path)
+    receipt = tmp_path / "receipt.json"
+    receipt.write_text(json.dumps({"status": "passed", "stderr": RECEIPT_STDERR, "csv_sha256": "0" * 64}),
+                       encoding="utf-8")
+    with pytest.raises(SystemExit, match="SHA-256"):
+        report.main([str(path), "--receipt", str(receipt)])
+
+
+@pytest.mark.parametrize("receipt, message", [
+    ({"status": "passed", "stderr": RECEIPT_STDERR[:-1]}, "idle readings"),
+    ({"status": "passed", "stderr": RECEIPT_STDERR[:2] + RECEIPT_STDERR[3:] + RECEIPT_STDERR[2:3]}, "idle readings"),
+    ({"status": "unqualified", "stderr": RECEIPT_STDERR}, "not 'passed'"),
+    ({"status": "invalid", "stderr": RECEIPT_STDERR}, "not 'passed'"),
+    ({"stderr": RECEIPT_STDERR}, "not 'passed'"),
+])
+def test_a_receipt_without_four_idle_readings_from_a_passed_run_is_refused(rows, receipt, message):
+    with pytest.raises(ValueError, match=message):
+        report.report(rows, receipt)
 
 
 def test_idle_readings_come_from_the_receipt_stderr_in_run_order():
