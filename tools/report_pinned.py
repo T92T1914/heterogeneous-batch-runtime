@@ -2,14 +2,17 @@
 
 This is written before any pinned run, so the checks and the summary are fixed
 before the data exists. It reads the CSV that `hbr_cuda_pinned_bench --run`
-prints and never runs anything on a device.
+prints, and the receipt that `tools/run_pinned.py` writes when it is given, and
+never runs anything on a device.
 """
 import argparse
 import csv
 import functools
+import hashlib
 import json
 import math
 from pathlib import Path
+import re
 import statistics
 import sys
 
@@ -20,9 +23,16 @@ WORKLOADS = PROTOCOL["workloads"]
 MEMORIES = PROTOCOL["host_memory"]
 SAMPLES = PROTOCOL["samples_per_condition"]
 TILE = PROTOCOL["tile_shape"][0]
+COMBINATIONS = len(WORKLOADS) * len(MEMORIES)
 TIMINGS = ("host_ms", "upload_ms", "kernel_ms", "download_ms")
+LOAD = ("gpu_util_percent", "gpu_memory_mib")
 HEADER = ["phase", "side", "workload", "host_memory", "iteration", "order", *TIMINGS,
-          "checksum", "upload_bytes", "download_bytes"]
+          "checksum", "upload_bytes", "download_bytes", *LOAD]
+SEQUENCE_HEADER = ["side", "workload", "host_memory", "iteration", "order"]
+# What the benchmark prints to stderr for each idle reading, which the runner keeps.
+IDLE = re.compile(r"GPU idle (before|after) (\d+): utilization (\d+) percent, memory (\d+) MiB")
+# The idle readings a complete run prints, in order: before each side and after the last.
+IDLE_POINTS = [f"before {side}" for side in SIDES] + [f"after {SIDES[-1]}"]
 
 
 def tiles(side):
@@ -50,94 +60,165 @@ def histogram_checksum(side):
     return float(total)
 
 
+def run_sequence():
+    """(side, workload, memory, iteration, order) for every run row, in the order the benchmark prints.
+
+    Each iteration takes the workloads in turn, rotated by iteration + condition, and runs
+    each with pageable and pinned input back to back, pageable first in even iterations.
+    """
+    sequence = []
+    for condition, side in enumerate(SIDES):
+        for iteration in range(SAMPLES):
+            for order in range(COMBINATIONS):
+                workload = WORKLOADS[(iteration + condition + order // 2) % len(WORKLOADS)]
+                memory = MEMORIES[(order + iteration) % len(MEMORIES)]
+                sequence.append((side, workload, memory, iteration, order))
+    return sequence
+
+
+def expected_rows():
+    """(phase, side, workload, memory, iteration, order) for every row the benchmark prints.
+
+    Each side is a setup row, its run rows and a retire row, in the protocol's side order.
+    """
+    runs = run_sequence()
+    per_side = len(runs) // len(SIDES)
+    rows = []
+    for index, side in enumerate(SIDES):
+        rows.append(("setup", side, "all", "pinned", -1, -1))
+        rows += [("run", *run) for run in runs[index * per_side:(index + 1) * per_side]]
+        rows.append(("retire", side, "all", "pinned", -1, -1))
+    return rows
+
+
+def sequence_differences(rows):
+    """Compare the rows of `hbr_cuda_pinned_bench --sequence` with run_sequence(). Returns a message or None."""
+    if not rows or list(rows[0]) != SEQUENCE_HEADER:
+        return "unexpected sequence header"
+    found = [(int(r["side"]), r["workload"], r["host_memory"], int(r["iteration"]), int(r["order"])) for r in rows]
+    expected = run_sequence()
+    if len(found) != len(expected):
+        return f"expected {len(expected)} sequence rows, found {len(found)}"
+    for position, (a, b) in enumerate(zip(found, expected)):
+        if a != b:
+            return f"sequence row {position + 2} is {a}, the report expects {b}"
+    return None
+
+
 def validate(rows):
-    """Check every row against the protocol and return the run rows by condition."""
-    if not rows or list(rows[0]) != HEADER:
+    """Check every row against the protocol and return the run rows by condition and the lifecycle rows."""
+    if not rows:
+        raise ValueError("no rows")
+    if list(rows[0]) != HEADER:
         raise ValueError("unexpected CSV header")
-    expected = len(SIDES) * len(WORKLOADS) * len(MEMORIES) * SAMPLES
-    if expected != PROTOCOL["run_rows"]:
+    expected = expected_rows()
+    if len(expected) - 2 * len(SIDES) != PROTOCOL["run_rows"]:
         raise ValueError("protocol row count does not follow from its conditions")
-    runs, lifecycle, positions = {}, {}, {}
-    for position, row in enumerate(rows):
+    if len(rows) != len(expected):
+        raise ValueError(f"expected {len(expected)} rows, found {len(rows)}")
+    runs, lifecycle, outputs = {}, {}, {}
+    for position, (row, want) in enumerate(zip(rows, expected)):
         if None in row or None in row.values():
             raise ValueError(f"row {position + 2} has the wrong number of fields")
+        found = (row["phase"], int(row["side"]), row["workload"], row["host_memory"],
+                 int(row["iteration"]), int(row["order"]))
+        if found != want:
+            raise ValueError(f"row {position + 2} is not in the order the protocol fixes: {found}")
         for field in TIMINGS:
             value = float(row[field])
             if not math.isfinite(value) or value < 0:
                 raise ValueError(f"invalid {field}: {row[field]}")
-        if not math.isfinite(float(row["checksum"])):
+        if not (row["gpu_util_percent"].isdigit() and int(row["gpu_util_percent"]) <= 100):
+            raise ValueError(f"invalid gpu_util_percent: row {position + 2}")
+        if not row["gpu_memory_mib"].isdigit():
+            raise ValueError(f"invalid gpu_memory_mib: row {position + 2}")
+        checksum = float(row["checksum"])
+        if not math.isfinite(checksum):
             raise ValueError("nonfinite checksum")
-        side = int(row["side"])
-        if row["phase"] in ("setup", "retire"):
-            if row["workload"] != "all" or row["host_memory"] != "pinned" or int(row["iteration"]) != -1:
-                raise ValueError(f"malformed {row['phase']} row")
-            if int(row["order"]) != -1 or int(row["download_bytes"]) != 0 or float(row["checksum"]) != 0:
-                raise ValueError(f"malformed {row['phase']} row")
+        phase, side, workload, memory = want[:4]
+        if phase == "run" and float(row["host_ms"]) == 0:
+            raise ValueError(f"a complete call of zero time: row {position + 2}")
+        if phase != "run":
+            if int(row["download_bytes"]) != 0 or checksum != 0:
+                raise ValueError(f"malformed {phase} row")
             if int(row["upload_bytes"]) != side * side * 10:
                 raise ValueError("pinned byte count differs from three buffers")
             if any(float(row[f]) != 0 for f in TIMINGS[1:]):
                 raise ValueError("lifecycle row carries device timing")
-            key = (row["phase"], side)
-            if key in lifecycle:
-                raise ValueError(f"duplicate {row['phase']} row")
-            lifecycle[key] = row
-            positions[key] = position
+            lifecycle[(phase, side)] = row
             continue
-        if row["phase"] != "run":
-            raise ValueError(f"unknown phase {row['phase']}")
-        runs.setdefault((side, row["workload"], row["host_memory"]), []).append(row)
-        positions.setdefault(("first", side), position)
-        positions[("last", side)] = position
-    if set(lifecycle) != {(p, s) for p in ("setup", "retire") for s in SIDES}:
-        raise ValueError("missing setup or retire row")
-    if set(runs) != {(s, w, m) for s in SIDES for w in WORKLOADS for m in MEMORIES}:
-        raise ValueError("unexpected or missing condition")
-    # The benchmark prints each side as setup, its runs, retire, in the protocol's side order.
-    sequence = [positions[(part, side)] for side in SIDES for part in ("setup", "first", "last", "retire")]
-    if sequence != sorted(sequence):
-        raise ValueError("rows are not in the order the benchmark prints them")
-    for condition, side in enumerate(SIDES):
-        for w_index, workload in enumerate(WORKLOADS):
-            up, down = transfer_bytes(workload, side)
-            reference = histogram_checksum(side) if workload == "tile_histogram" else None
-            for m_index, memory in enumerate(MEMORIES):
-                group = runs[(side, workload, memory)]
-                if [int(r["iteration"]) for r in group] != list(range(SAMPLES)):
-                    raise ValueError(f"iterations out of order or missing: {side} {workload} {memory}")
-                for row in group:
-                    order = (m_index * len(WORKLOADS) + w_index - int(row["iteration"]) - condition) % 6
-                    if int(row["order"]) != order:
-                        raise ValueError(f"order differs from the rotation: {side} {workload} {memory}")
-                    if (int(row["upload_bytes"]), int(row["download_bytes"])) != (up, down):
-                        raise ValueError(f"transfer bytes differ: {side} {workload}")
-                    checksum = float(row["checksum"])
-                    if reference is None:
-                        reference = checksum
-                    if checksum != reference:
-                        raise ValueError(f"output differs across samples or memory kinds: {side} {workload}")
+        if (int(row["upload_bytes"]), int(row["download_bytes"])) != transfer_bytes(workload, side):
+            raise ValueError(f"transfer bytes differ: {side} {workload}")
+        if workload == "tile_histogram" and checksum != histogram_checksum(side):
+            raise ValueError(f"output differs from the expected histogram: {side} {memory}")
+        # The benchmark checks every output bit for bit against the first of its workload and side.
+        if checksum != outputs.setdefault((side, workload), checksum):
+            raise ValueError(f"output differs across samples or memory kinds: {side} {workload}")
+        runs.setdefault((side, workload, memory), []).append(row)
     return runs, lifecycle
 
 
-def summarize(runs):
-    """Warm sample statistics per condition. Iteration zero stays out, as the protocol says.
+def spread(values):
+    """Median, quartiles by the inclusive method, as the reuse report uses, and range."""
+    q = statistics.quantiles(values, n=4, method="inclusive")
+    return {"median": statistics.median(values), "p25": q[0], "p75": q[2], "min": min(values), "max": max(values)}
 
-    Quartiles use the inclusive method, the same one the reuse report uses.
-    """
+
+def summarize(runs):
+    """Warm sample statistics per condition. Iteration zero stays out, as the protocol says."""
     stats = {}
     for key, group in runs.items():
         warm = group[1:]
         entry = {"n": len(warm)}
         for field in TIMINGS:
-            values = [float(r[field]) for r in warm]
-            q = statistics.quantiles(values, n=4, method="inclusive")
-            entry[field] = {"median": statistics.median(values), "p25": q[0], "p75": q[2],
-                            "min": min(values), "max": max(values)}
+            entry[field] = spread([float(r[field]) for r in warm])
         entry["first_host_ms"] = float(group[0]["host_ms"])
         stats[key] = entry
     return stats
 
 
-def tables(stats, lifecycle):
+def paired(runs):
+    """Pinned divided by pageable within each warm pair, by side and workload.
+
+    Rows of a condition come in iteration order, so the pageable and pinned rows at one
+    index share side, workload and iteration. A pair is pageable first when its pageable
+    row comes earlier in the run, which holds in even iterations.
+    """
+    result = {}
+    for side in SIDES:
+        for workload in WORKLOADS:
+            pageable, pinned = runs[(side, workload, "pageable")], runs[(side, workload, "pinned")]
+            ratios = {"all": [], "pageable_first": [], "pinned_first": []}
+            for a, b in zip(pageable[1:], pinned[1:]):
+                if a["iteration"] != b["iteration"]:
+                    raise ValueError(f"unpaired rows: {side} {workload} iteration {a['iteration']}")
+                ratio = float(b["host_ms"]) / float(a["host_ms"])
+                ratios["all"].append(ratio)
+                ratios["pageable_first" if int(a["order"]) < int(b["order"]) else "pinned_first"].append(ratio)
+            result[(side, workload)] = {"n": len(ratios["all"]), "all": spread(ratios["all"]),
+                                        "pageable_first": statistics.median(ratios["pageable_first"]),
+                                        "pinned_first": statistics.median(ratios["pinned_first"])}
+    return result
+
+
+def load(runs):
+    """Median and range of the reading taken before each recorded call, by side, over every run row."""
+    result = {}
+    for side in SIDES:
+        rows = [r for (s, _, _), group in runs.items() if s == side for r in group]
+        result[side] = {field: spread([int(r[field]) for r in rows]) for field in LOAD}
+        result[side]["n"] = len(rows)
+    return result
+
+
+def idle_readings(receipt):
+    """The idle readings the runner kept from the benchmark's stderr, in run order."""
+    return [{"point": f"{m.group(1)} {m.group(2)}", "gpu_util_percent": int(m.group(3)),
+             "gpu_memory_mib": int(m.group(4))}
+            for line in receipt.get("stderr", []) for m in [IDLE.fullmatch(line)] if m]
+
+
+def tables(stats, lifecycle, pairs=None, loads=None, idle=None):
     out = ["| Image | Workload | Upload bytes | Complete call, pageable | Complete call, pinned "
            "| Upload, pageable | Upload, pinned | Download, pageable | Download, pinned |",
            "| --- | --- | ---: | ---: | ---: | ---: | ---: | ---: | ---: |"]
@@ -147,6 +228,17 @@ def tables(stats, lifecycle):
             cells = [a["host_ms"], b["host_ms"], a["upload_ms"], b["upload_ms"], a["download_ms"], b["download_ms"]]
             out.append(f"| {side} × {side} | {workload} | {transfer_bytes(workload, side)[0]} | "
                        + " | ".join(f"{c['median']:.5f}" for c in cells) + " |")
+    if pairs is not None:
+        out += ["", "| Image | Workload | Pairs | Median of pinned ÷ pageable in a pair | Middle 50 percent "
+                "| Full range | Pageable first | Pinned first |",
+                "| --- | --- | ---: | ---: | --- | --- | ---: | ---: |"]
+        for side in SIDES:
+            for workload in WORKLOADS:
+                p = pairs[(side, workload)]
+                a = p["all"]
+                out.append(f"| {side} × {side} | {workload} | {p['n']} | {a['median']:.3f} | "
+                           f"{a['p25']:.3f} to {a['p75']:.3f} | {a['min']:.3f} to {a['max']:.3f} | "
+                           f"{p['pageable_first']:.3f} | {p['pinned_first']:.3f} |")
     out += ["", "| Image | Workload | Memory | Warm samples | Median | Middle 50 percent | Full range "
             "| First call | Kernel median |", "| --- | --- | --- | ---: | ---: | --- | --- | ---: | ---: |"]
     for side in SIDES:
@@ -162,17 +254,51 @@ def tables(stats, lifecycle):
         setup, retire = lifecycle[("setup", side)], lifecycle[("retire", side)]
         out.append(f"| {side} × {side} | {setup['upload_bytes']} | {float(setup['host_ms']):.5f} | "
                    f"{float(retire['host_ms']):.5f} |")
+    if loads is not None:
+        out += ["", "| Image | Readings | GPU utilization median | Utilization range | Memory in use median "
+                "| Memory range |",
+                "| --- | ---: | ---: | --- | ---: | --- |"]
+        for side in SIDES:
+            u, m = loads[side]["gpu_util_percent"], loads[side]["gpu_memory_mib"]
+            out.append(f"| {side} × {side} | {loads[side]['n']} | {u['median']:g} percent | "
+                       f"{u['min']:g} to {u['max']:g} percent | {m['median']:g} MiB | {m['min']:g} to {m['max']:g} MiB |")
+    if idle is not None:
+        out += ["", "| Idle reading | GPU utilization | Memory in use |", "| --- | ---: | ---: |"]
+        out += [f"| {r['point']} | {r['gpu_util_percent']} percent | {r['gpu_memory_mib']} MiB |" for r in idle]
     return "\n".join(out) + "\n"
+
+
+def checked_idle_readings(receipt):
+    """The receipt's idle readings, only from a passed run that kept all four in order."""
+    if receipt.get("status") != "passed":
+        raise ValueError(f"the receipt's status is {receipt.get('status')!r}, not 'passed'")
+    readings = idle_readings(receipt)
+    points = [r["point"] for r in readings]
+    if points != IDLE_POINTS:
+        raise ValueError(f"idle readings {points}, expected {IDLE_POINTS}")
+    return readings
+
+
+def report(rows, receipt=None):
+    runs, lifecycle = validate(rows)
+    return tables(summarize(runs), lifecycle, paired(runs), load(runs),
+                  None if receipt is None else checked_idle_readings(receipt))
 
 
 def main(argv=None):
     parser = argparse.ArgumentParser(description=__doc__.splitlines()[0])
     parser.add_argument("csv", type=Path, help="output of hbr_cuda_pinned_bench --run")
+    parser.add_argument("--receipt", type=Path, help="the run's receipt, for the idle readings")
     args = parser.parse_args(argv)
     with args.csv.open(newline="", encoding="utf-8-sig") as stream:
         rows = list(csv.DictReader(stream))
-    runs, lifecycle = validate(rows)
-    sys.stdout.write(tables(summarize(runs), lifecycle))
+    receipt = None
+    if args.receipt:
+        receipt = json.loads(args.receipt.read_text(encoding="utf-8"))
+        # The receipt must describe these samples and not another attempt's.
+        if receipt.get("csv_sha256") != hashlib.sha256(args.csv.read_bytes()).hexdigest():
+            raise SystemExit(f"{args.receipt} does not name {args.csv} by its SHA-256.")
+    sys.stdout.write(report(rows, receipt))
     return 0
 
 
