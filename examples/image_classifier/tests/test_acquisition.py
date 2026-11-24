@@ -190,3 +190,91 @@ def test_manifest_headers_name_an_archive_source_keyed_by_their_own_hash():
     for record in manifest['headers']:
         assert record['fallback_urls']==[
             'https://archive.softwareheritage.org/api/1/content/sha256:'+record['sha256']+'/raw/']
+
+def _timing_out_first(calls,answers,timeouts):
+    """An opener whose first requests raise the given timeouts before the answers apply."""
+    opener=_opener(calls,answers)
+    def open_response(request,timeout):
+        if timeouts:
+            calls.append(request.full_url)
+            raise timeouts.pop(0)
+        return opener(request,timeout)
+    return open_response
+
+def test_source_that_times_out_once_is_tried_again(tmp_path,monkeypatch,capsys):
+    expected=b'fixture header'
+    primary='https://example.invalid/header'
+    archive='https://archive.example.invalid/sha256/raw'
+    destination=_manifest_with_sources(tmp_path,monkeypatch,expected,[primary,archive])
+    calls=[]
+    opener=_opener(calls,{primary:module.urllib.error.HTTPError(primary,404,'Not Found',{},None),
+                          archive:expected})
+    timeouts=[TimeoutError('The read operation timed out')]
+    def open_response(request,timeout):
+        if request.full_url==archive and timeouts:
+            calls.append(archive)
+            raise timeouts.pop()
+        return opener(request,timeout)
+    monkeypatch.setattr(module.urllib.request,'urlopen',open_response)
+    module.acquire(destination)
+    assert calls==[primary,archive,archive]
+    assert (destination/'sdk'/'include'/'fixture.h').read_bytes()==expected
+    logged=capsys.readouterr().out
+    assert 'Source 2 of 2 for fixture.h timed out. Trying it again, attempt 2 of 2.' in logged
+    assert 'https://' not in logged
+
+def test_connection_timeout_inside_url_error_is_tried_again(tmp_path,monkeypatch):
+    expected=b'fixture header'
+    archive='https://archive.example.invalid/sha256/raw'
+    destination=_manifest_with_sources(tmp_path,monkeypatch,expected,[archive])
+    calls=[]
+    monkeypatch.setattr(module.urllib.request,'urlopen',_timing_out_first(
+        calls,{archive:expected},[module.urllib.error.URLError(TimeoutError('timed out'))]))
+    module.acquire(destination)
+    assert calls==[archive,archive]
+    assert (destination/'sdk'/'include'/'fixture.h').read_bytes()==expected
+
+def test_read_that_times_out_is_tried_again_and_drops_partial_bytes(tmp_path,monkeypatch):
+    expected=b'fixture header'
+    archive='https://archive.example.invalid/sha256/raw'
+    destination=_manifest_with_sources(tmp_path,monkeypatch,expected,[archive])
+    calls=[]
+    class Slow:
+        def __enter__(self):return self
+        def __exit__(self,*args):return False
+        def read(self,limit):raise TimeoutError('The read operation timed out')
+    opener=_opener(calls,{archive:expected})
+    def open_response(request,timeout):
+        if not calls:
+            calls.append(request.full_url)
+            return Slow()
+        return opener(request,timeout)
+    monkeypatch.setattr(module.urllib.request,'urlopen',open_response)
+    module.acquire(destination)
+    assert calls==[archive,archive]
+    assert (destination/'sdk'/'include'/'fixture.h').read_bytes()==expected
+
+def test_timeouts_are_retried_a_bounded_number_of_times(tmp_path,monkeypatch):
+    expected=b'fixture header'
+    archive='https://archive.example.invalid/sha256/raw'
+    destination=_manifest_with_sources(tmp_path,monkeypatch,expected,[archive])
+    calls=[]
+    monkeypatch.setattr(module.urllib.request,'urlopen',
+                        _opener(calls,{archive:TimeoutError('timed out')}))
+    with pytest.raises(ConnectionError,match='no source answered for fixture.h: TimeoutError, TimeoutError;'):
+        module.acquire(destination)
+    assert calls==[archive,archive]
+    assert not (destination/'sdk'/'include'/'fixture.h').exists()
+
+def test_identity_failure_after_a_timeout_still_stops_at_once(tmp_path,monkeypatch):
+    expected=b'fixture header'
+    primary='https://example.invalid/header'
+    archive='https://archive.example.invalid/sha256/raw'
+    destination=_manifest_with_sources(tmp_path,monkeypatch,expected,[primary,archive])
+    calls=[]
+    monkeypatch.setattr(module.urllib.request,'urlopen',_timing_out_first(
+        calls,{primary:b'fixture HEADER',archive:expected},[TimeoutError('timed out')]))
+    with pytest.raises(ValueError,match='failed size or identity validation'):
+        module.acquire(destination)
+    assert calls==[primary,primary]
+    assert not (destination/'sdk'/'include'/'fixture.h').exists()
