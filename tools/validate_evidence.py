@@ -96,3 +96,45 @@ headline = (f'The gap was between {min(gaps):.1f} and {max(gaps):.1f} percent of
 if any(text not in results_page for text in headline):
     raise ValueError(f'The SYCL and CUDA results page headline differs from its samples: {headline}')
 print(f'{len(sycl_rows)} and {len(first_rows)} SYCL and CUDA rows, the receipt, the unchanged protocol, the results tables and the page citations passed')
+
+# The pinned input run under docs/pinned-protocol.json as amended on 2026-11-24. Its receipt is
+# published. The results page must carry under its Results heading the tables report_pinned.py
+# makes from the samples and the receipt, the recorded hashes and revisions, and the headline
+# numbers that follow from the samples.
+spec = importlib.util.spec_from_file_location('report_pinned', Path(__file__).resolve().parent / 'report_pinned.py')
+report_pinned = importlib.util.module_from_spec(spec)
+spec.loader.exec_module(report_pinned)
+pinned_receipt = json.loads((root / 'pinned-execution.json').read_text(encoding='utf-8'))
+pinned_bytes = (root / 'pinned.csv').read_bytes()
+if hashlib.sha256(pinned_bytes).hexdigest() != pinned_receipt['csv_sha256']:
+    raise ValueError('Retained evidence changed: pinned.csv')
+if hashlib.sha256((root.parent / 'pinned-protocol.json').read_bytes()).hexdigest() != pinned_receipt['protocol_sha256']:
+    raise ValueError('The pinned protocol changed after its run')
+if pinned_receipt['status'] != 'passed' or pinned_receipt['exit_code'] != 0:
+    raise ValueError('The pinned run did not pass')
+pinned_rows = list(csv.DictReader(pinned_bytes.decode('utf-8-sig').splitlines()))
+pinned_page = (root.parent / 'pinned-results.md').read_text(encoding='utf-8')
+pinned_sections = {}
+for part in ('\n' + pinned_page).split('\n## ')[1:]:
+    heading, _, body = part.partition('\n')
+    pinned_sections[heading] = body
+if report_pinned.report(pinned_rows, pinned_receipt) not in pinned_sections.get('Results', ''):
+    raise ValueError('The pinned results page differs from its samples')
+for value in (pinned_receipt['csv_sha256'], pinned_receipt['source'], pinned_receipt['binary_sha256'],
+              pinned_receipt['protocol_sha256'], pinned_receipt['protocol_commit']):
+    if value not in pinned_page:
+        raise ValueError(f'The pinned results page does not cite {value}')
+pinned_runs, _ = report_pinned.validate(pinned_rows)
+pinned_pairs = report_pinned.paired(pinned_runs)
+if any(not p['all']['p25'] <= 1 <= p['all']['p75'] for p in pinned_pairs.values()):
+    raise ValueError('The pinned results page says every middle half of the paired ratios includes 1')
+ratios = [p['all']['median'] for p in pinned_pairs.values()]
+pinned_slower = [sum(float(b['host_ms']) > float(a['host_ms'])
+                     for a, b in zip(pinned_runs[(side, workload, 'pageable')][1:], pinned_runs[(side, workload, 'pinned')][1:]))
+                 for side, workload in pinned_pairs]
+warm = report_pinned.PROTOCOL['warm_samples']
+headline = (f'the median of the {warm} paired ratios was between {min(ratios):.3f} and {max(ratios):.3f}',
+            f'between {min(pinned_slower)} and {max(pinned_slower)} of the {warm} back to back pairs had the pinned call slower')
+if any(text not in pinned_page for text in headline):
+    raise ValueError(f'The pinned results page headline differs from its samples: {headline}')
+print(f'{len(pinned_rows)} pinned rows, the receipt, the unchanged protocol, the results tables, the page citations and the headline passed')

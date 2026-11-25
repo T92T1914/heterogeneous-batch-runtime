@@ -1,0 +1,53 @@
+{
+  "schema_version": 2,
+  "source": "2efa1d5bf6d52098b3182f667bd150f50ef9ba6a",
+  "source_tree": "183a693c59d8aeabd1e084c7a8f529073ddcff91",
+  "protocol_commit": "982ce814103e56e9749eb145e9ce35f5c3e03a0c",
+  "protocol_sha256": "78ce235842c971b5559e53c579e1db56955c548065dbc86af9ac830080af4eaf",
+  "binary_sha256": "e644ed7a9c33d98417d35538d27684accdef784e828f2d82e5d297598f136685",
+  "compilers": {
+    "cxx": "MSVC 19.44.35228.0",
+    "cuda": "NVIDIA 13.2.86"
+  },
+  "cpu": "AMD64 Family 25 Model 97 Stepping 2, AuthenticAMD",
+  "os": "Windows-10-10.0.26300-SP0",
+  "desktop_load_confirmed": true,
+  "gpu_before": "NVIDIA GeForce RTX 4090, 621.24, 24564 MiB, 15 %, 5836 MiB, 43.93",
+  "started_utc": "2026-11-25T10:24:48.677040+00:00",
+  "finished_utc": "2026-11-25T10:25:01.390715+00:00",
+  "exit_code": 0,
+  "csv_sha256": "5c90cfd4b2f044a23d815b7d5199814341e984b401029ec044b26d3a143a8e25",
+  "stderr": [
+    "NVIDIA GeForce RTX 4090 SM 8.9",
+    "NVML: the CUDA device found by its UUID",
+    "GPU idle before 32: utilization 5 percent, memory 6597 MiB",
+    "GPU idle before 256: utilization 4 percent, memory 6597 MiB",
+    "GPU idle before 1024: utilization 7 percent, memory 6599 MiB",
+    "GPU idle after 1024: utilization 9 percent, memory 6597 MiB"
+  ],
+  "gpu_idle_readings": [
+    {
+      "point": "before 32",
+      "gpu_util_percent": 5,
+      "gpu_memory_mib": 6597
+    },
+    {
+      "point": "before 256",
+      "gpu_util_percent": 4,
+      "gpu_memory_mib": 6597
+    },
+    {
+      "point": "before 1024",
+      "gpu_util_percent": 7,
+      "gpu_memory_mib": 6599
+    },
+    {
+      "point": "after 1024",
+      "gpu_util_percent": 9,
+      "gpu_memory_mib": 6597
+    }
+  ],
+  "gpu_after": "NVIDIA GeForce RTX 4090, 621.24, 24564 MiB, 9 %, 5836 MiB, 43.76",
+  "source_unchanged": true,
+  "status": "passed"
+}
