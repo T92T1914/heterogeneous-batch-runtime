@@ -33,6 +33,11 @@ SEQUENCE_HEADER = ["side", "workload", "host_memory", "iteration", "order"]
 IDLE = re.compile(r"GPU idle (before|after) (\d+): utilization (\d+) percent, memory (\d+) MiB")
 # The idle readings a complete run prints, in order: before each side and after the last.
 IDLE_POINTS = [f"before {side}" for side in SIDES] + [f"after {SIDES[-1]}"]
+# The link readings the runner keeps under a protocol with a pcie_link entry, one per line of
+# nvidia-smi in the order of the protocol's fields after the timestamp.
+LINK_KEYS = ("gen_current", "gen_max", "gen_gpumax", "gen_hostmax", "width_current", "width_max")
+# The generation an idle card drops its link to.
+IDLE_GENERATION = 1
 
 
 def tiles(side):
@@ -218,6 +223,84 @@ def idle_readings(receipt):
             for line in receipt.get("stderr", []) for m in [IDLE.fullmatch(line)] if m]
 
 
+def link_reading(line):
+    """One line of nvidia-smi with the protocol's link fields, as a dict. A line that is not one raises ValueError."""
+    parts = [part.strip() for part in line.split(",")]
+    if len(parts) != 1 + len(LINK_KEYS) or not all(part.isdigit() for part in parts[1:]):
+        raise ValueError(f"not a link reading: {line!r}")
+    return {"timestamp": parts[0], **{key: int(value) for key, value in zip(LINK_KEYS, parts[1:])}}
+
+
+def link_problem(readings, generation, width):
+    """Why the link readings do not qualify a run at this generation and width, or None when they do.
+
+    An idle card drops its link to generation 1 to save power, so a reading at generation 1 is
+    allowed, at any width. Every other reading must show the link at the protocol's generation and
+    width, because a link that trained down under load would read between the two. Every reading
+    must give the protocol's maximum, and at least one must show the link at the protocol's
+    generation and width.
+    """
+    if not readings:
+        return "no link reading was taken while the benchmark ran"
+    for reading in readings:
+        if (reading["gen_max"], reading["width_max"]) != (generation, width):
+            return (f"the link maximum read generation {reading['gen_max']} with {reading['width_max']} lanes "
+                    f"at {reading['timestamp']}, the protocol names generation {generation} with {width}")
+        current = (reading["gen_current"], reading["width_current"])
+        if reading["gen_current"] != IDLE_GENERATION and current != (generation, width):
+            return (f"the link ran at generation {current[0]} with {current[1]} lanes at {reading['timestamp']}, "
+                    f"neither the idle generation {IDLE_GENERATION} nor generation {generation} with {width}")
+    if not any((r["gen_current"], r["width_current"]) == (generation, width) for r in readings):
+        return f"no reading showed the link running at generation {generation} with {width} lanes"
+    return None
+
+
+def checked_link_readings(receipt):
+    """The receipt's link readings and the protocol's link, after link_problem finds nothing wrong."""
+    link = receipt["pcie_link"]
+    problem = link_problem(receipt["pcie_link_readings"], link["generation"], link["width"])
+    if problem:
+        raise ValueError(problem)
+    return receipt["pcie_link_readings"], link, len(receipt.get("pcie_link_unread", []))
+
+
+def link_table(readings, link, unread=0):
+    counts = {}
+    for r in readings:
+        key = (r["gen_current"], r["width_current"])
+        counts[key] = counts.get(key, 0) + 1
+    kept = f" {unread} more lines from nvidia-smi held no reading and are kept in the receipt." if unread else ""
+    out = [f"The protocol names PCIe generation {link['generation']} with {link['width']} lanes. "
+           f"Every one of the {len(readings)} link readings gave that as the maximum.{kept}", "",
+           "| Current link | Readings while the benchmark ran |", "| --- | ---: |"]
+    for (generation, width), n in sorted(counts.items(), reverse=True):
+        out.append(f"| generation {generation}, {width} lanes | {n} |")
+    return "\n".join(out) + "\n"
+
+
+def upload_rate(upload_bytes, upload_ms):
+    """Bytes per millisecond divided by a million is gigabytes per second."""
+    return f"{upload_bytes / upload_ms / 1e6:.2f} GB/s" if upload_ms > 0 else "not measured"
+
+
+def compare(base_rows, rows, base_label, label):
+    """Median complete call and upload of each condition in two runs under the same plan, beside each other."""
+    base, other = summarize(validate(base_rows)[0]), summarize(validate(rows)[0])
+    out = [f"| Image | Workload | Memory | Complete call, {base_label} | Complete call, {label} | Ratio "
+           f"| Upload, {base_label} | Upload, {label} | Upload rate, {base_label} | Upload rate, {label} |",
+           "| --- | --- | --- | ---: | ---: | ---: | ---: | ---: | ---: | ---: |"]
+    for side in SIDES:
+        for workload in WORKLOADS:
+            for memory in MEMORIES:
+                a, b = base[(side, workload, memory)], other[(side, workload, memory)]
+                ha, hb = a["host_ms"]["median"], b["host_ms"]["median"]
+                ua, ub = a["upload_ms"]["median"], b["upload_ms"]["median"]
+                up = transfer_bytes(workload, side)[0]
+                out.append(f"| {side} × {side} | {workload} | {memory} | {ha:.5f} | {hb:.5f} | {hb / ha:.3f} | "
+                           f"{ua:.5f} | {ub:.5f} | {upload_rate(up, ua)} | {upload_rate(up, ub)} |")
+    return "\n".join(out) + "\n"
+
+
 def tables(stats, lifecycle, pairs=None, loads=None, idle=None):
     out = ["| Image | Workload | Upload bytes | Complete call, pageable | Complete call, pinned "
            "| Upload, pageable | Upload, pinned | Download, pageable | Download, pinned |",
@@ -281,17 +364,30 @@ def checked_idle_readings(receipt):
 
 def report(rows, receipt=None):
     runs, lifecycle = validate(rows)
-    return tables(summarize(runs), lifecycle, paired(runs), load(runs),
-                  None if receipt is None else checked_idle_readings(receipt))
+    out = tables(summarize(runs), lifecycle, paired(runs), load(runs),
+                 None if receipt is None else checked_idle_readings(receipt))
+    # Only a run under a protocol that names the link has readings. The run of 2026-11-25 has none,
+    # and its report stays as published.
+    if receipt is not None and "pcie_link" in receipt:
+        out += "\n" + link_table(*checked_link_readings(receipt))
+    return out
+
+
+def read_rows(path):
+    with Path(path).open(newline="", encoding="utf-8-sig") as stream:
+        return list(csv.DictReader(stream))
 
 
 def main(argv=None):
     parser = argparse.ArgumentParser(description=__doc__.splitlines()[0])
     parser.add_argument("csv", type=Path, help="output of hbr_cuda_pinned_bench --run")
     parser.add_argument("--receipt", type=Path, help="the run's receipt, for the idle readings")
+    parser.add_argument("--compare", type=Path, metavar="BASE_CSV",
+                        help="an earlier run under the same plan, set beside this one condition by condition")
+    parser.add_argument("--labels", nargs=2, default=["generation 3", "generation 4"], metavar=("BASE", "THIS"),
+                        help="the names of the earlier run and this one in the comparison table")
     args = parser.parse_args(argv)
-    with args.csv.open(newline="", encoding="utf-8-sig") as stream:
-        rows = list(csv.DictReader(stream))
+    rows = read_rows(args.csv)
     receipt = None
     if args.receipt:
         receipt = json.loads(args.receipt.read_text(encoding="utf-8"))
@@ -299,6 +395,8 @@ def main(argv=None):
         if receipt.get("csv_sha256") != hashlib.sha256(args.csv.read_bytes()).hexdigest():
             raise SystemExit(f"{args.receipt} does not name {args.csv} by its SHA-256.")
     sys.stdout.write(report(rows, receipt))
+    if args.compare:
+        sys.stdout.write("\n" + compare(read_rows(args.compare), rows, *args.labels))
     return 0
 
 

@@ -234,3 +234,86 @@ def test_expected_histogram_checksum_matches_the_runtime(side):
     counts = hbr.tile_histogram(image, report.TILE, report.TILE, "scalar").ravel()
     weights = np.arange(1, counts.size + 1, dtype=np.uint64)
     assert float(int((counts * weights).sum())) == report.histogram_checksum(side)
+
+
+LINK = {"generation": 4, "width": 16}
+
+
+def link_line(current, width=16, maximum=4, at="2026/11/26 02:00:00.000"):
+    return f"{at}, {current}, {maximum}, 4, 5, {width}, 16"
+
+
+def test_a_link_line_from_nvidia_smi_is_read_field_by_field():
+    reading = report.link_reading(link_line(4))
+    assert reading == {"timestamp": "2026/11/26 02:00:00.000", "gen_current": 4, "gen_max": 4, "gen_gpumax": 4,
+                       "gen_hostmax": 5, "width_current": 16, "width_max": 16}
+    for line in ("unavailable: FileNotFoundError: nvidia-smi", "2026/11/26 02:00:00.000, 4, 4, [N/A], 5, 16, 16",
+                 "2026/11/26 02:00:00.000, 4, 4, 4, 5, 16"):
+        with pytest.raises(ValueError, match="not a link reading"):
+            report.link_reading(line)
+
+
+@pytest.mark.parametrize("lines, message", [
+    ([], "no link reading"),
+    ([link_line(1), link_line(4, maximum=3)], "maximum read generation 3"),
+    ([link_line(4), link_line(1, width=8)], None),
+    ([link_line(1), link_line(1)], "no reading showed the link running at generation 4 with 16"),
+    ([link_line(1), link_line(4, width=8)], "ran at generation 4 with 8 lanes"),
+    ([link_line(1), link_line(4), link_line(3), link_line(4)], "ran at generation 3 with 16 lanes"),
+    ([link_line(4), link_line(2), link_line(1)], "ran at generation 2 with 16 lanes"),
+    ([link_line(4), link_line(5)], "ran at generation 5"),
+])
+def test_the_link_qualifies_a_run_only_at_the_protocols_generation_and_width(lines, message):
+    problem = report.link_problem([report.link_reading(line) for line in lines], 4, 16)
+    if message is None:
+        assert problem is None
+    else:
+        assert message in problem
+
+
+def test_a_receipt_with_link_readings_adds_their_counts_and_one_without_is_unchanged(rows):
+    plain = report.report(rows, {"status": "passed", "stderr": IDLE_STDERR})
+    readings = [report.link_reading(link_line(g)) for g in (1, 4, 4, 4, 1)]
+    receipt = {"status": "passed", "stderr": IDLE_STDERR, "pcie_link": LINK, "pcie_link_readings": readings}
+    text = report.report(rows, receipt)
+    assert text.startswith(plain)
+    assert "Every one of the 5 link readings gave that as the maximum." in text
+    assert "| generation 4, 16 lanes | 3 |" in text and "| generation 1, 16 lanes | 2 |" in text
+    assert "held no reading" not in text
+    receipt["pcie_link_unread"] = ["nvidia-smi has failed", "No devices were found"]
+    assert "maximum. 2 more lines from nvidia-smi held no reading and are kept in the receipt." \
+        in report.report(rows, receipt)
+    receipt["pcie_link_readings"] = readings[:1]
+    with pytest.raises(ValueError, match="no reading showed the link running"):
+        report.report(rows, receipt)
+
+
+def faster(rows, factor):
+    out = copy(rows)
+    for r in out:
+        if r["phase"] == "run":
+            r["host_ms"], r["upload_ms"] = repr(float(r["host_ms"]) * factor), repr(float(r["upload_ms"]) * factor)
+    return out
+
+
+def test_two_runs_are_compared_condition_by_condition(rows):
+    text = report.compare(rows, faster(rows, 0.5), "generation 3", "generation 4")
+    assert "| Complete call, generation 3 | Complete call, generation 4 | Ratio |" in text
+    # The pageable reduction at 1024 uploads 9437184 bytes in 0.4 ms, then in 0.2 ms.
+    assert "| 1024 × 1024 | masked_reduce | pageable | 1.60500 | 0.80250 | 0.500 | 0.40000 | 0.20000 " \
+           "| 23.59 GB/s | 47.19 GB/s |" in text
+    assert text.count("\n") == 2 + 18
+
+
+def test_main_sets_an_earlier_run_beside_this_one(rows, tmp_path, capsys):
+    paths = []
+    for name, data in (("base.csv", rows), ("this.csv", faster(rows, 0.5))):
+        path = tmp_path / name
+        with path.open("w", newline="", encoding="utf-8") as stream:
+            writer = csv.DictWriter(stream, fieldnames=report.HEADER, lineterminator="\n")
+            writer.writeheader()
+            writer.writerows(data)
+        paths.append(path)
+    assert report.main([str(paths[1]), "--compare", str(paths[0]), "--labels", "first", "second"]) == 0
+    out = capsys.readouterr().out
+    assert "| Complete call, first | Complete call, second | Ratio |" in out
