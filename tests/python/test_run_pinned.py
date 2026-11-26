@@ -4,6 +4,7 @@ import importlib.util
 import json
 from pathlib import Path
 import sys
+import time
 
 import pytest
 
@@ -28,7 +29,7 @@ IDENTITY = {"source": "a" * 40, "source_tree": "b" * 40, "protocol_commit": "c" 
 GPU = "Stand-in GPU, 1.0, 24564 MiB, 3 %, 100 MiB, 30"
 
 
-def same_identity(check_clean=True):
+def same_identity(check_clean=True, protocol=None):
     return dict(IDENTITY)
 
 
@@ -70,10 +71,13 @@ def stand_in(tmp_path, rows, exit_code=0, plan=PLAN, error=None, sleep=0, stderr
     return [sys.executable, str(script)], script, build
 
 
-def collect(tmp_path, rows, desktop_load=True, identity=same_identity, gpu=lambda: GPU, **kwargs):
+def collect(tmp_path, rows, desktop_load=True, identity=same_identity, gpu=lambda: GPU, protocol_path=runner.PROTOCOL,
+            link_watch=None, **kwargs):
     command, script, build = stand_in(tmp_path, rows, **kwargs)
     out = tmp_path / "evidence"
-    return runner.collect(command, script, out, build, desktop_load, identity=identity, gpu=gpu), out
+    extra = {} if link_watch is None else {"link_watch": link_watch}
+    return runner.collect(command, script, out, build, desktop_load, identity=identity, gpu=gpu,
+                          protocol_path=protocol_path, **extra), out
 
 
 @pytest.fixture(scope="module")
@@ -141,7 +145,7 @@ def test_a_run_without_all_four_idle_readings_is_invalid(tmp_path, rows):
 def test_passed_needs_an_unchanged_source_and_a_confirmed_desktop_load(tmp_path, rows):
     sources = iter(["a" * 40, "d" * 40])
 
-    def moved(check_clean=True):
+    def moved(check_clean=True, protocol=None):
         return dict(IDENTITY, source=next(sources))
 
     receipt, _ = collect(tmp_path / "moved", rows, identity=moved)
@@ -180,6 +184,119 @@ def test_a_run_order_mismatch_runs_nothing(tmp_path, rows):
     with pytest.raises(SystemExit, match="run order differs"):
         runner.collect(command, script, tmp_path / "evidence", build, True, identity=same_identity, gpu=lambda: GPU)
     assert not (tmp_path / "evidence").exists()
+
+
+GEN4 = ROOT / "docs" / "pinned-gen4-protocol.json"
+
+
+def link_line(current, width=16, maximum=4):
+    return f"2026/11/26 02:00:00.000, {current}, {maximum}, 4, 5, {width}, 16"
+
+
+class FakeWatch:
+    """Stands in for LinkWatch and returns the given nvidia-smi lines, or raises on start or stop."""
+
+    def __init__(self, lines, fail_start=False):
+        self.lines, self.fail_start, self.calls = lines, fail_start, []
+
+    def __call__(self, link):
+        self.calls.append(("made", link["interval_milliseconds"]))
+        return self
+
+    def start(self):
+        self.calls.append("start")
+        if self.fail_start:
+            raise FileNotFoundError("nvidia-smi")
+
+    def stop(self):
+        self.calls.append("stop")
+        return list(self.lines)
+
+
+def collect_gen4(tmp_path, rows, watch, **kwargs):
+    return collect(tmp_path, rows, protocol_path=GEN4, link_watch=watch, **kwargs)
+
+
+def test_the_gen4_protocol_keeps_the_plan_of_the_pinned_protocol():
+    protocol = json.loads(GEN4.read_text(encoding="utf-8"))
+    assert runner.plan_differences(protocol) == []
+    assert runner.evidence_names(protocol) == ("pinned-gen4.csv", "pinned-gen4-execution.json")
+    assert runner.evidence_names(json.loads(runner.PROTOCOL.read_text(encoding="utf-8"))) == \
+        ("pinned.csv", "pinned-execution.json")
+    assert protocol["pcie_link"]["generation"] == 4 and protocol["pcie_link"]["width"] == 16
+    assert protocol["pcie_link"]["fields"][1:] == [f"pcie.link.{key.replace('_', '.')}"
+                                                   for key in synthetic.report.LINK_KEYS]
+
+
+def test_a_repeat_that_changes_the_plan_runs_nothing(tmp_path, rows):
+    changed = json.loads(GEN4.read_text(encoding="utf-8"))
+    changed["samples_per_condition"], changed["host_timing"] = 120, "something else"
+    path = tmp_path / "changed-protocol.json"
+    path.write_text(json.dumps(changed), encoding="utf-8")
+    watch = FakeWatch([link_line(4)])
+    with pytest.raises(SystemExit, match="host_timing, samples_per_condition. Nothing ran"):
+        collect(tmp_path, rows, protocol_path=path, link_watch=watch)
+    assert watch.calls == [] and not (tmp_path / "evidence").exists()
+
+
+def test_a_gen4_run_keeps_every_link_reading_and_passes_at_generation_4(tmp_path, rows):
+    watch = FakeWatch([link_line(1), link_line(4), link_line(4), link_line(1)])
+    receipt, out = collect_gen4(tmp_path, rows, watch)
+    assert watch.calls == [("made", 250), "start", "stop"]
+    assert receipt["status"] == "passed" and receipt["schema_version"] == 3
+    assert receipt["pcie_link"] == {"generation": 4, "width": 16}
+    assert [r["gen_current"] for r in receipt["pcie_link_readings"]] == [1, 4, 4, 1]
+    assert "pcie_link_unread" not in receipt and "link_problem" not in receipt
+    assert receipt["protocol_sha256"] == hashlib.sha256(GEN4.read_bytes()).hexdigest()
+    assert receipt["csv_sha256"] == hashlib.sha256((out / "pinned-gen4.csv").read_bytes()).hexdigest()
+    assert json.loads((out / "pinned-gen4-execution.json").read_text(encoding="utf-8")) == receipt
+    assert not (out / "pinned.csv").exists()
+    assert "| generation 4, 16 lanes | 2 |" in synthetic.report.report(rows, receipt)
+
+
+@pytest.mark.parametrize("lines, message", [
+    ([link_line(3, maximum=3)], "maximum read generation 3"),
+    ([link_line(1), link_line(1)], "no reading showed the link running"),
+    (["nvidia-smi has failed", link_line(4, width=8)], "no reading showed the link running"),
+])
+def test_a_run_at_another_link_is_kept_and_unqualified(tmp_path, rows, lines, message):
+    receipt, out = collect_gen4(tmp_path, rows, FakeWatch(lines))
+    assert receipt["status"] == "unqualified" and message in receipt["link_problem"]
+    assert (out / "pinned-gen4.csv").exists()
+    if lines[0] == "nvidia-smi has failed":
+        assert receipt["pcie_link_unread"] == ["nvidia-smi has failed"]
+
+
+def test_a_link_watch_that_cannot_start_leaves_the_run_unqualified(tmp_path, rows):
+    watch = FakeWatch([link_line(4)], fail_start=True)
+    receipt, _ = collect_gen4(tmp_path, rows, watch)
+    assert watch.calls == [("made", 250), "start"]
+    assert receipt["pcie_link_readings"] == []
+    assert receipt["pcie_link_unread"][0].startswith("unavailable: FileNotFoundError")
+    assert receipt["status"] == "unqualified" and "no link reading" in receipt["link_problem"]
+
+
+def test_the_pinned_protocol_runs_without_a_link_watch(tmp_path, rows):
+    watch = FakeWatch([link_line(4)])
+    receipt, _ = collect(tmp_path, rows, link_watch=watch)
+    assert watch.calls == [] and "pcie_link" not in receipt and receipt["schema_version"] == 2
+
+
+def test_link_watch_keeps_what_its_command_prints_until_it_is_stopped(tmp_path):
+    script = tmp_path / "smi.py"
+    script.write_text("import sys, time\nfor i in range(3):\n    print(f'line {i}', flush=True)\n"
+                      "time.sleep(60)\n", encoding="utf-8")
+    watch = runner.LinkWatch({"fields": ["timestamp"], "interval_milliseconds": 250})
+    assert watch.command == ["nvidia-smi", "--query-gpu=timestamp", "--format=csv,noheader,nounits", "-lms", "250"]
+    watch.command = [sys.executable, str(script)]
+    watch.start()
+    for _ in range(100):
+        watch.output.seek(0)
+        if watch.output.read().count(b"line") == 3:
+            break
+        time.sleep(0.05)
+    assert watch.stop() == ["line 0", "line 1", "line 2"]
+    assert watch.process.poll() is not None
 
 
 def test_the_old_confirmation_flag_is_refused(monkeypatch):
