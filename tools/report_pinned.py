@@ -36,6 +36,8 @@ IDLE_POINTS = [f"before {side}" for side in SIDES] + [f"after {SIDES[-1]}"]
 # The link readings the runner keeps under a protocol with a pcie_link entry, one per line of
 # nvidia-smi in the order of the protocol's fields after the timestamp.
 LINK_KEYS = ("gen_current", "gen_max", "gen_gpumax", "gen_hostmax", "width_current", "width_max")
+# The generation an idle card drops its link to.
+IDLE_GENERATION = 1
 
 
 def tiles(side):
@@ -232,9 +234,11 @@ def link_reading(line):
 def link_problem(readings, generation, width):
     """Why the link readings do not qualify a run at this generation and width, or None when they do.
 
-    An idle card drops its link to save power, so a current generation below the protocol's is
-    allowed. Every reading must give the protocol's maximum, at least one must show the link
-    running at the protocol's generation and width, and none may run above it.
+    An idle card drops its link to generation 1 to save power, so a reading at generation 1 is
+    allowed, at any width. Every other reading must show the link at the protocol's generation and
+    width, because a link that trained down under load would read between the two. Every reading
+    must give the protocol's maximum, and at least one must show the link at the protocol's
+    generation and width.
     """
     if not readings:
         return "no link reading was taken while the benchmark ran"
@@ -242,8 +246,10 @@ def link_problem(readings, generation, width):
         if (reading["gen_max"], reading["width_max"]) != (generation, width):
             return (f"the link maximum read generation {reading['gen_max']} with {reading['width_max']} lanes "
                     f"at {reading['timestamp']}, the protocol names generation {generation} with {width}")
-        if reading["gen_current"] > generation:
-            return f"the link ran at generation {reading['gen_current']} at {reading['timestamp']}"
+        current = (reading["gen_current"], reading["width_current"])
+        if reading["gen_current"] != IDLE_GENERATION and current != (generation, width):
+            return (f"the link ran at generation {current[0]} with {current[1]} lanes at {reading['timestamp']}, "
+                    f"neither the idle generation {IDLE_GENERATION} nor generation {generation} with {width}")
     if not any((r["gen_current"], r["width_current"]) == (generation, width) for r in readings):
         return f"no reading showed the link running at generation {generation} with {width} lanes"
     return None
@@ -255,16 +261,17 @@ def checked_link_readings(receipt):
     problem = link_problem(receipt["pcie_link_readings"], link["generation"], link["width"])
     if problem:
         raise ValueError(problem)
-    return receipt["pcie_link_readings"], link
+    return receipt["pcie_link_readings"], link, len(receipt.get("pcie_link_unread", []))
 
 
-def link_table(readings, link):
+def link_table(readings, link, unread=0):
     counts = {}
     for r in readings:
         key = (r["gen_current"], r["width_current"])
         counts[key] = counts.get(key, 0) + 1
+    kept = f" {unread} more lines from nvidia-smi held no reading and are kept in the receipt." if unread else ""
     out = [f"The protocol names PCIe generation {link['generation']} with {link['width']} lanes. "
-           f"Every one of the {len(readings)} link readings gave that as the maximum.", "",
+           f"Every one of the {len(readings)} link readings gave that as the maximum.{kept}", "",
            "| Current link | Readings while the benchmark ran |", "| --- | ---: |"]
     for (generation, width), n in sorted(counts.items(), reverse=True):
         out.append(f"| generation {generation}, {width} lanes | {n} |")

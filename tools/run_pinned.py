@@ -116,9 +116,13 @@ class LinkWatch:
         self.process = subprocess.Popen(self.command, stdout=self.output, stderr=subprocess.STDOUT)
 
     def stop(self):
-        """Stop nvidia-smi and return the lines it printed."""
+        """Stop nvidia-smi and return the lines it printed, killing it if it does not stop."""
         self.process.terminate()
-        self.process.wait(timeout=30)
+        try:
+            self.process.wait(timeout=30)
+        except subprocess.TimeoutExpired:
+            self.process.kill()
+            self.process.wait(timeout=30)
         self.output.seek(0)
         lines = self.output.read().decode("utf-8", "replace").splitlines()
         self.output.close()

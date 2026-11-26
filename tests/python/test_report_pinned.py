@@ -257,7 +257,10 @@ def test_a_link_line_from_nvidia_smi_is_read_field_by_field():
     ([], "no link reading"),
     ([link_line(1), link_line(4, maximum=3)], "maximum read generation 3"),
     ([link_line(4), link_line(1, width=8)], None),
-    ([link_line(1), link_line(4, width=8)], "no reading showed the link running at generation 4 with 16"),
+    ([link_line(1), link_line(1)], "no reading showed the link running at generation 4 with 16"),
+    ([link_line(1), link_line(4, width=8)], "ran at generation 4 with 8 lanes"),
+    ([link_line(1), link_line(4), link_line(3), link_line(4)], "ran at generation 3 with 16 lanes"),
+    ([link_line(4), link_line(2), link_line(1)], "ran at generation 2 with 16 lanes"),
     ([link_line(4), link_line(5)], "ran at generation 5"),
 ])
 def test_the_link_qualifies_a_run_only_at_the_protocols_generation_and_width(lines, message):
@@ -276,6 +279,10 @@ def test_a_receipt_with_link_readings_adds_their_counts_and_one_without_is_uncha
     assert text.startswith(plain)
     assert "Every one of the 5 link readings gave that as the maximum." in text
     assert "| generation 4, 16 lanes | 3 |" in text and "| generation 1, 16 lanes | 2 |" in text
+    assert "held no reading" not in text
+    receipt["pcie_link_unread"] = ["nvidia-smi has failed", "No devices were found"]
+    assert "maximum. 2 more lines from nvidia-smi held no reading and are kept in the receipt." \
+        in report.report(rows, receipt)
     receipt["pcie_link_readings"] = readings[:1]
     with pytest.raises(ValueError, match="no reading showed the link running"):
         report.report(rows, receipt)

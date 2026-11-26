@@ -257,7 +257,8 @@ def test_a_gen4_run_keeps_every_link_reading_and_passes_at_generation_4(tmp_path
 @pytest.mark.parametrize("lines, message", [
     ([link_line(3, maximum=3)], "maximum read generation 3"),
     ([link_line(1), link_line(1)], "no reading showed the link running"),
-    (["nvidia-smi has failed", link_line(4, width=8)], "no reading showed the link running"),
+    (["nvidia-smi has failed", link_line(4, width=8)], "ran at generation 4 with 8 lanes"),
+    ([link_line(4), link_line(3), link_line(4)], "ran at generation 3 with 16 lanes"),
 ])
 def test_a_run_at_another_link_is_kept_and_unqualified(tmp_path, rows, lines, message):
     receipt, out = collect_gen4(tmp_path, rows, FakeWatch(lines))
@@ -276,6 +277,15 @@ def test_a_link_watch_that_cannot_start_leaves_the_run_unqualified(tmp_path, row
     assert receipt["status"] == "unqualified" and "no link reading" in receipt["link_problem"]
 
 
+def test_a_timed_out_gen4_run_still_stops_the_link_watch(tmp_path, rows, monkeypatch):
+    monkeypatch.setattr(runner, "TIMEOUT", 2)
+    watch = FakeWatch([link_line(4)])
+    receipt, out = collect_gen4(tmp_path, rows[:10], watch, sleep=30)
+    assert watch.calls == [("made", 250), "start", "stop"]
+    assert receipt["exit_code"] == "timeout" and receipt["status"] == "failed"
+    assert len(receipt["pcie_link_readings"]) == 1 and (out / "pinned-gen4.csv").exists()
+
+
 def test_the_pinned_protocol_runs_without_a_link_watch(tmp_path, rows):
     watch = FakeWatch([link_line(4)])
     receipt, _ = collect(tmp_path, rows, link_watch=watch)
@@ -283,16 +293,17 @@ def test_the_pinned_protocol_runs_without_a_link_watch(tmp_path, rows):
 
 
 def test_link_watch_keeps_what_its_command_prints_until_it_is_stopped(tmp_path):
-    script = tmp_path / "smi.py"
+    # The stand in writes a marker file once its lines are out, so the test never moves the file
+    # position that it shares with the child while the child still writes.
+    script, marker = tmp_path / "smi.py", tmp_path / "printed"
     script.write_text("import sys, time\nfor i in range(3):\n    print(f'line {i}', flush=True)\n"
-                      "time.sleep(60)\n", encoding="utf-8")
+                      f"open({str(marker)!r}, 'w').close()\ntime.sleep(60)\n", encoding="utf-8")
     watch = runner.LinkWatch({"fields": ["timestamp"], "interval_milliseconds": 250})
     assert watch.command == ["nvidia-smi", "--query-gpu=timestamp", "--format=csv,noheader,nounits", "-lms", "250"]
     watch.command = [sys.executable, str(script)]
     watch.start()
-    for _ in range(100):
-        watch.output.seek(0)
-        if watch.output.read().count(b"line") == 3:
+    for _ in range(200):
+        if marker.exists():
             break
         time.sleep(0.05)
     assert watch.stop() == ["line 0", "line 1", "line 2"]
