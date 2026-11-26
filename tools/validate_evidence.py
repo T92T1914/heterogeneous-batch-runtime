@@ -138,3 +138,53 @@ headline = (f'the median of the {warm} paired ratios was between {min(ratios):.3
 if any(text not in pinned_page for text in headline):
     raise ValueError(f'The pinned results page headline differs from its samples: {headline}')
 print(f'{len(pinned_rows)} pinned rows, the receipt, the unchanged protocol, the results tables, the page citations and the headline passed')
+
+# The same plan again at PCIe generation 4 under docs/pinned-gen4-protocol.json. Its receipt holds
+# the link readings, which report_pinned.py checks against the protocol's link before it makes the
+# tables. The results page must also carry, under its comparison heading, the table that sets each
+# condition of the generation 3 run beside this one.
+gen4_receipt = json.loads((root / 'pinned-gen4-execution.json').read_text(encoding='utf-8'))
+gen4_bytes = (root / 'pinned-gen4.csv').read_bytes()
+if hashlib.sha256(gen4_bytes).hexdigest() != gen4_receipt['csv_sha256']:
+    raise ValueError('Retained evidence changed: pinned-gen4.csv')
+if hashlib.sha256((root.parent / 'pinned-gen4-protocol.json').read_bytes()).hexdigest() != gen4_receipt['protocol_sha256']:
+    raise ValueError('The pinned generation 4 protocol changed after its run')
+if gen4_receipt['status'] != 'passed' or gen4_receipt['exit_code'] != 0:
+    raise ValueError('The pinned generation 4 run did not pass')
+gen4_protocol = json.loads((root.parent / 'pinned-gen4-protocol.json').read_text(encoding='utf-8'))
+if gen4_receipt['pcie_link'] != {'generation': gen4_protocol['pcie_link']['generation'],
+                                 'width': gen4_protocol['pcie_link']['width']}:
+    raise ValueError('The pinned generation 4 receipt names another link than its protocol')
+gen4_rows = list(csv.DictReader(gen4_bytes.decode('utf-8-sig').splitlines()))
+gen4_page = (root.parent / 'pinned-gen4-results.md').read_text(encoding='utf-8')
+gen4_sections = {}
+for part in ('\n' + gen4_page).split('\n## ')[1:]:
+    heading, _, body = part.partition('\n')
+    gen4_sections[heading] = body
+if report_pinned.report(gen4_rows, gen4_receipt) not in gen4_sections.get('Results', ''):
+    raise ValueError('The pinned generation 4 results page differs from its samples')
+if (report_pinned.compare(pinned_rows, gen4_rows, 'generation 3', 'generation 4')
+        not in gen4_sections.get('Beside the generation 3 run', '')):
+    raise ValueError('The pinned generation 4 comparison differs from the samples of both runs')
+for value in (gen4_receipt['csv_sha256'], gen4_receipt['source'], gen4_receipt['binary_sha256'],
+              gen4_receipt['protocol_sha256'], gen4_receipt['protocol_commit']):
+    if value not in gen4_page:
+        raise ValueError(f'The pinned generation 4 results page does not cite {value}')
+gen4_runs, _ = report_pinned.validate(gen4_rows)
+gen4_pairs = report_pinned.paired(gen4_runs)
+if any(not p['all']['p25'] <= 1 <= p['all']['p75'] for p in gen4_pairs.values()):
+    raise ValueError('The pinned generation 4 page says every middle half of the paired ratios includes 1')
+gen4_link = gen4_receipt['pcie_link_readings']
+if any((r['gen_current'], r['width_current'], r['gen_max'], r['width_max']) != (4, 16, 4, 16) for r in gen4_link):
+    raise ValueError('The pinned generation 4 page says every link reading was generation 4 with 16 lanes')
+gen4_ratios = [p['all']['median'] for p in gen4_pairs.values()]
+gen4_slower = [sum(float(b['host_ms']) > float(a['host_ms'])
+                   for a, b in zip(gen4_runs[(side, workload, 'pageable')][1:], gen4_runs[(side, workload, 'pinned')][1:]))
+               for side, workload in gen4_pairs]
+headline = (f'the median of the {warm} paired ratios was between {min(gen4_ratios):.3f} and {max(gen4_ratios):.3f}',
+            f'between {min(gen4_slower)} and {max(gen4_slower)} of the {warm} back to back pairs had the pinned call slower',
+            f'All {len(gen4_link)} readings gave generation 4 with 16 lanes')
+if any(text not in gen4_page for text in headline):
+    raise ValueError(f'The pinned generation 4 page headline differs from its samples: {headline}')
+print(f'{len(gen4_rows)} pinned generation 4 rows, the receipt and its link readings, the unchanged protocol, '
+      'the results and comparison tables, the page citations and the headline passed')

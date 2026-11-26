@@ -1,0 +1,491 @@
+{
+  "schema_version": 3,
+  "source": "175fcd3abb3f1775b36c61fc603e0768d8341e51",
+  "source_tree": "624d9157b866fb95746ddb430a8d54e92ac1b6e6",
+  "protocol_commit": "2f8396fe6583c1d28693c5ea2ddb8198e96262fc",
+  "protocol_sha256": "e4aa315fb358245d81f37fc6e234c0a4eea84fb44ee80400aea674a0a50a1455",
+  "binary_sha256": "e644ed7a9c33d98417d35538d27684accdef784e828f2d82e5d297598f136685",
+  "compilers": {
+    "cxx": "MSVC 19.44.35228.0",
+    "cuda": "NVIDIA 13.2.86"
+  },
+  "cpu": "AMD64 Family 25 Model 97 Stepping 2, AuthenticAMD",
+  "os": "Windows-10-10.0.26300-SP0",
+  "desktop_load_confirmed": true,
+  "pcie_link": {
+    "generation": 4,
+    "width": 16
+  },
+  "gpu_before": "NVIDIA GeForce RTX 4090, 621.24, 24564 MiB, 1 %, 4504 MiB, 39.33",
+  "started_utc": "2026-11-26T12:10:46.818485+00:00",
+  "finished_utc": "2026-11-26T12:10:59.250781+00:00",
+  "exit_code": 0,
+  "csv_sha256": "c22b79b33ae8c122afab2f2b081a23db265fdf7f3190c1c0007333d2f1e17e3c",
+  "stderr": [
+    "NVIDIA GeForce RTX 4090 SM 8.9",
+    "NVML: the CUDA device found by its UUID",
+    "GPU idle before 32: utilization 1 percent, memory 5265 MiB",
+    "GPU idle before 256: utilization 2 percent, memory 5265 MiB",
+    "GPU idle before 1024: utilization 2 percent, memory 5265 MiB",
+    "GPU idle after 1024: utilization 9 percent, memory 5265 MiB"
+  ],
+  "gpu_idle_readings": [
+    {
+      "point": "before 32",
+      "gpu_util_percent": 1,
+      "gpu_memory_mib": 5265
+    },
+    {
+      "point": "before 256",
+      "gpu_util_percent": 2,
+      "gpu_memory_mib": 5265
+    },
+    {
+      "point": "before 1024",
+      "gpu_util_percent": 2,
+      "gpu_memory_mib": 5265
+    },
+    {
+      "point": "after 1024",
+      "gpu_util_percent": 9,
+      "gpu_memory_mib": 5265
+    }
+  ],
+  "gpu_after": "NVIDIA GeForce RTX 4090, 621.24, 24564 MiB, 13 %, 4504 MiB, 38.96",
+  "pcie_link_readings": [
+    {
+      "timestamp": "2026/11/26 06:10:46.856",
+      "gen_current": 4,
+      "gen_max": 4,
+      "gen_gpumax": 4,
+      "gen_hostmax": 5,
+      "width_current": 16,
+      "width_max": 16
+    },
+    {
+      "timestamp": "2026/11/26 06:10:47.120",
+      "gen_current": 4,
+      "gen_max": 4,
+      "gen_gpumax": 4,
+      "gen_hostmax": 5,
+      "width_current": 16,
+      "width_max": 16
+    },
+    {
+      "timestamp": "2026/11/26 06:10:47.371",
+      "gen_current": 4,
+      "gen_max": 4,
+      "gen_gpumax": 4,
+      "gen_hostmax": 5,
+      "width_current": 16,
+      "width_max": 16
+    },
+    {
+      "timestamp": "2026/11/26 06:10:47.636",
+      "gen_current": 4,
+      "gen_max": 4,
+      "gen_gpumax": 4,
+      "gen_hostmax": 5,
+      "width_current": 16,
+      "width_max": 16
+    },
+    {
+      "timestamp": "2026/11/26 06:10:47.886",
+      "gen_current": 4,
+      "gen_max": 4,
+      "gen_gpumax": 4,
+      "gen_hostmax": 5,
+      "width_current": 16,
+      "width_max": 16
+    },
+    {
+      "timestamp": "2026/11/26 06:10:48.149",
+      "gen_current": 4,
+      "gen_max": 4,
+      "gen_gpumax": 4,
+      "gen_hostmax": 5,
+      "width_current": 16,
+      "width_max": 16
+    },
+    {
+      "timestamp": "2026/11/26 06:10:48.400",
+      "gen_current": 4,
+      "gen_max": 4,
+      "gen_gpumax": 4,
+      "gen_hostmax": 5,
+      "width_current": 16,
+      "width_max": 16
+    },
+    {
+      "timestamp": "2026/11/26 06:10:48.665",
+      "gen_current": 4,
+      "gen_max": 4,
+      "gen_gpumax": 4,
+      "gen_hostmax": 5,
+      "width_current": 16,
+      "width_max": 16
+    },
+    {
+      "timestamp": "2026/11/26 06:10:48.917",
+      "gen_current": 4,
+      "gen_max": 4,
+      "gen_gpumax": 4,
+      "gen_hostmax": 5,
+      "width_current": 16,
+      "width_max": 16
+    },
+    {
+      "timestamp": "2026/11/26 06:10:49.180",
+      "gen_current": 4,
+      "gen_max": 4,
+      "gen_gpumax": 4,
+      "gen_hostmax": 5,
+      "width_current": 16,
+      "width_max": 16
+    },
+    {
+      "timestamp": "2026/11/26 06:10:49.445",
+      "gen_current": 4,
+      "gen_max": 4,
+      "gen_gpumax": 4,
+      "gen_hostmax": 5,
+      "width_current": 16,
+      "width_max": 16
+    },
+    {
+      "timestamp": "2026/11/26 06:10:49.710",
+      "gen_current": 4,
+      "gen_max": 4,
+      "gen_gpumax": 4,
+      "gen_hostmax": 5,
+      "width_current": 16,
+      "width_max": 16
+    },
+    {
+      "timestamp": "2026/11/26 06:10:49.974",
+      "gen_current": 4,
+      "gen_max": 4,
+      "gen_gpumax": 4,
+      "gen_hostmax": 5,
+      "width_current": 16,
+      "width_max": 16
+    },
+    {
+      "timestamp": "2026/11/26 06:10:50.225",
+      "gen_current": 4,
+      "gen_max": 4,
+      "gen_gpumax": 4,
+      "gen_hostmax": 5,
+      "width_current": 16,
+      "width_max": 16
+    },
+    {
+      "timestamp": "2026/11/26 06:10:50.490",
+      "gen_current": 4,
+      "gen_max": 4,
+      "gen_gpumax": 4,
+      "gen_hostmax": 5,
+      "width_current": 16,
+      "width_max": 16
+    },
+    {
+      "timestamp": "2026/11/26 06:10:50.755",
+      "gen_current": 4,
+      "gen_max": 4,
+      "gen_gpumax": 4,
+      "gen_hostmax": 5,
+      "width_current": 16,
+      "width_max": 16
+    },
+    {
+      "timestamp": "2026/11/26 06:10:51.017",
+      "gen_current": 4,
+      "gen_max": 4,
+      "gen_gpumax": 4,
+      "gen_hostmax": 5,
+      "width_current": 16,
+      "width_max": 16
+    },
+    {
+      "timestamp": "2026/11/26 06:10:51.267",
+      "gen_current": 4,
+      "gen_max": 4,
+      "gen_gpumax": 4,
+      "gen_hostmax": 5,
+      "width_current": 16,
+      "width_max": 16
+    },
+    {
+      "timestamp": "2026/11/26 06:10:51.533",
+      "gen_current": 4,
+      "gen_max": 4,
+      "gen_gpumax": 4,
+      "gen_hostmax": 5,
+      "width_current": 16,
+      "width_max": 16
+    },
+    {
+      "timestamp": "2026/11/26 06:10:51.794",
+      "gen_current": 4,
+      "gen_max": 4,
+      "gen_gpumax": 4,
+      "gen_hostmax": 5,
+      "width_current": 16,
+      "width_max": 16
+    },
+    {
+      "timestamp": "2026/11/26 06:10:52.046",
+      "gen_current": 4,
+      "gen_max": 4,
+      "gen_gpumax": 4,
+      "gen_hostmax": 5,
+      "width_current": 16,
+      "width_max": 16
+    },
+    {
+      "timestamp": "2026/11/26 06:10:52.309",
+      "gen_current": 4,
+      "gen_max": 4,
+      "gen_gpumax": 4,
+      "gen_hostmax": 5,
+      "width_current": 16,
+      "width_max": 16
+    },
+    {
+      "timestamp": "2026/11/26 06:10:52.573",
+      "gen_current": 4,
+      "gen_max": 4,
+      "gen_gpumax": 4,
+      "gen_hostmax": 5,
+      "width_current": 16,
+      "width_max": 16
+    },
+    {
+      "timestamp": "2026/11/26 06:10:52.837",
+      "gen_current": 4,
+      "gen_max": 4,
+      "gen_gpumax": 4,
+      "gen_hostmax": 5,
+      "width_current": 16,
+      "width_max": 16
+    },
+    {
+      "timestamp": "2026/11/26 06:10:53.088",
+      "gen_current": 4,
+      "gen_max": 4,
+      "gen_gpumax": 4,
+      "gen_hostmax": 5,
+      "width_current": 16,
+      "width_max": 16
+    },
+    {
+      "timestamp": "2026/11/26 06:10:53.354",
+      "gen_current": 4,
+      "gen_max": 4,
+      "gen_gpumax": 4,
+      "gen_hostmax": 5,
+      "width_current": 16,
+      "width_max": 16
+    },
+    {
+      "timestamp": "2026/11/26 06:10:53.618",
+      "gen_current": 4,
+      "gen_max": 4,
+      "gen_gpumax": 4,
+      "gen_hostmax": 5,
+      "width_current": 16,
+      "width_max": 16
+    },
+    {
+      "timestamp": "2026/11/26 06:10:53.883",
+      "gen_current": 4,
+      "gen_max": 4,
+      "gen_gpumax": 4,
+      "gen_hostmax": 5,
+      "width_current": 16,
+      "width_max": 16
+    },
+    {
+      "timestamp": "2026/11/26 06:10:54.147",
+      "gen_current": 4,
+      "gen_max": 4,
+      "gen_gpumax": 4,
+      "gen_hostmax": 5,
+      "width_current": 16,
+      "width_max": 16
+    },
+    {
+      "timestamp": "2026/11/26 06:10:54.412",
+      "gen_current": 4,
+      "gen_max": 4,
+      "gen_gpumax": 4,
+      "gen_hostmax": 5,
+      "width_current": 16,
+      "width_max": 16
+    },
+    {
+      "timestamp": "2026/11/26 06:10:54.676",
+      "gen_current": 4,
+      "gen_max": 4,
+      "gen_gpumax": 4,
+      "gen_hostmax": 5,
+      "width_current": 16,
+      "width_max": 16
+    },
+    {
+      "timestamp": "2026/11/26 06:10:54.941",
+      "gen_current": 4,
+      "gen_max": 4,
+      "gen_gpumax": 4,
+      "gen_hostmax": 5,
+      "width_current": 16,
+      "width_max": 16
+    },
+    {
+      "timestamp": "2026/11/26 06:10:55.191",
+      "gen_current": 4,
+      "gen_max": 4,
+      "gen_gpumax": 4,
+      "gen_hostmax": 5,
+      "width_current": 16,
+      "width_max": 16
+    },
+    {
+      "timestamp": "2026/11/26 06:10:55.456",
+      "gen_current": 4,
+      "gen_max": 4,
+      "gen_gpumax": 4,
+      "gen_hostmax": 5,
+      "width_current": 16,
+      "width_max": 16
+    },
+    {
+      "timestamp": "2026/11/26 06:10:55.721",
+      "gen_current": 4,
+      "gen_max": 4,
+      "gen_gpumax": 4,
+      "gen_hostmax": 5,
+      "width_current": 16,
+      "width_max": 16
+    },
+    {
+      "timestamp": "2026/11/26 06:10:55.986",
+      "gen_current": 4,
+      "gen_max": 4,
+      "gen_gpumax": 4,
+      "gen_hostmax": 5,
+      "width_current": 16,
+      "width_max": 16
+    },
+    {
+      "timestamp": "2026/11/26 06:10:56.236",
+      "gen_current": 4,
+      "gen_max": 4,
+      "gen_gpumax": 4,
+      "gen_hostmax": 5,
+      "width_current": 16,
+      "width_max": 16
+    },
+    {
+      "timestamp": "2026/11/26 06:10:56.489",
+      "gen_current": 4,
+      "gen_max": 4,
+      "gen_gpumax": 4,
+      "gen_hostmax": 5,
+      "width_current": 16,
+      "width_max": 16
+    },
+    {
+      "timestamp": "2026/11/26 06:10:56.751",
+      "gen_current": 4,
+      "gen_max": 4,
+      "gen_gpumax": 4,
+      "gen_hostmax": 5,
+      "width_current": 16,
+      "width_max": 16
+    },
+    {
+      "timestamp": "2026/11/26 06:10:57.013",
+      "gen_current": 4,
+      "gen_max": 4,
+      "gen_gpumax": 4,
+      "gen_hostmax": 5,
+      "width_current": 16,
+      "width_max": 16
+    },
+    {
+      "timestamp": "2026/11/26 06:10:57.275",
+      "gen_current": 4,
+      "gen_max": 4,
+      "gen_gpumax": 4,
+      "gen_hostmax": 5,
+      "width_current": 16,
+      "width_max": 16
+    },
+    {
+      "timestamp": "2026/11/26 06:10:57.526",
+      "gen_current": 4,
+      "gen_max": 4,
+      "gen_gpumax": 4,
+      "gen_hostmax": 5,
+      "width_current": 16,
+      "width_max": 16
+    },
+    {
+      "timestamp": "2026/11/26 06:10:57.777",
+      "gen_current": 4,
+      "gen_max": 4,
+      "gen_gpumax": 4,
+      "gen_hostmax": 5,
+      "width_current": 16,
+      "width_max": 16
+    },
+    {
+      "timestamp": "2026/11/26 06:10:58.043",
+      "gen_current": 4,
+      "gen_max": 4,
+      "gen_gpumax": 4,
+      "gen_hostmax": 5,
+      "width_current": 16,
+      "width_max": 16
+    },
+    {
+      "timestamp": "2026/11/26 06:10:58.308",
+      "gen_current": 4,
+      "gen_max": 4,
+      "gen_gpumax": 4,
+      "gen_hostmax": 5,
+      "width_current": 16,
+      "width_max": 16
+    },
+    {
+      "timestamp": "2026/11/26 06:10:58.560",
+      "gen_current": 4,
+      "gen_max": 4,
+      "gen_gpumax": 4,
+      "gen_hostmax": 5,
+      "width_current": 16,
+      "width_max": 16
+    },
+    {
+      "timestamp": "2026/11/26 06:10:58.823",
+      "gen_current": 4,
+      "gen_max": 4,
+      "gen_gpumax": 4,
+      "gen_hostmax": 5,
+      "width_current": 16,
+      "width_max": 16
+    },
+    {
+      "timestamp": "2026/11/26 06:10:59.088",
+      "gen_current": 4,
+      "gen_max": 4,
+      "gen_gpumax": 4,
+      "gen_hostmax": 5,
+      "width_current": 16,
+      "width_max": 16
+    }
+  ],
+  "source_unchanged": true,
+  "status": "passed"
+}
