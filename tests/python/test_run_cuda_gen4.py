@@ -24,7 +24,7 @@ FIELDS = PROTOCOL["pcie_link"]["fields"]
 SEPTEMBER = (ROOT / "docs" / "evidence" / "baseline-cuda.csv").read_bytes()
 IDENTITY = {"source": "a" * 40, "source_tree": "b" * 40, "protocol_commit": "c" * 40}
 FORECAST = {"forecast_commit": "d" * 40, "forecast_sha256": "e" * 64}
-GPU = "Stand-in GPU, 1.0, 24564 MiB, 3 %, 100 MiB, 30"
+GPU = "Stand in GPU, 1.0, 24564 MiB, 3 %, 100 MiB, 30"
 IDLE = "2026/11/27 08:00:00.000, 1, 4, 4, 5, 16, 16, 9, 6100"
 GEN4 = "2026/11/27 08:00:00.050, 4, 4, 4, 5, 16, 16, 31, 6900"
 GEN3 = "2026/11/27 08:00:00.100, 3, 4, 4, 5, 16, 16, 30, 6900"
@@ -287,7 +287,7 @@ def test_watch_counts_only_readings_from_a_real_process(tmp_path):
 
 
 def real_watch(tmp_path, first, then):
-    """runner.Watch on the real clock around a stand-in nvidia-smi that prints first once and then
+    """runner.Watch on the real clock around a stand in nvidia-smi that prints first once and then
     prints then every 50 milliseconds."""
     script = tmp_path / "smi.py"
     script.write_text(f"import time\nprint({first!r}, flush=True)\nwhile True:\n    time.sleep(0.05)\n"
