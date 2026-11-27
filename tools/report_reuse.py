@@ -141,7 +141,7 @@ The context belongs to its creating thread and CUDA device. Inputs remain immuta
 
 Actual WSL2 Linux Release and ASan/UBSan verification and an installed CPU consumer are recorded separately in the receipt. That is Linux CPU evidence, not Linux GPU execution or a separate physical machine. Hosted checks must be verified at the delivered revision. GPU hardware counters remain restricted by `ERR_NVGPUCTRPERM`, and Windows Compute Sanitizer's WDDM initialization remains unresolved. No GPU sanitizer pass is claimed.
 
-This run used the Ryzen 7 7800X3D, RTX 4090, driver 617.14, MSVC 19.44 and CUDA 13.4.59 on a shared Windows workstation. GPU utilization was 18 percent before and 32 percent after collection. Ordinary applications stayed active. Only one task benchmark ran, with at most two CPU threads and a 120 second cap. No clocks, power, drivers, display or security settings changed. A single short batch on a shared host cannot establish statistical independence, general speedup or production latency.
+This run used the Ryzen 7 7800X3D, RTX 4090, driver 617.14, MSVC 19.44 and CUDA 13.4.59 on a shared Windows workstation. GPU utilization was 18 percent before and 32 percent after collection. Ordinary applications stayed active. Only one task benchmark ran, with at most two CPU threads and a 120 second cap. No clocks, power, drivers, display or security settings changed. A single short batch on a shared host cannot establish statistical independence, general speedup or production latency. The card's PCIe link generation was not read during this run, and on November 25, 2026 I found the motherboard setting for the card's slot at generation 3, set it to automatic, and the link has read generation 4 with 16 lanes since.
 
 ## Reproduce
 
