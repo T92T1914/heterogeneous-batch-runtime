@@ -1,5 +1,7 @@
+import csv
 import importlib.util
 from pathlib import Path
+import statistics
 import unittest
 
 ROOT = Path(__file__).resolve().parents[1]
@@ -49,6 +51,45 @@ class CostModelTest(unittest.TestCase):
         report, table = cost_model.outputs(receipt, points)
         self.assertEqual((ROOT / "docs" / "cost-model.md").read_text(encoding="utf-8"), report)
         self.assertEqual((ROOT / "docs" / "evidence" / "cost-model.csv").read_text(encoding="utf-8"), table)
+
+    def test_committed_forecast_matches(self):
+        # The forecast is committed before the generation 4 run. If the file and the script disagree,
+        # the prediction on record is not the one the script makes.
+        receipt, points = cost_model.load()
+        self.assertEqual(cost_model.FORECAST.read_text(encoding="utf-8"), cost_model.forecast_output(receipt, points))
+
+    def test_forecast_fits_all_sizes_and_scales_only_the_term_per_byte(self):
+        _, points = cost_model.load()
+        terms, same = cost_model.forecast(points, 1.0)
+        for entry in same:
+            for field in cost_model.FORECAST_FIELDS.values():
+                self.assertEqual(entry[field]["scaled"], entry[field]["unscaled"])
+        _, halved = cost_model.forecast(points, 2.0)
+        self.assertEqual(len(halved), 18)
+        for name, view in cost_model.MODELS.items():
+            a, b = cost_model.fit([view(p) for p in points])
+            self.assertEqual(terms[name], (a, b))
+            for entry, p in zip(halved, points):
+                x0, x1, y = view(p)
+                cell = entry[cost_model.FORECAST_FIELDS[name]]
+                self.assertAlmostEqual(cell["unscaled"], a * x0 + b * x1, places=9)
+                self.assertAlmostEqual(cell["scaled"], a * x0 + b / 2 * x1, places=9)
+                self.assertAlmostEqual(cell["september_median"], y, places=9)
+
+    def test_upload_rate_ratio_comes_from_the_largest_pageable_uploads(self):
+        ratio, binary, runs = cost_model.upload_rate_ratio()
+        rows = {}
+        for label, name in cost_model.PINNED_RUNS:
+            text = (ROOT / "docs" / "evidence" / f"{name}.csv").read_bytes().decode("utf-8-sig")
+            rows[label] = [r for r in csv.DictReader(text.splitlines())
+                           if r["phase"] == "run" and r["host_memory"] == "pageable" and r["side"] == "1024"
+                           and r["workload"] in ("masked_reduce", "stencil3x3") and r["iteration"] != "0"]
+            self.assertEqual(len(rows[label]), 240)
+        total = {label: sum(statistics.median(float(r["upload_ms"]) for r in rows[label] if r["workload"] == w)
+                            for w in ("masked_reduce", "stencil3x3")) for label in rows}
+        self.assertAlmostEqual(ratio, total["generation 3"] / total["generation 4"], places=12)
+        self.assertGreater(ratio, 1)
+        self.assertEqual(binary, runs["generation 3"][0]["binary_sha256"])
 
 
 if __name__ == "__main__":

@@ -1,0 +1,427 @@
+{
+  "schema_version": 1,
+  "target": "docs/cuda-gen4-protocol.json, the September CUDA protocol of docs/cuda-protocol.json run again with the card's link at PCIe generation 4 with 16 lanes",
+  "written_before": "the first sample of that run. The commit that adds this file is older than the run, which the run's receipt records by revision",
+  "predicts": "for each of the six CUDA conditions at each of the three sizes, the median of the five warm samples of the upload interval, the download interval and the complete call on the host clock, in milliseconds",
+  "model": "the three models of docs/cost-model.md, each fitted once on all 18 September medians by least squares on relative error, where docs/cost-model.md holds one size out of each fit. a is the fixed term, a latency per copy for the upload and download and one fixed cost for the complete call, and b is the term per byte",
+  "unscaled": "a times copies (or 1) plus b times bytes, the fitted terms as they are",
+  "scaled": "a times copies (or 1) plus b divided by upload_rate_ratio times bytes. Every term per byte is divided, the download's and the complete call's too, although the ratio comes from uploads and the complete call's term per byte also holds host work that grows with the image",
+  "claims_nothing_about": "the link generation of the September run, which no reading records",
+  "upload_rate_ratio": {
+    "value": 1.818748045,
+    "definition": "the summed median pageable upload of masked_reduce and stencil3x3 at 1024 by 1024, 9437184 and 8388608 bytes, over the 120 warm samples of the run at generation 3, divided by the same sum in the run at generation 4",
+    "binary_sha256": "e644ed7a9c33d98417d35538d27684accdef784e828f2d82e5d297598f136685",
+    "median_upload_ms": {
+      "generation 3": {
+        "masked_reduce": 0.750815988,
+        "stencil3x3": 0.669407994
+      },
+      "generation 4": {
+        "masked_reduce": 0.413279995,
+        "stencil3x3": 0.367600009
+      }
+    },
+    "csv_sha256": {
+      "generation 3": "5c90cfd4b2f044a23d815b7d5199814341e984b401029ec044b26d3a143a8e25",
+      "generation 4": "c22b79b33ae8c122afab2f2b081a23db265fdf7f3190c1c0007333d2f1e17e3c"
+    }
+  },
+  "september_csv_sha256": "a83f16d5046ff83d719578aad2a5fce03da5b51f2c63a63b3e0b856f75002f11",
+  "terms": {
+    "upload": {
+      "fixed_ms": 0.003512715,
+      "ms_per_mib": 0.095478469,
+      "scaled_ms_per_mib": 0.052496809
+    },
+    "download": {
+      "fixed_ms": 0.014899264,
+      "ms_per_mib": 0.12987673,
+      "scaled_ms_per_mib": 0.071409962
+    },
+    "complete": {
+      "fixed_ms": 0.403932405,
+      "ms_per_mib": 0.294062168,
+      "scaled_ms_per_mib": 0.16168384
+    }
+  },
+  "predictions": [
+    {
+      "workload": "masked_reduce",
+      "distribution": "uniform",
+      "backend": "cuda_baseline",
+      "side": 32,
+      "upload_ms": {
+        "unscaled": 0.007864596,
+        "scaled": 0.007486828,
+        "september_median": 0.006048
+      },
+      "download_ms": {
+        "unscaled": 0.014900254,
+        "scaled": 0.014899808,
+        "september_median": 0.020671999
+      },
+      "host_total_ms": {
+        "unscaled": 0.40651918,
+        "scaled": 0.405354688,
+        "september_median": 0.512
+      }
+    },
+    {
+      "workload": "masked_reduce",
+      "distribution": "uniform",
+      "backend": "cuda_baseline",
+      "side": 256,
+      "upload_ms": {
+        "unscaled": 0.060732069,
+        "scaled": 0.036554885,
+        "september_median": 0.099327996
+      },
+      "download_ms": {
+        "unscaled": 0.014900254,
+        "scaled": 0.014899808,
+        "september_median": 0.020479999
+      },
+      "host_total_ms": {
+        "unscaled": 0.569344618,
+        "scaled": 0.494880799,
+        "september_median": 0.7621
+      }
+    },
+    {
+      "workload": "masked_reduce",
+      "distribution": "uniform",
+      "backend": "cuda_baseline",
+      "side": 1024,
+      "upload_ms": {
+        "unscaled": 0.866331653,
+        "scaled": 0.479496713,
+        "september_median": 0.769183993
+      },
+      "download_ms": {
+        "unscaled": 0.014900254,
+        "scaled": 0.014899808,
+        "september_median": 0.025664
+      },
+      "host_total_ms": {
+        "unscaled": 3.050494157,
+        "scaled": 1.859088197,
+        "september_median": 6.9292
+      }
+    },
+    {
+      "workload": "stencil3x3",
+      "distribution": "uniform",
+      "backend": "cuda_baseline",
+      "side": 32,
+      "upload_ms": {
+        "unscaled": 0.004258641,
+        "scaled": 0.003922846,
+        "september_median": 0.005088
+      },
+      "download_ms": {
+        "unscaled": 0.015913926,
+        "scaled": 0.015457154,
+        "september_median": 0.013312
+      },
+      "host_total_ms": {
+        "unscaled": 0.408527127,
+        "scaled": 0.406458715,
+        "september_median": 0.3682
+      }
+    },
+    {
+      "workload": "stencil3x3",
+      "distribution": "uniform",
+      "backend": "cuda_baseline",
+      "side": 256,
+      "upload_ms": {
+        "unscaled": 0.05125195,
+        "scaled": 0.02976112,
+        "september_median": 0.067744002
+      },
+      "download_ms": {
+        "unscaled": 0.079837628,
+        "scaled": 0.050604245,
+        "september_median": 0.095455997
+      },
+      "host_total_ms": {
+        "unscaled": 0.697994573,
+        "scaled": 0.565616245,
+        "september_median": 0.7396
+      }
+    },
+    {
+      "workload": "stencil3x3",
+      "distribution": "uniform",
+      "backend": "cuda_baseline",
+      "side": 1024,
+      "upload_ms": {
+        "unscaled": 0.767340469,
+        "scaled": 0.423487189,
+        "september_median": 0.673088014
+      },
+      "download_ms": {
+        "unscaled": 1.0539131,
+        "scaled": 0.586178963,
+        "september_median": 0.733536005
+      },
+      "host_total_ms": {
+        "unscaled": 5.108927086,
+        "scaled": 2.990873842,
+        "september_median": 5.2319
+      }
+    },
+    {
+      "workload": "tile_histogram",
+      "distribution": "uniform",
+      "backend": "cuda_baseline",
+      "side": 32,
+      "upload_ms": {
+        "unscaled": 0.003605956,
+        "scaled": 0.003563982,
+        "september_median": 0.004096
+      },
+      "download_ms": {
+        "unscaled": 0.015152929,
+        "scaled": 0.015038736,
+        "september_median": 0.013312
+      },
+      "host_total_ms": {
+        "unscaled": 0.404793916,
+        "scaled": 0.404406089,
+        "september_median": 0.5298
+      }
+    },
+    {
+      "workload": "tile_histogram",
+      "distribution": "uniform",
+      "backend": "cuda_baseline",
+      "side": 256,
+      "upload_ms": {
+        "unscaled": 0.009480119,
+        "scaled": 0.006793766,
+        "september_median": 0.008992
+      },
+      "download_ms": {
+        "unscaled": 0.018957911,
+        "scaled": 0.017130825,
+        "september_median": 0.022592001
+      },
+      "host_total_ms": {
+        "unscaled": 0.431500734,
+        "scaled": 0.419090265,
+        "september_median": 0.4543
+      }
+    },
+    {
+      "workload": "tile_histogram",
+      "distribution": "uniform",
+      "backend": "cuda_baseline",
+      "side": 1024,
+      "upload_ms": {
+        "unscaled": 0.098991184,
+        "scaled": 0.056009524,
+        "september_median": 0.113824002
+      },
+      "download_ms": {
+        "unscaled": 0.079837628,
+        "scaled": 0.050604245,
+        "september_median": 0.105088003
+      },
+      "host_total_ms": {
+        "unscaled": 0.845025657,
+        "scaled": 0.646458165,
+        "september_median": 0.8524
+      }
+    },
+    {
+      "workload": "tile_histogram",
+      "distribution": "uniform",
+      "backend": "cuda_shared",
+      "side": 32,
+      "upload_ms": {
+        "unscaled": 0.003605956,
+        "scaled": 0.003563982,
+        "september_median": 0.004096
+      },
+      "download_ms": {
+        "unscaled": 0.015152929,
+        "scaled": 0.015038736,
+        "september_median": 0.012576
+      },
+      "host_total_ms": {
+        "unscaled": 0.404793916,
+        "scaled": 0.404406089,
+        "september_median": 0.3958
+      }
+    },
+    {
+      "workload": "tile_histogram",
+      "distribution": "uniform",
+      "backend": "cuda_shared",
+      "side": 256,
+      "upload_ms": {
+        "unscaled": 0.009480119,
+        "scaled": 0.006793766,
+        "september_median": 0.008192
+      },
+      "download_ms": {
+        "unscaled": 0.018957911,
+        "scaled": 0.017130825,
+        "september_median": 0.025599999
+      },
+      "host_total_ms": {
+        "unscaled": 0.431500734,
+        "scaled": 0.419090265,
+        "september_median": 0.3473
+      }
+    },
+    {
+      "workload": "tile_histogram",
+      "distribution": "uniform",
+      "backend": "cuda_shared",
+      "side": 1024,
+      "upload_ms": {
+        "unscaled": 0.098991184,
+        "scaled": 0.056009524,
+        "september_median": 0.104800001
+      },
+      "download_ms": {
+        "unscaled": 0.079837628,
+        "scaled": 0.050604245,
+        "september_median": 0.097727999
+      },
+      "host_total_ms": {
+        "unscaled": 0.845025657,
+        "scaled": 0.646458165,
+        "september_median": 0.6562
+      }
+    },
+    {
+      "workload": "tile_histogram",
+      "distribution": "single_bin",
+      "backend": "cuda_baseline",
+      "side": 32,
+      "upload_ms": {
+        "unscaled": 0.003605956,
+        "scaled": 0.003563982,
+        "september_median": 0.004096
+      },
+      "download_ms": {
+        "unscaled": 0.015152929,
+        "scaled": 0.015038736,
+        "september_median": 0.013312
+      },
+      "host_total_ms": {
+        "unscaled": 0.404793916,
+        "scaled": 0.404406089,
+        "september_median": 0.366
+      }
+    },
+    {
+      "workload": "tile_histogram",
+      "distribution": "single_bin",
+      "backend": "cuda_baseline",
+      "side": 256,
+      "upload_ms": {
+        "unscaled": 0.009480119,
+        "scaled": 0.006793766,
+        "september_median": 0.008192
+      },
+      "download_ms": {
+        "unscaled": 0.018957911,
+        "scaled": 0.017130825,
+        "september_median": 0.023552001
+      },
+      "host_total_ms": {
+        "unscaled": 0.431500734,
+        "scaled": 0.419090265,
+        "september_median": 0.5088
+      }
+    },
+    {
+      "workload": "tile_histogram",
+      "distribution": "single_bin",
+      "backend": "cuda_baseline",
+      "side": 1024,
+      "upload_ms": {
+        "unscaled": 0.098991184,
+        "scaled": 0.056009524,
+        "september_median": 0.10768
+      },
+      "download_ms": {
+        "unscaled": 0.079837628,
+        "scaled": 0.050604245,
+        "september_median": 0.096832
+      },
+      "host_total_ms": {
+        "unscaled": 0.845025657,
+        "scaled": 0.646458165,
+        "september_median": 0.7198
+      }
+    },
+    {
+      "workload": "tile_histogram",
+      "distribution": "single_bin",
+      "backend": "cuda_shared",
+      "side": 32,
+      "upload_ms": {
+        "unscaled": 0.003605956,
+        "scaled": 0.003563982,
+        "september_median": 0.004096
+      },
+      "download_ms": {
+        "unscaled": 0.015152929,
+        "scaled": 0.015038736,
+        "september_median": 0.013312
+      },
+      "host_total_ms": {
+        "unscaled": 0.404793916,
+        "scaled": 0.404406089,
+        "september_median": 0.4304
+      }
+    },
+    {
+      "workload": "tile_histogram",
+      "distribution": "single_bin",
+      "backend": "cuda_shared",
+      "side": 256,
+      "upload_ms": {
+        "unscaled": 0.009480119,
+        "scaled": 0.006793766,
+        "september_median": 0.008192
+      },
+      "download_ms": {
+        "unscaled": 0.018957911,
+        "scaled": 0.017130825,
+        "september_median": 0.01536
+      },
+      "host_total_ms": {
+        "unscaled": 0.431500734,
+        "scaled": 0.419090265,
+        "september_median": 0.4646
+      }
+    },
+    {
+      "workload": "tile_histogram",
+      "distribution": "single_bin",
+      "backend": "cuda_shared",
+      "side": 1024,
+      "upload_ms": {
+        "unscaled": 0.098991184,
+        "scaled": 0.056009524,
+        "september_median": 0.107968003
+      },
+      "download_ms": {
+        "unscaled": 0.079837628,
+        "scaled": 0.050604245,
+        "september_median": 0.094112001
+      },
+      "host_total_ms": {
+        "unscaled": 0.845025657,
+        "scaled": 0.646458165,
+        "september_median": 0.8253
+      }
+    }
+  ]
+}
