@@ -14,7 +14,7 @@ without JavaScript. Wide tables scroll within labelled regions that take keyboar
 ## Data and regeneration
 
 `web/source-pins.json` identifies 22 retained input files. Twenty one come from
-source `5855a508e37cb45264184da01ef0503835160379`. The copied theme token file,
+source `f6f23de19c052a77ee4f23deed9215c2292fa80a`. The copied theme token file,
 `web/theme-tokens.json`, comes from the theme revision named under Appearance
 and accessibility. The
 generator rejects changed input bytes before calculating a table.
