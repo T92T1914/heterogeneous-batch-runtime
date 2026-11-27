@@ -105,9 +105,14 @@ def is_reading(line, fields):
 
 
 class Watch:
-    """nvidia-smi at the protocol's interval, read on a thread that notes when each line arrived."""
+    """nvidia-smi at the protocol's interval, read on a thread that notes when each line arrived.
 
-    def __init__(self, link, clock=time.monotonic):
+    mark() gives the number of lines received so far. The runner marks right after the benchmark's
+    process exists and right after it exits, and a line's position against those marks, not a clock,
+    decides whether it arrived while the benchmark ran. Arrival times are kept for reading only.
+    """
+
+    def __init__(self, link, clock=time.perf_counter):
         self.command = run_pinned.LinkWatch(link).command
         self.fields = link["fields"]
         self.clock = clock
@@ -123,6 +128,9 @@ class Watch:
             line = raw.decode("utf-8", "replace").strip()
             if line:
                 self.received.append((self.clock(), line))
+
+    def mark(self):
+        return len(self.received)
 
     def readings(self):
         """How many lines so far are link readings."""
@@ -157,21 +165,21 @@ def forecast_identity(source):
             "forecast_sha256": run_pinned.sha256(data)}
 
 
-def watch_problem(watch_errors, readings, unread, generation, width, duration):
+def watch_problem(watch_errors, readings, unread, generation, width):
     """Why the watch does not qualify the run beyond report_pinned.link_problem, or None."""
     if watch_errors:
-        return "; ".join(watch_errors)
+        return " Then ".join(watch_errors)
     if unread:
-        return f"{len(unread)} line(s) from nvidia-smi were not link readings, so the link is unknown then"
-    if not any(0 <= r["seconds_from_start"] <= duration and r["gen_current"] == generation
-               and r["width_current"] == width for r in readings):
+        return f"nvidia-smi printed {len(unread)} lines that are not link readings, so the link is unknown then"
+    if not any(r["phase"] == "during" and r["gen_current"] == generation and r["width_current"] == width
+               for r in readings):
         return f"no reading that arrived while the benchmark ran showed generation {generation} with {width} lanes"
     return None
 
 
 def collect(command, binary, out_dir, build_dir, desktop_load, identity=run_pinned.source_identity,
             gpu=run_pinned.gpu_state, protocol_path=PROTOCOL, watch_type=Watch, forecast_check=forecast_identity,
-            clock=time.monotonic):
+            clock=time.perf_counter):
     """Run the benchmark with the link watched, then write the CSV and the receipt. Returns the receipt."""
     out_dir, protocol_path = Path(out_dir), Path(protocol_path)
     protocol = json.loads(protocol_path.read_text(encoding="utf-8"))
@@ -202,15 +210,23 @@ def collect(command, binary, out_dir, build_dir, desktop_load, identity=run_pinn
     else:
         watch_errors.append(f"nvidia-smi did not start: {started}")
     receipt["started_utc"] = run_pinned.now()
-    begin = clock()
     try:
-        run = subprocess.run([*command, "--run"], capture_output=True,
-                             timeout=protocol["limits"]["measurement_timeout_seconds"])
-        exit_code, stdout, stderr = run.returncode, run.stdout, run.stderr
-    except subprocess.TimeoutExpired as expired:
-        exit_code, stdout, stderr = "timeout", expired.stdout or b"", expired.stderr or b""
+        benchmark = subprocess.Popen([*command, "--run"], stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+    except OSError:
+        if started is None:
+            run_pinned.guarded(watch.stop)
+        raise
+    # Marked once the benchmark's process exists and again once it has exited.
+    first, begin = (watch.mark() if started is None else 0), clock()
+    try:
+        stdout, stderr = benchmark.communicate(timeout=protocol["limits"]["measurement_timeout_seconds"])
+        exit_code = benchmark.returncode
+    except subprocess.TimeoutExpired:
+        benchmark.kill()
+        stdout, stderr = benchmark.communicate()
+        exit_code = "timeout"
     finally:
-        end = clock()
+        last, end = (watch.mark() if started is None else 0), clock()
         entries = []
         if started is None:
             after = run_pinned.guarded(lambda: watch.wait_for(watch.readings() + 1))
@@ -224,15 +240,17 @@ def collect(command, binary, out_dir, build_dir, desktop_load, identity=run_pinn
     # The samples reach disk before any step that could still fail.
     (out_dir / samples).write_bytes(stdout)
     receipt["finished_utc"] = run_pinned.now()
-    receipt["benchmark_seconds"] = round(end - begin, 3)
+    receipt["benchmark_seconds"] = round(end - begin, 4)
     receipt["exit_code"] = exit_code
     receipt["csv_sha256"] = run_pinned.sha256(stdout)
     receipt["stderr"] = stderr.decode("utf-8", "replace").strip().splitlines()
     receipt["gpu_after"] = run_pinned.guarded(gpu)
     readings, unread = [], []
-    for arrived, line in entries:
+    for index, (arrived, line) in enumerate(entries):
+        phase = "before" if index < first else "during" if index < last else "after"
         try:
-            readings.append({**reading(line, link["fields"]), "seconds_from_start": round(arrived - begin, 3)})
+            readings.append({**reading(line, link["fields"]), "phase": phase,
+                             "seconds_from_start": round(arrived - begin, 4)})
         except ValueError:
             unread.append(line)
     receipt["pcie_link_readings"] = readings
@@ -252,8 +270,7 @@ def collect(command, binary, out_dir, build_dir, desktop_load, identity=run_pinn
         status = "unqualified"
     if status == "passed":
         problem = (report_pinned.link_problem(readings, link["generation"], link["width"])
-                   or watch_problem(watch_errors, readings, unread, link["generation"], link["width"],
-                                    end - begin))
+                   or watch_problem(watch_errors, readings, unread, link["generation"], link["width"]))
         if problem:
             status, receipt["link_problem"] = "unqualified", problem
     receipt["status"] = status

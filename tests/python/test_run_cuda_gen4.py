@@ -48,18 +48,26 @@ def fake_clock():
 
 
 class FakeWatch:
-    """Stands in for nvidia-smi. Each line has the time it arrives on the fake clock. The lines before
-    END are there once it starts, and the later ones arrive one at a time as the runner waits."""
+    """Stands in for nvidia-smi. Each line has the time it arrives on the fake clock. Lines before
+    BEGIN are there once it starts, lines from BEGIN to END arrive by the second mark, the moment the
+    benchmark has exited, and later ones arrive one at a time as the runner waits."""
 
     lines = [(9.9, IDLE), (10.3, GEN4), (11.05, IDLE)]
 
     def __init__(self, link, clock=None):
         self.fields = link["fields"]
         self.received = []
+        self.marks = 0
         self.pending = [entry for entry in self.lines if entry[0] > END]
 
     def start(self):
-        self.received.extend(entry for entry in self.lines if entry[0] <= END)
+        self.received.extend(entry for entry in self.lines if entry[0] < BEGIN)
+
+    def mark(self):
+        self.marks += 1
+        if self.marks == 2:
+            self.received.extend(entry for entry in self.lines if BEGIN <= entry[0] <= END)
+        return len(self.received)
 
     def readings(self):
         return sum(runner.is_reading(line, self.fields) for _, line in self.received)
@@ -136,6 +144,7 @@ def test_a_run_at_generation_4_passes_and_keeps_every_reading(tmp_path):
     assert receipt["csv_sha256"] == runner.run_pinned.sha256(SEPTEMBER)
     assert [r["gen_current"] for r in receipt["pcie_link_readings"]] == [1, 4, 1]
     assert [r["seconds_from_start"] for r in receipt["pcie_link_readings"]] == [-0.1, 0.3, 1.05]
+    assert [r["phase"] for r in receipt["pcie_link_readings"]] == ["before", "during", "after"]
     assert receipt["benchmark_seconds"] == 1.0
     assert receipt["pcie_link_readings"][1]["utilization_percent"] == 31
     assert receipt["pcie_link_readings"][1]["memory_used_mib"] == 6900
@@ -275,3 +284,52 @@ def test_watch_counts_only_readings_from_a_real_process(tmp_path):
     assert sum(runner.is_reading(line, FIELDS) for _, line in entries) >= seen + 2
     times = [arrived for arrived, _ in entries]
     assert times == sorted(times)
+
+
+def real_watch(tmp_path, first, then):
+    """runner.Watch on the real clock around a stand-in nvidia-smi that prints first once and then
+    prints then every 50 milliseconds."""
+    script = tmp_path / "smi.py"
+    script.write_text(f"import time\nprint({first!r}, flush=True)\nwhile True:\n    time.sleep(0.05)\n"
+                      f"    print({then!r}, flush=True)\n", encoding="utf-8")
+
+    class StandIn(runner.Watch):
+        def __init__(self, link, clock=runner.time.perf_counter):
+            super().__init__(link, clock)
+            self.command = [sys.executable, str(script)]
+
+    return StandIn
+
+
+def slow_stand_in(tmp_path):
+    command, script, build = stand_in(tmp_path)
+    text = script.read_text(encoding="utf-8").replace("import sys\n", "import sys, time\ntime.sleep(0.3)\n", 1)
+    script.write_text(text, encoding="utf-8")
+    return command, script, build
+
+
+@pytest.mark.parametrize("trial", range(5))
+def test_with_the_real_clock_a_reading_taken_before_the_run_never_counts_as_during(tmp_path, trial):
+    # The second review found that on Windows time.monotonic ticks every 15.6 ms, so the reading the
+    # runner waits for before the benchmark landed at 0.0 seconds and qualified a run that never read
+    # generation 4 while it ran. The window is now set by line position, not by a clock.
+    command, script, build = slow_stand_in(tmp_path)
+    receipt = runner.collect(command, script, tmp_path / "evidence", build, True, identity=same_identity,
+                             gpu=lambda: GPU, watch_type=real_watch(tmp_path, GEN4, IDLE),
+                             forecast_check=lambda source: FORECAST)
+    assert receipt["status"] == "unqualified", receipt.get("link_problem")
+    assert "while the benchmark ran" in receipt["link_problem"]
+    assert receipt["pcie_link_readings"][0]["phase"] == "before"
+    assert all(r["gen_current"] == 1 for r in receipt["pcie_link_readings"] if r["phase"] == "during")
+
+
+def test_with_the_real_clock_a_run_read_at_generation_4_passes(tmp_path):
+    command, script, build = slow_stand_in(tmp_path)
+    receipt = runner.collect(command, script, tmp_path / "evidence", build, True, identity=same_identity,
+                             gpu=lambda: GPU, watch_type=real_watch(tmp_path, IDLE, GEN4),
+                             forecast_check=lambda source: FORECAST)
+    assert receipt["status"] == "passed", receipt.get("link_problem")
+    phases = [r["phase"] for r in receipt["pcie_link_readings"]]
+    assert phases[0] == "before" and "during" in phases and phases[-1] == "after"
+    assert phases == sorted(phases, key=["before", "during", "after"].index)
+    assert receipt["benchmark_seconds"] >= 0.3
