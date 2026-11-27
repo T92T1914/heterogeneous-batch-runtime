@@ -106,6 +106,8 @@ Even a future device trace needs activity classification. ORT 1.30.0's CUPTI pat
 
 Actual device execution, transfers, launches, synchronization contributions, stream overlap and the peak device allocation of the process remain unobserved. No unexplained host remainder is assigned to one of them. A supported, already installed route for activity tracing with an applicable device grant would be a prerequisite for that distinct attribution question. It is not required to accept the present result of no change.
 
+The card's PCIe link generation was not read during these runs, and on November 25, 2026 I found the motherboard setting for the card's slot at generation 3, set it to automatic, and the link has read generation 4 with 16 lanes since.
+
 ## Correctness, ownership and retirement
 
 The bounded qualification of the installed consumers covers both execution modes, every N from zero through eight, and original, duplicate/permuted and seeded frames. Each provider records 54 cases with complete outputs against the independent original reference. The actual invocation deltas remain N for serial, one for nonempty batched and zero for empty input. All scores, rather than only the winning label, are retained.
