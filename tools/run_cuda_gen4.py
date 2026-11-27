@@ -168,7 +168,7 @@ def forecast_identity(source):
 def watch_problem(watch_errors, readings, unread, generation, width):
     """Why the watch does not qualify the run beyond report_pinned.link_problem, or None."""
     if watch_errors:
-        return " Then ".join(watch_errors)
+        return ", and then ".join(watch_errors)
     if unread:
         return f"nvidia-smi printed {len(unread)} lines that are not link readings, so the link is unknown then"
     if not any(r["phase"] == "during" and r["gen_current"] == generation and r["width_current"] == width
@@ -212,7 +212,8 @@ def collect(command, binary, out_dir, build_dir, desktop_load, identity=run_pinn
     receipt["started_utc"] = run_pinned.now()
     try:
         benchmark = subprocess.Popen([*command, "--run"], stdout=subprocess.PIPE, stderr=subprocess.PIPE)
-    except OSError:
+    except BaseException:
+        # Windows does not end a child with its parent, so nvidia-smi must not outlive a failed launch.
         if started is None:
             run_pinned.guarded(watch.stop)
         raise
@@ -227,6 +228,10 @@ def collect(command, binary, out_dir, build_dir, desktop_load, identity=run_pinn
         exit_code = "timeout"
     finally:
         last, end = (watch.mark() if started is None else 0), clock()
+        if benchmark.poll() is None:
+            # Only an interrupt reaches here with the benchmark still running.
+            benchmark.kill()
+            benchmark.wait(timeout=30)
         entries = []
         if started is None:
             after = run_pinned.guarded(lambda: watch.wait_for(watch.readings() + 1))

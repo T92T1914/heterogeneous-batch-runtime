@@ -333,3 +333,19 @@ def test_with_the_real_clock_a_run_read_at_generation_4_passes(tmp_path):
     assert phases[0] == "before" and "during" in phases and phases[-1] == "after"
     assert phases == sorted(phases, key=["before", "during", "after"].index)
     assert receipt["benchmark_seconds"] >= 0.3
+
+
+def test_a_launch_that_fails_stops_nvidia_smi(tmp_path):
+    stopped = []
+
+    class Tracked(FakeWatch):
+        def stop(self):
+            stopped.append(True)
+            return super().stop()
+
+    _, script, build = stand_in(tmp_path)
+    with pytest.raises(OSError):
+        runner.collect([str(tmp_path / "no-such-benchmark.exe")], script, tmp_path / "evidence", build, True,
+                       identity=same_identity, gpu=lambda: GPU, watch_type=Tracked,
+                       forecast_check=lambda source: FORECAST)
+    assert stopped == [True]
