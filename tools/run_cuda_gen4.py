@@ -57,6 +57,8 @@ def validate(rows, protocol):
     """Raise ValueError unless the rows are the protocol's complete, finite and consistent output."""
     if not rows or list(rows[0]) != HEADER:
         raise ValueError(f"the columns are not {','.join(HEADER)}")
+    if any(None in row or None in row.values() for row in rows):
+        raise ValueError("a row has more or fewer fields than the header")
     if len(rows) != protocol["run_rows"]:
         raise ValueError(f"{len(rows)} rows, the protocol has {protocol['run_rows']}")
     expected = [(*c, i) for c in conditions() for i in range(protocol["iterations"])]
@@ -78,22 +80,37 @@ def validate(rows, protocol):
             raise ValueError(f"checksums differ across backends for {key}")
 
 
-def reading(line, link_fields):
-    """One nvidia-smi line as the link reading report_pinned.link_reading makes plus the load fields."""
+def reading(line, fields):
+    """One nvidia-smi line as the link reading report_pinned.link_reading makes, plus the load fields.
+
+    The link fields must all be read. A load field nvidia-smi cannot read, such as [N/A], is kept
+    as None, so a line that shows the link is never dropped for want of a load reading.
+    """
     parts = [part.strip() for part in line.split(",")]
-    if len(parts) != len(link_fields) or not all(part.isdigit() for part in parts[-len(LOAD_KEYS):]):
+    if len(parts) != len(fields):
         raise ValueError(f"not a link and load reading: {line!r}")
     link_part = len(parts) - len(LOAD_KEYS)
     found = report_pinned.link_reading(",".join(parts[:link_part]))
-    found.update({key: int(value) for key, value in zip(LOAD_KEYS, parts[link_part:])})
+    found.update({key: int(value) if value.isdigit() else None
+                  for key, value in zip(LOAD_KEYS, parts[link_part:])})
     return found
 
 
-class Watch:
-    """nvidia-smi at the protocol's interval, read line by line on a thread so the runner can wait for readings."""
+def is_reading(line, fields):
+    try:
+        reading(line, fields)
+        return True
+    except ValueError:
+        return False
 
-    def __init__(self, link):
+
+class Watch:
+    """nvidia-smi at the protocol's interval, read on a thread that notes when each line arrived."""
+
+    def __init__(self, link, clock=time.monotonic):
         self.command = run_pinned.LinkWatch(link).command
+        self.fields = link["fields"]
+        self.clock = clock
         self.received = []
 
     def start(self):
@@ -105,20 +122,22 @@ class Watch:
         for raw in self.process.stdout:
             line = raw.decode("utf-8", "replace").strip()
             if line:
-                self.received.append(line)
+                self.received.append((self.clock(), line))
 
-    def lines(self):
-        return len(self.received)
+    def readings(self):
+        """How many lines so far are link readings."""
+        return sum(is_reading(line, self.fields) for _, line in list(self.received))
 
     def wait_for(self, count, timeout=10):
+        """Wait until count lines are link readings. Other lines do not count."""
         deadline = time.monotonic() + timeout
-        while self.lines() < count:
+        while self.readings() < count:
             if self.process.poll() is not None or time.monotonic() > deadline:
-                raise RuntimeError(f"nvidia-smi gave fewer than {count} readings")
+                raise RuntimeError(f"nvidia-smi gave fewer than {count} link readings")
             time.sleep(0.005)
 
     def stop(self):
-        """Stop nvidia-smi and return every line it printed, killing it if it does not stop."""
+        """Stop nvidia-smi and return every (arrival time, line) it printed, killing it if it does not stop."""
         self.process.terminate()
         try:
             self.process.wait(timeout=30)
@@ -129,14 +148,30 @@ class Watch:
         return list(self.received)
 
 
-def forecast_committed(source):
-    """True when the forecast file is committed in the history of source."""
-    commit = run_pinned.git("log", "-1", "--format=%H", source, "--", FORECAST)
-    return bool(commit)
+def forecast_identity(source):
+    """The commit that last wrote the forecast and its SHA-256, both as of source, or None when source lacks it."""
+    if subprocess.run(["git", "cat-file", "-e", f"{source}:{FORECAST}"], cwd=ROOT, capture_output=True).returncode:
+        return None
+    data = subprocess.run(["git", "show", f"{source}:{FORECAST}"], cwd=ROOT, check=True, capture_output=True).stdout
+    return {"forecast_commit": run_pinned.git("log", "-1", "--format=%H", source, "--", FORECAST),
+            "forecast_sha256": run_pinned.sha256(data)}
+
+
+def watch_problem(watch_errors, readings, unread, generation, width, duration):
+    """Why the watch does not qualify the run beyond report_pinned.link_problem, or None."""
+    if watch_errors:
+        return "; ".join(watch_errors)
+    if unread:
+        return f"{len(unread)} line(s) from nvidia-smi were not link readings, so the link is unknown then"
+    if not any(0 <= r["seconds_from_start"] <= duration and r["gen_current"] == generation
+               and r["width_current"] == width for r in readings):
+        return f"no reading that arrived while the benchmark ran showed generation {generation} with {width} lanes"
+    return None
 
 
 def collect(command, binary, out_dir, build_dir, desktop_load, identity=run_pinned.source_identity,
-            gpu=run_pinned.gpu_state, protocol_path=PROTOCOL, watch_type=Watch, forecast_check=forecast_committed):
+            gpu=run_pinned.gpu_state, protocol_path=PROTOCOL, watch_type=Watch, forecast_check=forecast_identity,
+            clock=time.monotonic):
     """Run the benchmark with the link watched, then write the CSV and the receipt. Returns the receipt."""
     out_dir, protocol_path = Path(out_dir), Path(protocol_path)
     protocol = json.loads(protocol_path.read_text(encoding="utf-8"))
@@ -146,9 +181,10 @@ def collect(command, binary, out_dir, build_dir, desktop_load, identity=run_pinn
     if (out_dir / samples).exists() or (out_dir / receipt_name).exists():
         raise SystemExit(f"{out_dir / samples} or its receipt exists. Rename and keep that attempt first.")
     source = identity(protocol=protocol_path)
-    if not forecast_check(source["source"]):
+    forecast = forecast_check(source["source"])
+    if not forecast:
         raise SystemExit(f"{FORECAST} is not committed in the source. The forecast comes before any sample.")
-    receipt = {"schema_version": 1, **source,
+    receipt = {"schema_version": 1, **source, **forecast,
                "protocol_sha256": run_pinned.sha256(protocol_path.read_bytes()),
                "binary_sha256": run_pinned.sha256(Path(binary).read_bytes()),
                "compilers": run_pinned.compilers(binary, build_dir), "cpu": platform.processor(),
@@ -156,11 +192,17 @@ def collect(command, binary, out_dir, build_dir, desktop_load, identity=run_pinn
                "pcie_link": {"generation": link["generation"], "width": link["width"]}}
     out_dir.mkdir(parents=True, exist_ok=True)
     receipt["gpu_before"] = gpu()
-    watch = watch_type(link)
-    start_error = run_pinned.guarded(watch.start)
-    if start_error is None:
-        start_error = run_pinned.guarded(lambda: watch.wait_for(1))
+    watch = watch_type(link, clock=clock)
+    watch_errors = []
+    started = run_pinned.guarded(watch.start)
+    if started is None:
+        before = run_pinned.guarded(lambda: watch.wait_for(1))
+        if before is not None:
+            watch_errors.append(f"before the benchmark: {before}")
+    else:
+        watch_errors.append(f"nvidia-smi did not start: {started}")
     receipt["started_utc"] = run_pinned.now()
+    begin = clock()
     try:
         run = subprocess.run([*command, "--run"], capture_output=True,
                              timeout=protocol["limits"]["measurement_timeout_seconds"])
@@ -168,42 +210,50 @@ def collect(command, binary, out_dir, build_dir, desktop_load, identity=run_pinn
     except subprocess.TimeoutExpired as expired:
         exit_code, stdout, stderr = "timeout", expired.stdout or b"", expired.stderr or b""
     finally:
-        if start_error is None:
-            after = run_pinned.guarded(lambda: watch.wait_for(watch.lines() + 1))
-            lines = run_pinned.guarded(watch.stop)
-            if after is not None and isinstance(lines, list):
-                lines.append(after)
-        else:
-            run_pinned.guarded(watch.stop)
-            lines = [start_error]
+        end = clock()
+        entries = []
+        if started is None:
+            after = run_pinned.guarded(lambda: watch.wait_for(watch.readings() + 1))
+            if after is not None:
+                watch_errors.append(f"after the benchmark: {after}")
+            stopped = run_pinned.guarded(watch.stop)
+            if isinstance(stopped, list):
+                entries = stopped
+            else:
+                watch_errors.append(f"stopping nvidia-smi: {stopped}")
     # The samples reach disk before any step that could still fail.
     (out_dir / samples).write_bytes(stdout)
     receipt["finished_utc"] = run_pinned.now()
+    receipt["benchmark_seconds"] = round(end - begin, 3)
     receipt["exit_code"] = exit_code
     receipt["csv_sha256"] = run_pinned.sha256(stdout)
     receipt["stderr"] = stderr.decode("utf-8", "replace").strip().splitlines()
     receipt["gpu_after"] = run_pinned.guarded(gpu)
     readings, unread = [], []
-    for line in lines if isinstance(lines, list) else [lines]:
+    for arrived, line in entries:
         try:
-            readings.append(reading(line, link["fields"]))
+            readings.append({**reading(line, link["fields"]), "seconds_from_start": round(arrived - begin, 3)})
         except ValueError:
             unread.append(line)
     receipt["pcie_link_readings"] = readings
     if unread:
         receipt["pcie_link_unread"] = unread
+    if watch_errors:
+        receipt["pcie_link_watch_errors"] = watch_errors
     current = run_pinned.guarded(lambda: identity(check_clean=False, protocol=protocol_path)["source"])
     receipt["source_unchanged"] = current == receipt["source"]
     status = "passed" if exit_code == 0 else "failed"
     if status == "passed":
         try:
             validate(list(csv.DictReader(stdout.decode("utf-8-sig").splitlines())), protocol)
-        except (ValueError, UnicodeDecodeError) as error:
+        except (ValueError, TypeError, UnicodeDecodeError) as error:
             status, receipt["validation_error"] = "invalid", str(error)
     if status == "passed" and not (receipt["source_unchanged"] and receipt["desktop_load_confirmed"]):
         status = "unqualified"
     if status == "passed":
-        problem = report_pinned.link_problem(readings, link["generation"], link["width"])
+        problem = (report_pinned.link_problem(readings, link["generation"], link["width"])
+                   or watch_problem(watch_errors, readings, unread, link["generation"], link["width"],
+                                    end - begin))
         if problem:
             status, receipt["link_problem"] = "unqualified", problem
     receipt["status"] = status
