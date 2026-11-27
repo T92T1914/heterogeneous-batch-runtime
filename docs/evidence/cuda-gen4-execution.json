@@ -1,0 +1,126 @@
+{
+  "schema_version": 1,
+  "source": "7f3cda9bcda272c368ae10188e1c99d8363cbba7",
+  "source_tree": "627ef36c6e5fb12c6383728e59a995cbfe31ade8",
+  "protocol_commit": "563c7d266d53d7ba9e2a9f3aec69c889293af551",
+  "forecast_commit": "35a54c415557e0e66991937f08c36128021aeeba",
+  "forecast_sha256": "fa26f7c3b8a8ed492ca3858b5278ecbf6f30c77847682cda78ffcb3d01473497",
+  "protocol_sha256": "989ee21581d9fc14c71e77127956a09b832439d633864151e3a7f39ba8085cee",
+  "binary_sha256": "f0238dd7977ee9ecbad0d9dd42b6f28285a0844d7a6f5d15a3f33a09c5edfb65",
+  "compilers": {
+    "cxx": "MSVC 19.44.35228.0",
+    "cuda": "NVIDIA 13.2.86"
+  },
+  "cpu": "AMD64 Family 25 Model 97 Stepping 2, AuthenticAMD",
+  "os": "Windows-10-10.0.26300-SP0",
+  "desktop_load_confirmed": true,
+  "pcie_link": {
+    "generation": 4,
+    "width": 16
+  },
+  "gpu_before": "NVIDIA GeForce RTX 4090, 621.40, 24564 MiB, 1 %, 4165 MiB, 39.45",
+  "started_utc": "2026-11-27T20:58:31.944367+00:00",
+  "finished_utc": "2026-11-27T20:58:32.324770+00:00",
+  "benchmark_seconds": 0.3048,
+  "exit_code": 0,
+  "csv_sha256": "24c6d42a4fbd03658ecde59a82bbb3fae4e93e537cf265712ebcd8b10e83b260",
+  "stderr": [
+    "NVIDIA GeForce RTX 4090 SM 8.9"
+  ],
+  "gpu_after": "NVIDIA GeForce RTX 4090, 621.40, 24564 MiB, 21 %, 4165 MiB, 39.56",
+  "pcie_link_readings": [
+    {
+      "timestamp": "2026/11/27 14:58:31.941",
+      "gen_current": 4,
+      "gen_max": 4,
+      "gen_gpumax": 4,
+      "gen_hostmax": 5,
+      "width_current": 16,
+      "width_max": 16,
+      "utilization_percent": 1,
+      "memory_used_mib": 4165,
+      "phase": "before",
+      "seconds_from_start": -0.0261
+    },
+    {
+      "timestamp": "2026/11/27 14:58:32.002",
+      "gen_current": 4,
+      "gen_max": 4,
+      "gen_gpumax": 4,
+      "gen_hostmax": 5,
+      "width_current": 16,
+      "width_max": 16,
+      "utilization_percent": 1,
+      "memory_used_mib": 4177,
+      "phase": "during",
+      "seconds_from_start": 0.0352
+    },
+    {
+      "timestamp": "2026/11/27 14:58:32.066",
+      "gen_current": 4,
+      "gen_max": 4,
+      "gen_gpumax": 4,
+      "gen_hostmax": 5,
+      "width_current": 16,
+      "width_max": 16,
+      "utilization_percent": 1,
+      "memory_used_mib": 4501,
+      "phase": "during",
+      "seconds_from_start": 0.099
+    },
+    {
+      "timestamp": "2026/11/27 14:58:32.128",
+      "gen_current": 4,
+      "gen_max": 4,
+      "gen_gpumax": 4,
+      "gen_hostmax": 5,
+      "width_current": 16,
+      "width_max": 16,
+      "utilization_percent": 1,
+      "memory_used_mib": 4501,
+      "phase": "during",
+      "seconds_from_start": 0.1613
+    },
+    {
+      "timestamp": "2026/11/27 14:58:32.190",
+      "gen_current": 4,
+      "gen_max": 4,
+      "gen_gpumax": 4,
+      "gen_hostmax": 5,
+      "width_current": 16,
+      "width_max": 16,
+      "utilization_percent": 21,
+      "memory_used_mib": 4501,
+      "phase": "during",
+      "seconds_from_start": 0.2234
+    },
+    {
+      "timestamp": "2026/11/27 14:58:32.253",
+      "gen_current": 4,
+      "gen_max": 4,
+      "gen_gpumax": 4,
+      "gen_hostmax": 5,
+      "width_current": 16,
+      "width_max": 16,
+      "utilization_percent": 21,
+      "memory_used_mib": 4433,
+      "phase": "during",
+      "seconds_from_start": 0.2861
+    },
+    {
+      "timestamp": "2026/11/27 14:58:32.316",
+      "gen_current": 4,
+      "gen_max": 4,
+      "gen_gpumax": 4,
+      "gen_hostmax": 5,
+      "width_current": 16,
+      "width_max": 16,
+      "utilization_percent": 21,
+      "memory_used_mib": 4165,
+      "phase": "after",
+      "seconds_from_start": 0.3493
+    }
+  ],
+  "source_unchanged": true,
+  "status": "passed"
+}
