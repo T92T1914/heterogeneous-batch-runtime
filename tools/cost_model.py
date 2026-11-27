@@ -2,8 +2,18 @@
 
 The model reads only `docs/evidence/baseline-cuda.csv`, whose bytes are pinned by
 `docs/evidence/execution.json`. It runs no workload. `--write` regenerates
-`docs/cost-model.md` and `docs/evidence/cost-model.csv`. `--check` recomputes both and
-fails if either differs from the committed bytes.
+`docs/cost-model.md` and `docs/evidence/cost-model.csv`.
+
+`--forecast` writes `docs/evidence/cost-model-forecast.json`, a prediction for the
+September CUDA protocol run again at PCIe generation 4 under
+`docs/cuda-gen4-protocol.json`. It fits each model on all three sizes and predicts
+every condition twice: once with the fitted terms as they are, and once with each
+term per byte divided by the ratio of the upload rates that the two pinned input
+runs measured on one binary, the second at generation 4 and the first at
+generation 3. It reads only the retained samples of those runs, checked against
+their receipts.
+
+`--check` recomputes all three files and fails if any differs from the committed bytes.
 """
 import argparse
 from collections import defaultdict
@@ -264,19 +274,122 @@ These fits describe one shared Windows workstation, one RTX 4090 with pageable h
     return report, buffer.getvalue()
 
 
+# The two pinned input runs, generation 3 first. Both ran the same binary, so the ratio of their
+# upload rates holds the binary, the driver and the computer fixed and leaves the link and the day.
+PINNED_RUNS = (("generation 3", "pinned"), ("generation 4", "pinned-gen4"))
+# The largest pageable copies of those runs. September used pageable input, and at 8 and 9 MiB a
+# copy's fixed latency is a small part of its time, so these two carry the rate per byte best.
+RATE_CONDITIONS = (("masked_reduce", 1024), ("stencil3x3", 1024))
+FORECAST_FIELDS = {"upload": "upload_ms", "download": "download_ms", "complete": "host_total_ms"}
+
+
+def pinned_uploads(name):
+    """Median warm pageable upload, in ms, of each RATE_CONDITIONS entry in one retained pinned run."""
+    receipt = json.loads((ROOT / f"docs/evidence/{name}-execution.json").read_text(encoding="utf-8"))
+    data = (ROOT / f"docs/evidence/{name}.csv").read_bytes()
+    require(hashlib.sha256(data).hexdigest() == receipt["csv_sha256"], f"retained samples changed: {name}.csv")
+    require(receipt["status"] == "passed" and receipt["exit_code"] == 0, f"the {name} run did not pass")
+    rows = list(csv.DictReader(data.decode("utf-8-sig").splitlines()))
+    medians = {}
+    for workload, side in RATE_CONDITIONS:
+        warm = [float(r["upload_ms"]) for r in rows if r["phase"] == "run" and r["host_memory"] == "pageable"
+                and r["workload"] == workload and int(r["side"]) == side and int(r["iteration"]) > 0]
+        require(len(warm) == 120, f"expected 120 warm pageable samples for {workload} at {side} in {name}.csv")
+        medians[workload] = statistics.median(warm)
+    return receipt, hashlib.sha256(data).hexdigest(), medians
+
+
+def upload_rate_ratio():
+    """Generation 4 upload rate over generation 3, from the summed medians of the RATE_CONDITIONS uploads."""
+    runs = {label: pinned_uploads(name) for label, name in PINNED_RUNS}
+    binaries = {receipt["binary_sha256"] for receipt, _, _ in runs.values()}
+    require(len(binaries) == 1, "the two pinned runs did not use one binary")
+    require(runs["generation 4"][0].get("pcie_link") == {"generation": 4, "width": 16},
+            "the generation 4 receipt names another link")
+    # The bytes of each copy are the same in both runs, so the rate ratio is the inverse time ratio.
+    ratio = sum(runs["generation 3"][2].values()) / sum(runs["generation 4"][2].values())
+    return ratio, binaries.pop(), runs
+
+
+def forecast(points, ratio):
+    """Each model fitted on all sizes, then every point predicted unscaled and with b divided by ratio."""
+    terms = {name: fit([view(p) for p in points]) for name, view in MODELS.items()}
+    predictions = []
+    for p in points:
+        entry = {"workload": p["condition"][0], "distribution": p["condition"][1], "backend": p["condition"][2],
+                 "side": p["side"]}
+        for name, view in MODELS.items():
+            a, b = terms[name]
+            x0, x1, measured = view(p)
+            entry[FORECAST_FIELDS[name]] = {"unscaled": round(a * x0 + b * x1, 9),
+                                            "scaled": round(a * x0 + b / ratio * x1, 9),
+                                            "september_median": round(measured, 9)}
+        predictions.append(entry)
+    return terms, predictions
+
+
+def forecast_output(receipt, points):
+    ratio, binary, runs = upload_rate_ratio()
+    terms, predictions = forecast(points, ratio)
+    document = {
+        "schema_version": 1,
+        "target": "docs/cuda-gen4-protocol.json, the September CUDA protocol of docs/cuda-protocol.json run again "
+                  "with the card's link at PCIe generation 4 with 16 lanes",
+        "written_before": "the first sample of that run. The commit that adds this file is older than the run, which "
+                          "the run's receipt records by revision",
+        "predicts": "for each of the six CUDA conditions at each of the three sizes, the median of the five warm "
+                    "samples of the upload interval, the download interval and the complete call on the host clock, "
+                    "in milliseconds",
+        "model": "the three models of docs/cost-model.md, each fitted once on all 18 September medians by least squares "
+                 "on relative error, where docs/cost-model.md holds one size out of each fit. a is the fixed term, "
+                 "a latency per copy for the upload and download and one fixed cost for the complete call, and b is "
+                 "the term per byte",
+        "unscaled": "a times copies (or 1) plus b times bytes, the fitted terms as they are",
+        "scaled": "a times copies (or 1) plus b divided by upload_rate_ratio times bytes. Every term per byte is "
+                  "divided, the download's and the complete call's too, although the ratio comes from uploads and "
+                  "the complete call's term per byte also holds host work that grows with the image",
+        "claims_nothing_about": "the link generation of the September run, which no reading records",
+        "upload_rate_ratio": {
+            "value": round(ratio, 9),
+            "definition": "the summed median pageable upload of masked_reduce and stencil3x3 at 1024 by 1024, 9437184 "
+                          "and 8388608 bytes, over the 120 warm samples of the run at generation 3, divided by the "
+                          "same sum in the run at generation 4",
+            "binary_sha256": binary,
+            "median_upload_ms": {label: {k: round(v, 9) for k, v in medians.items()} for label, (_, _, medians) in runs.items()},
+            "csv_sha256": {label: digest for label, (_, digest, _) in runs.items()},
+        },
+        "september_csv_sha256": receipt["artifact_sha256"]["baseline-cuda.csv"],
+        "terms": {name: {"fixed_ms": round(a, 9), "ms_per_mib": round(b * 2 ** 20, 9),
+                         "scaled_ms_per_mib": round(b / ratio * 2 ** 20, 9)} for name, (a, b) in terms.items()},
+        "predictions": predictions,
+    }
+    return json.dumps(document, indent=2) + "\n"
+
+
+FORECAST = ROOT / "docs/evidence/cost-model-forecast.json"
+
+
 def main():
     parser = argparse.ArgumentParser(description=__doc__.splitlines()[0])
     mode = parser.add_mutually_exclusive_group()
     mode.add_argument("--write", action="store_true")
     mode.add_argument("--check", action="store_true")
+    mode.add_argument("--forecast", action="store_true")
     args = parser.parse_args()
     receipt, points = load()
+    if args.forecast:
+        FORECAST.write_text(forecast_output(receipt, points), encoding="utf-8", newline="\n")
+        print(f"18 forecasts, each unscaled and scaled, written to {FORECAST.relative_to(ROOT).as_posix()}")
+        return
     report, table = outputs(receipt, points)
     for path, expected in [(ROOT / "docs/cost-model.md", report), (ROOT / "docs/evidence/cost-model.csv", table)]:
         if args.write:
             path.write_text(expected, encoding="utf-8", newline="\n")
         else:
             require(path.read_text(encoding="utf-8") == expected, f"stale generated output: {path.name}")
+    if not args.write:
+        require(FORECAST.read_text(encoding="utf-8") == forecast_output(receipt, points),
+                f"stale generated output: {FORECAST.name}")
     print("6 CUDA conditions at 3 sizes, 3 models, 3 sizes held out: retained hash and generated outputs passed")
 
 
