@@ -188,3 +188,47 @@ if any(text not in gen4_page for text in headline):
     raise ValueError(f'The pinned generation 4 page headline differs from its samples: {headline}')
 print(f'{len(gen4_rows)} pinned generation 4 rows, the receipt and its link readings, the unchanged protocol, '
       'the results and comparison tables, the page citations and the headline passed')
+
+# The September CUDA protocol again at PCIe generation 4 under docs/cuda-gen4-protocol.json. The
+# receipt holds every link reading and names the forecast committed before the run. No results
+# page sets the two side by side yet, so this checks the samples, the receipt, the unchanged
+# protocol and the unchanged forecast. The September files are checked above with execution.json.
+# Until a results page cites the CSV's hash, it is pinned here, so a changed CSV with a receipt
+# rewritten to match still fails.
+CUDA_GEN4_CSV_SHA256 = '24c6d42a4fbd03658ecde59a82bbb3fae4e93e537cf265712ebcd8b10e83b260'
+spec = importlib.util.spec_from_file_location('run_cuda_gen4', Path(__file__).resolve().parent / 'run_cuda_gen4.py')
+run_cuda_gen4 = importlib.util.module_from_spec(spec)
+spec.loader.exec_module(run_cuda_gen4)
+cuda_gen4_receipt = json.loads((root / 'cuda-gen4-execution.json').read_text(encoding='utf-8'))
+cuda_gen4_bytes = (root / 'cuda-gen4.csv').read_bytes()
+if not (hashlib.sha256(cuda_gen4_bytes).hexdigest() == cuda_gen4_receipt['csv_sha256'] == CUDA_GEN4_CSV_SHA256):
+    raise ValueError('Retained evidence changed: cuda-gen4.csv')
+cuda_gen4_protocol_path = root.parent / 'cuda-gen4-protocol.json'
+if hashlib.sha256(cuda_gen4_protocol_path.read_bytes()).hexdigest() != cuda_gen4_receipt['protocol_sha256']:
+    raise ValueError('The CUDA generation 4 protocol changed after its run')
+if hashlib.sha256((root / 'cost-model-forecast.json').read_bytes()).hexdigest() != cuda_gen4_receipt['forecast_sha256']:
+    raise ValueError('The forecast changed after the CUDA generation 4 run')
+if (cuda_gen4_receipt['status'] != 'passed' or type(cuda_gen4_receipt['exit_code']) is not int
+        or cuda_gen4_receipt['exit_code'] != 0
+        or cuda_gen4_receipt['source_unchanged'] is not True or cuda_gen4_receipt['desktop_load_confirmed'] is not True):
+    raise ValueError('The CUDA generation 4 run did not pass')
+cuda_gen4_protocol = json.loads(cuda_gen4_protocol_path.read_text(encoding='utf-8'))
+cuda_gen4_link = cuda_gen4_protocol['pcie_link']
+if cuda_gen4_receipt['pcie_link'] != {'generation': cuda_gen4_link['generation'], 'width': cuda_gen4_link['width']}:
+    raise ValueError('The CUDA generation 4 receipt names another link than its protocol')
+run_cuda_gen4.validate(list(csv.DictReader(cuda_gen4_bytes.decode('utf-8-sig').splitlines())), cuda_gen4_protocol)
+cuda_gen4_readings = cuda_gen4_receipt['pcie_link_readings']
+cuda_gen4_phases = ['before', 'during', 'after']
+if any(r['phase'] not in cuda_gen4_phases for r in cuda_gen4_readings) or not (
+        cuda_gen4_readings and cuda_gen4_readings[0]['phase'] == 'before' and cuda_gen4_readings[-1]['phase'] == 'after'
+        and all(cuda_gen4_phases.index(a['phase']) <= cuda_gen4_phases.index(b['phase'])
+                for a, b in zip(cuda_gen4_readings, cuda_gen4_readings[1:]))):
+    raise ValueError('The CUDA generation 4 link readings do not cover the run from before to after')
+cuda_gen4_problem = (report_pinned.link_problem(cuda_gen4_readings, cuda_gen4_link['generation'], cuda_gen4_link['width'])
+                     or run_cuda_gen4.watch_problem(cuda_gen4_receipt.get('pcie_link_watch_errors', []), cuda_gen4_readings,
+                                                    cuda_gen4_receipt.get('pcie_link_unread', []),
+                                                    cuda_gen4_link['generation'], cuda_gen4_link['width']))
+if cuda_gen4_problem:
+    raise ValueError(cuda_gen4_problem)
+print(f'{cuda_gen4_protocol["run_rows"]} CUDA generation 4 rows, the receipt and its {len(cuda_gen4_readings)} link readings, '
+      'the unchanged protocol and the unchanged forecast passed')
